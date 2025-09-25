@@ -1,6 +1,6 @@
 package net.irisshaders.iris.mixin;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.Program;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
@@ -32,6 +32,6 @@ public class MixinProgram {
 
 	@Inject(method = "compileShaderInternal", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;glGetShaderInfoLog(II)Ljava/lang/String;"), locals = LocalCapture.CAPTURE_FAILHARD)
 	private static void iris$causeException(Program.Type arg, String string, InputStream inputStream, String string2, GlslPreprocessor arg2, CallbackInfoReturnable<Integer> cir, String string3, int i) {
-		throw new ShaderCompileException(string + arg.getExtension(), GlStateManager.glGetShaderInfoLog(i, 32768));
+		throw new ShaderCompileException(string + arg.getExtension(), GL_STATE_MANAGER.glGetShaderInfoLog(i, 32768));
 	}
 }

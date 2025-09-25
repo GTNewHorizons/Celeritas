@@ -1,6 +1,6 @@
 package net.irisshaders.iris.mixin;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.Uniform;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,13 +20,13 @@ public class MixinUniform {
 		int location = cir.getReturnValue();
 
 		if (location == -1 && name.equals("Sampler0")) {
-			location = GlStateManager._glGetUniformLocation(programId, "tex");
+			location = GL_STATE_MANAGER.glGetUniformLocation(programId, "tex");
 
 			if (location == -1) {
-				location = GlStateManager._glGetUniformLocation(programId, "gtexture");
+				location = GL_STATE_MANAGER.glGetUniformLocation(programId, "gtexture");
 
 				if (location == -1) {
-					location = GlStateManager._glGetUniformLocation(programId, "texture");
+					location = GL_STATE_MANAGER.glGetUniformLocation(programId, "texture");
 
 					// TODO: If a shader samples from *any* sampler with a name that isn't known, then it should act like sampler 0.
 				}

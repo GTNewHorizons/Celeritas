@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.buffer;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.lwjgl.opengl.GL43C;
@@ -40,8 +40,8 @@ public class ShaderStorageBuffer {
 		if (!info.relative()) return;
 
 		IrisRenderSystem.deleteBuffers(id);
-		int newId = GlStateManager._glGenBuffers();
-		GlStateManager._glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, newId);
+		int newId = GL_STATE_MANAGER.glGenBuffers();
+		GL_STATE_MANAGER.glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, newId);
 
 		// Calculation time
 		int newWidth = (int) (width * info.scaleX());

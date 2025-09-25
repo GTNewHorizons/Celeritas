@@ -1,4 +1,5 @@
 package net.irisshaders.iris.gl.blending;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -26,10 +27,10 @@ public class BlendModeStorage {
 		blendLocked = false;
 
 		if (override == null) {
-			GlStateManager._disableBlend();
+			GL_STATE_MANAGER.disableBlend();
 		} else {
-			GlStateManager._enableBlend();
-			GlStateManager._blendFuncSeparate(override.srcRgb(), override.dstRgb(), override.srcAlpha(), override.dstAlpha());
+			GL_STATE_MANAGER.enableBlend();
+			GL_STATE_MANAGER.glBlendFuncSeparate(override.srcRgb(), override.dstRgb(), override.srcAlpha(), override.dstAlpha());
 		}
 
 		blendLocked = true;
@@ -70,12 +71,12 @@ public class BlendModeStorage {
 		blendLocked = false;
 
 		if (originalBlendEnable) {
-			GlStateManager._enableBlend();
+			GL_STATE_MANAGER.enableBlend();
 		} else {
-			GlStateManager._disableBlend();
+			GL_STATE_MANAGER.disableBlend();
 		}
 
-		GlStateManager._blendFuncSeparate(originalBlend.srcRgb(), originalBlend.dstRgb(),
+		GL_STATE_MANAGER.glBlendFuncSeparate(originalBlend.srcRgb(), originalBlend.dstRgb(),
 			originalBlend.srcAlpha(), originalBlend.dstAlpha());
 	}
 }

@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.texture;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.shaderpack.texture.TextureFilteringData;
 import org.embeddedt.embeddium.impl.gl.GlObject;
@@ -17,7 +17,7 @@ public class GlTexture extends GlObject implements TextureAccess {
 	private final TextureType target;
 
 	public GlTexture(TextureType target, int sizeX, int sizeY, int sizeZ, int internalFormat, int format, int pixelType, byte[] pixels, TextureFilteringData filteringData) {
-		this.setHandle(GlStateManager._genTexture());
+		this.setHandle(GL_STATE_MANAGER.glGenTextures());
 		IrisRenderSystem.bindTextureForSetup(target.getGlType(), handle());
 
 		TextureUploadHelper.resetTextureUploadState();
@@ -72,6 +72,6 @@ public class GlTexture extends GlObject implements TextureAccess {
 
 	@Override
 	protected void destroyInternal() {
-		GlStateManager._deleteTexture(handle());
+		GL_STATE_MANAGER.glDeleteTextures(handle());
 	}
 }

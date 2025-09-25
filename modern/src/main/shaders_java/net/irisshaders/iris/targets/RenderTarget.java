@@ -1,6 +1,6 @@
 package net.irisshaders.iris.targets;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.InternalTextureFormat;
 import net.irisshaders.iris.gl.texture.PixelFormat;
@@ -35,7 +35,7 @@ public class RenderTarget {
 		this.height = builder.height;
 
 		int[] textures = new int[2];
-		GlStateManager._genTextures(textures);
+		GL_STATE_MANAGER.glGenTextures(textures);
 
 		this.mainTexture = textures[0];
 		this.altTexture = textures[1];
@@ -51,7 +51,7 @@ public class RenderTarget {
 
 		// Clean up after ourselves
 		// This is strictly defensive to ensure that other buggy code doesn't tamper with our textures
-		GlStateManager._bindTexture(0);
+		GL_STATE_MANAGER.bindTexture(0);
 	}
 
 	public static Builder builder() {
@@ -115,7 +115,7 @@ public class RenderTarget {
 		requireValid();
 		isValid = false;
 
-		GlStateManager._deleteTextures(new int[]{mainTexture, altTexture});
+		GL_STATE_MANAGER.glDeleteTextures(new int[]{mainTexture, altTexture});
 	}
 
 	private void requireValid() {

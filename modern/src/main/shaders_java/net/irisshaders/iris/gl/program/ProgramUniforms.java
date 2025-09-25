@@ -1,7 +1,7 @@
 package net.irisshaders.iris.gl.program;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.platform.GlStateManager;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.state.ValueUpdateNotifier;
@@ -291,7 +291,7 @@ public class ProgramUniforms {
 
 		@Override
 		public OptionalInt location(String name, UniformType type) {
-			int id = GlStateManager._glGetUniformLocation(program, name);
+			int id = GL_STATE_MANAGER.glGetUniformLocation(program, name);
 
 			if (id == -1) {
 				return OptionalInt.empty();
@@ -312,7 +312,7 @@ public class ProgramUniforms {
 		public ProgramUniforms buildUniforms() {
 			// Check for any unsupported uniforms and warn about them so that we can easily figure out what uniforms we
 			// need to add.
-			int activeUniforms = GlStateManager.glGetProgrami(program, GL20C.GL_ACTIVE_UNIFORMS);
+			int activeUniforms = GL_STATE_MANAGER.glGetProgrami(program, GL20C.GL_ACTIVE_UNIFORMS);
 			IntBuffer sizeBuf = BufferUtils.createIntBuffer(1);
 			IntBuffer typeBuf = BufferUtils.createIntBuffer(1);
 

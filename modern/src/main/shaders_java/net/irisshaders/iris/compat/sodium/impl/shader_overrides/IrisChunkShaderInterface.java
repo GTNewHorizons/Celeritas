@@ -1,6 +1,6 @@
 package net.irisshaders.iris.compat.sodium.impl.shader_overrides;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
@@ -104,7 +104,7 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
 		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, TextureUtil.getBlockTextureId());
 		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, TextureUtil.getLightTextureId());
 		// This is what is expected by the rest of rendering state, failure to do this will cause blurry textures on particles.
-		GlStateManager._activeTexture(GL32C.GL_TEXTURE0 + IrisSamplers.LIGHTMAP_TEXTURE_UNIT);
+		GL_STATE_MANAGER.glActiveTexture(GL32C.GL_TEXTURE0 + IrisSamplers.LIGHTMAP_TEXTURE_UNIT);
 		CapturedRenderingState.INSTANCE.setCurrentAlphaTest(alpha);
 
 		if (blendModeOverride != null) {

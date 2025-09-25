@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.program;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.ProgramManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import org.embeddedt.embeddium.impl.gl.GlObject;
@@ -35,7 +35,7 @@ public final class Program extends GlObject {
 	}
 
 	public void destroyInternal() {
-		GlStateManager.glDeleteProgram(handle());
+		GL_STATE_MANAGER.glDeleteProgram(handle());
 	}
 
 	/**

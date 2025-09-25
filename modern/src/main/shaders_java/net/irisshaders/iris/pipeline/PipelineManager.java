@@ -1,7 +1,7 @@
 package net.irisshaders.iris.pipeline;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import static net.irisshaders.iris.IrisLogging.IrisLogger;
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
@@ -95,13 +95,13 @@ public class PipelineManager {
 		//
 		// Without this code, there will be weird issues when reloading certain shaderpacks.
 		for (int i = 0; i < 16; i++) {
-			GlStateManager.glActiveTexture(GL20C.GL_TEXTURE0 + i);
-			GlStateManager._bindTexture(0);
+			GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE0 + i);
+			GL_STATE_MANAGER.bindTexture(0);
 		}
 
 		// Set the active texture unit to unit 0
 		//
 		// This seems to be what most code expects. It's a sane default in any case.
-		GlStateManager.glActiveTexture(GL20C.GL_TEXTURE0);
+		GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE0);
 	}
 }

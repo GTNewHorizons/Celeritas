@@ -1,9 +1,9 @@
 package net.irisshaders.iris.gl.texture;
 
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
-import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
@@ -56,7 +56,7 @@ public interface DepthCopyStrategy {
 		public void copy(GlFramebuffer sourceFb, int sourceTexture, GlFramebuffer destFb, int destTexture, int width, int height) {
 			sourceFb.bindAsReadBuffer();
 
-			int previousTexture = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
+			int previousTexture = GL_STATE_MANAGER.getActiveBoundTexture();
 
 			IrisRenderSystem.copyTexSubImage2D(
 				destTexture,

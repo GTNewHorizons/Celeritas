@@ -1,4 +1,5 @@
 package net.irisshaders.iris.texture.pbr;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -109,7 +110,7 @@ public class PBRTextureManager {
 			Class<? extends AbstractTexture> clazz = texture.getClass();
 			PBRTextureLoader loader = PBRTextureLoaderRegistry.INSTANCE.getLoader(clazz);
 			if (loader != null) {
-				int previousTextureBinding = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
+				int previousTextureBinding = GL_STATE_MANAGER.getActiveBoundTexture();
 				consumer.clear();
 				try {
 					loader.load(texture, Minecraft.getInstance().getResourceManager(), consumer);
@@ -117,7 +118,7 @@ public class PBRTextureManager {
 				} catch (Exception e) {
 					IrisLogger.debug("Failed to load PBR textures for texture " + id, e);
 				} finally {
-					GlStateManager._bindTexture(previousTextureBinding);
+					GL_STATE_MANAGER.bindTexture(previousTextureBinding);
 				}
 			}
 		}

@@ -1,6 +1,6 @@
 package net.irisshaders.iris.pipeline;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import net.irisshaders.iris.compat.dh.DHCompat;
@@ -36,7 +36,7 @@ public class VanillaRenderingPipeline implements WorldRenderingPipeline {
 	public void beginLevelRendering() {
 		// Use the default Minecraft framebuffer and ensure that no programs are in use
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
-		GlStateManager._glUseProgram(0);
+		GL_STATE_MANAGER.glUseProgram(0);
 	}
 
 	@Override

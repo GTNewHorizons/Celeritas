@@ -1,8 +1,8 @@
 package net.irisshaders.iris.compat.dh;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiGenericObjectShaderProgram;
 import com.seibel.distanthorizons.api.interfaces.render.IDhApiRenderableBoxGroup;
@@ -134,8 +134,8 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 		samplers = samplerBuilder.build();
 		images = builder.build();
 
-		this.va = GlStateManager._glGenVertexArrays();
-		GlStateManager._glBindVertexArray(va);
+		this.va = GL_STATE_MANAGER.glGenVertexArrays();
+		GL_STATE_MANAGER.glBindVertexArray(va);
 		GL32.glVertexAttribPointer(0, 3, GL32.GL_FLOAT, false, 0, 0);
 		GL32.glEnableVertexAttribArray(0);
 
@@ -223,7 +223,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 
 	// Override ShaderProgram.bind()
 	public void bind(DhApiRenderParam renderParam) {
-		GlStateManager._glBindVertexArray(va);
+		GL_STATE_MANAGER.glBindVertexArray(va);
 		GL32C.glUseProgram(id);
 		if (blend != null) blend.apply();
 
@@ -249,7 +249,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 	}
 
 	public void unbind() {
-		GlStateManager._glBindVertexArray(0);
+		GL_STATE_MANAGER.glBindVertexArray(0);
 		GL43C.glUseProgram(0);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();

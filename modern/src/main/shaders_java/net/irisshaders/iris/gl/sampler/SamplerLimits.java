@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.sampler;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL45C;
@@ -12,9 +12,9 @@ public class SamplerLimits {
 	private final int maxShaderStorageUnits;
 
 	private SamplerLimits() {
-		this.maxTextureUnits = GlStateManager._getInteger(GL20C.GL_MAX_TEXTURE_IMAGE_UNITS);
-		this.maxDrawBuffers = GlStateManager._getInteger(GL20C.GL_MAX_DRAW_BUFFERS);
-		this.maxShaderStorageUnits = IrisRenderSystem.supportsSSBO() ? GlStateManager._getInteger(GL45C.GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS) : 0;
+		this.maxTextureUnits = GL_STATE_MANAGER.glGetInteger(GL20C.GL_MAX_TEXTURE_IMAGE_UNITS);
+		this.maxDrawBuffers = GL_STATE_MANAGER.glGetInteger(GL20C.GL_MAX_DRAW_BUFFERS);
+		this.maxShaderStorageUnits = IrisRenderSystem.supportsSSBO() ? GL_STATE_MANAGER.glGetInteger(GL45C.GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS) : 0;
 	}
 
 	public static SamplerLimits get() {

@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.framebuffer;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -19,8 +19,8 @@ public class GlFramebuffer extends GlObject {
 		this.setHandle(IrisRenderSystem.createFramebuffer());
 
 		this.attachments = new Int2IntArrayMap();
-		this.maxDrawBuffers = GlStateManager._getInteger(GL30C.GL_MAX_DRAW_BUFFERS);
-		this.maxColorAttachments = GlStateManager._getInteger(GL30C.GL_MAX_COLOR_ATTACHMENTS);
+		this.maxDrawBuffers = GL_STATE_MANAGER.glGetInteger(GL30C.GL_MAX_DRAW_BUFFERS);
+		this.maxColorAttachments = GL_STATE_MANAGER.glGetInteger(GL30C.GL_MAX_COLOR_ATTACHMENTS);
 		this.hasDepthAttachment = false;
 	}
 
@@ -82,25 +82,25 @@ public class GlFramebuffer extends GlObject {
 	}
 
 	public void bind() {
-		GlStateManager._glBindFramebuffer(GL30C.GL_FRAMEBUFFER, handle());
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, handle());
 	}
 
 	public void bindAsReadBuffer() {
-		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, handle());
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, handle());
 	}
 
 	public void bindAsDrawBuffer() {
-		GlStateManager._glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, handle());
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, handle());
 	}
 
 	protected void destroyInternal() {
-		GlStateManager._glDeleteFramebuffers(handle());
+		GL_STATE_MANAGER.glDeleteFramebuffers(handle());
 	}
 
 	public int getStatus() {
 		bind();
 
-		return GlStateManager.glCheckFramebufferStatus(GL30C.GL_FRAMEBUFFER);
+		return GL_STATE_MANAGER.glCheckFramebufferStatus(GL30C.GL_FRAMEBUFFER);
 	}
 
 	public int getId() {

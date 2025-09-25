@@ -1,6 +1,6 @@
 package net.irisshaders.iris.pipeline.programs;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.ProgramManager;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -48,9 +48,9 @@ public class FallbackShader extends ShaderInstance {
 		this.FOG_DENSITY = this.getUniform("FogDensity");
 		this.FOG_IS_EXP2 = this.getUniform("FogIsExp2");
 
-		this.gtexture = GlStateManager._glGetUniformLocation(getId(), "gtexture");
-		this.overlay = GlStateManager._glGetUniformLocation(getId(), "overlay");
-		this.lightmap = GlStateManager._glGetUniformLocation(getId(), "lightmap");
+		this.gtexture = GL_STATE_MANAGER.glGetUniformLocation(getId(), "gtexture");
+		this.overlay = GL_STATE_MANAGER.glGetUniformLocation(getId(), "overlay");
+		this.lightmap = GL_STATE_MANAGER.glGetUniformLocation(getId(), "lightmap");
 
 
 		Uniform ALPHA_TEST_VALUE = this.getUniform("AlphaTestValue");
@@ -96,9 +96,9 @@ public class FallbackShader extends ShaderInstance {
 			uploadIfNotNull(uniform);
 		}
 
-		GlStateManager._glUniform1i(gtexture, 0);
-		GlStateManager._glUniform1i(overlay, 1);
-		GlStateManager._glUniform1i(lightmap, 2);
+		GL_STATE_MANAGER.glUniform1i(gtexture, 0);
+		GL_STATE_MANAGER.glUniform1i(overlay, 1);
+		GL_STATE_MANAGER.glUniform1i(lightmap, 2);
 
 		if (this.blendModeOverride != null) {
 			this.blendModeOverride.apply();

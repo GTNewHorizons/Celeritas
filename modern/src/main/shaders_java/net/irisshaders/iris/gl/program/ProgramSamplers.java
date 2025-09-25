@@ -2,6 +2,7 @@ package net.irisshaders.iris.gl.program;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -71,7 +72,7 @@ public class ProgramSamplers {
 
 		// We need to keep the active texture intact, since if we mess it up
 		// in the middle of RenderType setup, bad things will happen.
-		int activeTexture = GlStateManagerAccessor.getActiveTexture();
+		int activeTexture = GL_STATE_MANAGER.getActiveTextureAccessor();
 
 		for (SamplerBinding samplerBinding : samplerBindings) {
 			samplerBinding.update();
@@ -132,7 +133,7 @@ public class ProgramSamplers {
 			}
 
 			for (String name : names) {
-				int location = GlStateManager._glGetUniformLocation(program, name);
+				int location = GL_STATE_MANAGER.glGetUniformLocation(program, name);
 
 				if (location == -1) {
 					// There's no active sampler with this particular name in the program.
@@ -147,7 +148,7 @@ public class ProgramSamplers {
 
 		@Override
 		public boolean hasSampler(String name) {
-			return GlStateManager._glGetUniformLocation(program, name) != -1;
+			return GL_STATE_MANAGER.glGetUniformLocation(program, name) != -1;
 		}
 
 		@Override
@@ -186,7 +187,7 @@ public class ProgramSamplers {
 			}
 
 			for (String name : names) {
-				int location = GlStateManager._glGetUniformLocation(program, name);
+				int location = GL_STATE_MANAGER.glGetUniformLocation(program, name);
 
 				if (location == -1) {
 					// There's no active sampler with this particular name in the program.

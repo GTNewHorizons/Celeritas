@@ -1,5 +1,6 @@
 package net.irisshaders.iris.uniforms;
 
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.compat.dh.DHCompat;
@@ -88,7 +89,7 @@ public final class CommonUniforms {
 		});
 
 		uniforms.uniform2i("gtextureSize", () -> {
-			int glId = GlStateManagerAccessor.getTEXTURES()[0].binding;
+			int glId = GL_STATE_MANAGER.getTextureBinding(0);
 
 			TextureInfo info = TextureInfoCache.INSTANCE.getInfo(glId);
 			return new Vector2i(info.getWidth(), info.getHeight());

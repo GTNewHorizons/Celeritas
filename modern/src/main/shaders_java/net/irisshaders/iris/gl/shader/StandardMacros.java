@@ -1,7 +1,7 @@
 package net.irisshaders.iris.gl.shader;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlUtil;
 import net.irisshaders.iris.Iris;
 import static net.irisshaders.iris.IrisLogging.IrisLogger;
@@ -152,7 +152,7 @@ public class StandardMacros {
 	 * @see <a href="https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L705-L707">Optifine Doc for GLSL Version</a>
 	 */
 	public static String getGlVersion(int name) {
-		String info = GlStateManager._getString(name);
+		String info = GL_STATE_MANAGER.glGetString(name);
 
 		Matcher matcher = SEMVER_PATTERN.matcher(Objects.requireNonNull(info));
 

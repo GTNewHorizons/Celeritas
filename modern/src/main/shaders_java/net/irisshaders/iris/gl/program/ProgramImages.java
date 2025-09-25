@@ -1,7 +1,7 @@
 package net.irisshaders.iris.gl.program;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.image.ImageBinding;
 import net.irisshaders.iris.gl.image.ImageHolder;
@@ -60,12 +60,12 @@ public class ProgramImages {
 
 		@Override
 		public boolean hasImage(String name) {
-			return GlStateManager._glGetUniformLocation(program, name) != -1;
+			return GL_STATE_MANAGER.glGetUniformLocation(program, name) != -1;
 		}
 
 		@Override
 		public void addTextureImage(IntSupplier textureID, InternalTextureFormat internalFormat, String name) {
-			int location = GlStateManager._glGetUniformLocation(program, name);
+			int location = GL_STATE_MANAGER.glGetUniformLocation(program, name);
 
 			if (location == -1) {
 				return;

@@ -1,10 +1,9 @@
 package net.irisshaders.iris.pipeline;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.features.FeatureFlags;
@@ -149,7 +148,7 @@ public class FinalPassRenderer {
 
 		this.swapPasses = swapPasses.build();
 
-		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
 	}
 
 	private static void setupMipmapping(RenderTarget target, boolean readFromAlt) {
@@ -291,7 +290,7 @@ public class FinalPassRenderer {
 			swapPass.from.bind();
 
 			RenderSystem.bindTexture(swapPass.targetTexture);
-			GlStateManager._glCopyTexSubImage2D(GL20C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, swapPass.width, swapPass.height);
+			GL_STATE_MANAGER.glCopyTexSubImage2D(GL20C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, swapPass.width, swapPass.height);
 		}
 
 		// Make sure to reset the viewport to how it was before... Otherwise weird issues could occur.
@@ -299,12 +298,12 @@ public class FinalPassRenderer {
 		main.bindWrite(true);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
-		GlStateManager._glUseProgram(0);
+		GL_STATE_MANAGER.glUseProgram(0);
 
 		for (int i = 0; i < SamplerLimits.get().getMaxTextureUnits(); i++) {
 			// Unbind all textures that we may have used.
 			// NB: This is necessary for shader pack reloading to work properly
-			if (GlStateManagerAccessor.getTEXTURES()[i].binding != 0) {
+            if (GL_STATE_MANAGER.getTextureBinding(i) != 0) {
 				RenderSystem.activeTexture(GL15C.GL_TEXTURE0 + i);
 				RenderSystem.bindTexture(0);
 			}

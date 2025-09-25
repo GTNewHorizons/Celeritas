@@ -1,10 +1,10 @@
 package net.irisshaders.iris.shadows;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.features.FeatureFlags;
@@ -143,7 +143,7 @@ public class ShadowCompositeRenderer {
 		this.passes = passes.build();
 		this.flippedAtLeastOnceFinal = flippedAtLeastOnce.build();
 
-		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
 	}
 
 	private static void setupMipmapping(net.irisshaders.iris.targets.RenderTarget target, boolean readFromAlt) {
@@ -234,7 +234,7 @@ public class ShadowCompositeRenderer {
 
 		// Make sure to reset the viewport to how it was before... Otherwise weird issues could occur.
 		ProgramUniforms.clearActiveUniforms();
-		GlStateManager._glUseProgram(0);
+		GL_STATE_MANAGER.glUseProgram(0);
 
 		for (int i = 0; i < renderTargets.getRenderTargetCount(); i++) {
 			// Reset mipmapping states at the end of the frame.

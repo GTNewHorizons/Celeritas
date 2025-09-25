@@ -1,9 +1,8 @@
 package net.irisshaders.iris.texture;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20C;
 
@@ -29,7 +28,7 @@ public class TextureInfoCache {
 	public void onTexImage2D(int target, int level, int internalformat, int width, int height, int border,
 							 int format, int type, @Nullable IntBuffer pixels) {
 		if (level == 0) {
-			int id = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
+			int id = GL_STATE_MANAGER.getActiveBoundTexture();
 			TextureInfo info = getInfo(id);
 			info.internalFormat = internalformat;
 			info.width = width;
@@ -78,14 +77,14 @@ public class TextureInfoCache {
 
 		private int fetchLevelParameter(int pname) {
 			// Keep track of what texture was bound before
-			int previousTextureBinding = GlStateManager._getInteger(GL20C.GL_TEXTURE_BINDING_2D);
+			int previousTextureBinding = GL_STATE_MANAGER.glGetInteger(GL20C.GL_TEXTURE_BINDING_2D);
 
 			// Bind this texture and grab the parameter from it.
-			GlStateManager._bindTexture(id);
-			int parameter = GlStateManager._getTexLevelParameter(GL20C.GL_TEXTURE_2D, 0, pname);
+			GL_STATE_MANAGER.bindTexture(id);
+			int parameter = GL_STATE_MANAGER.glGetTexLevelParameter(GL20C.GL_TEXTURE_2D, 0, pname);
 
 			// Make sure to re-bind the previous texture to avoid issues.
-			GlStateManager._bindTexture(previousTextureBinding);
+			GL_STATE_MANAGER.bindTexture(previousTextureBinding);
 
 			return parameter;
 		}

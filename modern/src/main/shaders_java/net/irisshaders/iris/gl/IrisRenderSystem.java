@@ -1,5 +1,6 @@
 package net.irisshaders.iris.gl;
 
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.IrisLogging;
@@ -253,9 +254,9 @@ public class IrisRenderSystem {
 
 	public static int getMaxImageUnits() {
 		if (GL.getCapabilities().OpenGL42 || GL.getCapabilities().GL_ARB_shader_image_load_store) {
-			return GlStateManager._getInteger(GL42C.GL_MAX_IMAGE_UNITS);
+			return GL_STATE_MANAGER.glGetInteger(GL42C.GL_MAX_IMAGE_UNITS);
 		} else if (GL.getCapabilities().GL_EXT_shader_image_load_store) {
-			return GlStateManager._getInteger(EXTShaderImageLoadStore.GL_MAX_IMAGE_UNITS_EXT);
+			return GL_STATE_MANAGER.glGetInteger(EXTShaderImageLoadStore.GL_MAX_IMAGE_UNITS_EXT);
 		} else {
 			return 0;
 		}
@@ -423,7 +424,7 @@ public class IrisRenderSystem {
 
 	public static void deleteBuffers(int glId) {
 		RenderSystem.assertOnRenderThreadOrInit();
-		GL43C.glDeleteBuffers(glId);
+		GL_STATE_MANAGER.glDeleteBuffers(glId);
 	}
 
 	public static void setPolygonMode(int mode) {
@@ -547,14 +548,14 @@ public class IrisRenderSystem {
 
 		@Override
 		public void bindTextureToUnit(int target, int unit, int texture) {
-			if (GlStateManagerAccessor.getTEXTURES()[unit].binding == texture) {
+			if (GL_STATE_MANAGER.getTextureBinding(unit) == texture) {
 				return;
 			}
 
 			ARBDirectStateAccess.glBindTextureUnit(unit, texture);
 
 			// Manually fix GLStateManager bindings...
-			GlStateManagerAccessor.getTEXTURES()[unit].binding = texture;
+			GL_STATE_MANAGER.setBoundTexture(unit, texture);
 		}
 
 		@Override
@@ -593,7 +594,7 @@ public class IrisRenderSystem {
 	public static class DSAUnsupported implements DSAAccess {
 		@Override
 		public void generateMipmaps(int texture, int target) {
-			GlStateManager._bindTexture(texture);
+			GL_STATE_MANAGER.bindTexture(texture);
 			GL32C.glGenerateMipmap(target);
 		}
 
@@ -617,13 +618,13 @@ public class IrisRenderSystem {
 
 		@Override
 		public void readBuffer(int framebuffer, int buffer) {
-			GlStateManager._glBindFramebuffer(GL32C.GL_FRAMEBUFFER, framebuffer);
+			GL_STATE_MANAGER.glBindFramebuffer(GL32C.GL_FRAMEBUFFER, framebuffer);
 			GL32C.glReadBuffer(buffer);
 		}
 
 		@Override
 		public void drawBuffers(int framebuffer, int[] buffers) {
-			GlStateManager._glBindFramebuffer(GL32C.GL_FRAMEBUFFER, framebuffer);
+			GL_STATE_MANAGER.glBindFramebuffer(GL32C.GL_FRAMEBUFFER, framebuffer);
 			GL32C.glDrawBuffers(buffers);
 		}
 
@@ -635,60 +636,60 @@ public class IrisRenderSystem {
 
 		@Override
 		public void copyTexSubImage2D(int destTexture, int target, int i, int i1, int i2, int i3, int i4, int width, int height) {
-			int previous = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
-			GlStateManager._bindTexture(destTexture);
+			int previous = GL_STATE_MANAGER.getActiveBoundTexture();
+			GL_STATE_MANAGER.bindTexture(destTexture);
 			GL32C.glCopyTexSubImage2D(target, i, i1, i2, i3, i4, width, height);
-			GlStateManager._bindTexture(previous);
+			GL_STATE_MANAGER.bindTexture(previous);
 		}
 
 		@Override
 		public void bindTextureToUnit(int target, int unit, int texture) {
-			int activeTexture = GlStateManager._getActiveTexture();
-			GlStateManager._activeTexture(GL30C.GL_TEXTURE0 + unit);
+			int activeTexture = GL_STATE_MANAGER.getActiveTexture();
+			GL_STATE_MANAGER.glActiveTexture(GL30C.GL_TEXTURE0 + unit);
 			bindTextureForSetup(target, texture);
-			GlStateManager._activeTexture(activeTexture);
+			GL_STATE_MANAGER.glActiveTexture(activeTexture);
 		}
 
 		@Override
 		public int bufferStorage(int target, float[] data, int usage) {
-			int buffer = GlStateManager._glGenBuffers();
-			GlStateManager._glBindBuffer(target, buffer);
+			int buffer = GL_STATE_MANAGER.glGenBuffers();
+			GL_STATE_MANAGER.glBindBuffer(target, buffer);
 			bufferData(target, data, usage);
-			GlStateManager._glBindBuffer(target, 0);
+			GL_STATE_MANAGER.glBindBuffer(target, 0);
 
 			return buffer;
 		}
 
 		@Override
 		public void blitFramebuffer(int source, int dest, int offsetX, int offsetY, int width, int height, int offsetX2, int offsetY2, int width2, int height2, int bufferChoice, int filter) {
-			GlStateManager._glBindFramebuffer(GL32C.GL_READ_FRAMEBUFFER, source);
-			GlStateManager._glBindFramebuffer(GL32C.GL_DRAW_FRAMEBUFFER, dest);
+			GL_STATE_MANAGER.glBindFramebuffer(GL32C.GL_READ_FRAMEBUFFER, source);
+			GL_STATE_MANAGER.glBindFramebuffer(GL32C.GL_DRAW_FRAMEBUFFER, dest);
 			GL32C.glBlitFramebuffer(offsetX, offsetY, width, height, offsetX2, offsetY2, width2, height2, bufferChoice, filter);
 		}
 
 		@Override
 		public void framebufferTexture2D(int fb, int fbtarget, int attachment, int target, int texture, int levels) {
-			GlStateManager._glBindFramebuffer(fbtarget, fb);
+			GL_STATE_MANAGER.glBindFramebuffer(fbtarget, fb);
 			GL32C.glFramebufferTexture2D(fbtarget, attachment, target, texture, levels);
 		}
 
 		@Override
 		public int createFramebuffer() {
-			int framebuffer = GlStateManager.glGenFramebuffers();
-			GlStateManager._glBindFramebuffer(GL32C.GL_FRAMEBUFFER, framebuffer);
+			int framebuffer = GL_STATE_MANAGER.glGenFramebuffers();
+			GL_STATE_MANAGER.glBindFramebuffer(GL32C.GL_FRAMEBUFFER, framebuffer);
 			return framebuffer;
 		}
 
 		@Override
 		public int createTexture(int target) {
-			int texture = GlStateManager._genTexture();
-			GlStateManager._bindTexture(texture);
+			int texture = GL_STATE_MANAGER.glGenTextures();
+			GL_STATE_MANAGER.bindTexture(texture);
 			return texture;
 		}
 
 		@Override
 		public int createBuffers() {
-			int value = GlStateManager._glGenBuffers();
+			int value = GL_STATE_MANAGER.glGenBuffers();
 			return value;
 		}
 	}
@@ -704,8 +705,8 @@ public class IrisRenderSystem {
 			}
 		} else {
 			for (int binding : bindings) {
-				GlStateManager._activeTexture(startingTexture);
-				GlStateManager._bindTexture(binding);
+				GL_STATE_MANAGER.glActiveTexture(startingTexture);
+				GL_STATE_MANAGER.bindTexture(binding);
 				startingTexture++;
 			}
 		}

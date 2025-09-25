@@ -1,6 +1,6 @@
 package net.irisshaders.iris.targets;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;
 import org.embeddedt.embeddium.impl.gl.GlObject;
@@ -22,7 +22,7 @@ public class DepthTexture extends GlObject {
 		IrisRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_S, GL13C.GL_CLAMP_TO_EDGE);
 		IrisRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_T, GL13C.GL_CLAMP_TO_EDGE);
 
-		GlStateManager._bindTexture(0);
+		GL_STATE_MANAGER.bindTexture(0);
 	}
 
 	void resize(int width, int height, DepthBufferFormat format) {
@@ -36,6 +36,6 @@ public class DepthTexture extends GlObject {
 
 	@Override
 	protected void destroyInternal() {
-		GlStateManager._deleteTexture(handle());
+		GL_STATE_MANAGER.glDeleteTextures(handle());
 	}
 }

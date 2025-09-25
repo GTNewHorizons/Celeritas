@@ -1,6 +1,6 @@
 package net.irisshaders.iris.targets.backed;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.TextureUploadHelper;
 import org.embeddedt.embeddium.impl.gl.GlObject;
@@ -41,6 +41,6 @@ public class SingleColorTexture extends GlObject {
 
 	@Override
 	protected void destroyInternal() {
-		GlStateManager._deleteTexture(handle());
+		GL_STATE_MANAGER.glDeleteTextures(handle());
 	}
 }

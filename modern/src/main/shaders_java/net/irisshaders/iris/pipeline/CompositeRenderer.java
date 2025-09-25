@@ -1,4 +1,5 @@
 package net.irisshaders.iris.pipeline;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -172,7 +173,7 @@ public class CompositeRenderer {
 		this.passes = passes.build();
 		this.flippedAtLeastOnceFinal = flippedAtLeastOnce.build();
 
-		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
 	}
 
 	private static void setupMipmapping(net.irisshaders.iris.targets.RenderTarget target, boolean readFromAlt) {
@@ -290,13 +291,13 @@ public class CompositeRenderer {
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
-		GlStateManager._glUseProgram(0);
+		GL_STATE_MANAGER.glUseProgram(0);
 
 		// NB: Unbinding all of these textures is necessary for proper shaderpack reloading.
 		for (int i = 0; i < SamplerLimits.get().getMaxTextureUnits(); i++) {
 			// Unbind all textures that we may have used.
 			// NB: This is necessary for shader pack reloading to work propely
-			if (GlStateManagerAccessor.getTEXTURES()[i].binding != 0) {
+            if (GL_STATE_MANAGER.getTextureBinding(i) != 0) {
 				RenderSystem.activeTexture(GL15C.GL_TEXTURE0 + i);
 				RenderSystem.bindTexture(0);
 			}

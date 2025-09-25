@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.image;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.InternalTextureFormat;
 import net.irisshaders.iris.gl.texture.PixelFormat;
@@ -101,7 +101,7 @@ public class GlImage extends GlObject {
 
 	@Override
 	protected void destroyInternal() {
-		GlStateManager._deleteTexture(handle());
+		GL_STATE_MANAGER.glDeleteTextures(handle());
 	}
 
 	public InternalTextureFormat getInternalFormat() {

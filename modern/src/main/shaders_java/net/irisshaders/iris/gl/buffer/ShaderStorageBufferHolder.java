@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.buffer;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.sampler.SamplerLimits;
@@ -34,13 +34,13 @@ public class ShaderStorageBufferHolder {
 			if (bufferInfo.relative()) {
 				buffers[index].resizeIfRelative(width, height);
 			} else {
-				GlStateManager._glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, buffer);
+				GL_STATE_MANAGER.glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, buffer);
 				IrisRenderSystem.bufferStorage(GL43C.GL_SHADER_STORAGE_BUFFER, bufferInfo.size(), 0);
 				IrisRenderSystem.clearBufferSubData(GL43C.GL_SHADER_STORAGE_BUFFER, GL43C.GL_R8, 0, bufferInfo.size(), GL43C.GL_RED, GL43C.GL_BYTE, new int[]{0});
 				IrisRenderSystem.bindBufferBase(GL43C.GL_SHADER_STORAGE_BUFFER, index, buffer);
 			}
 		});
-		GlStateManager._glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, 0);
+		GL_STATE_MANAGER.glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, 0);
 	}
 
 	private static long toMib(long x) {

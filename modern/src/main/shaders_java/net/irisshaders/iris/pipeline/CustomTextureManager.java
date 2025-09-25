@@ -1,4 +1,5 @@
 package net.irisshaders.iris.pipeline;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -169,10 +170,10 @@ public class CustomTextureManager {
 
 						TextureFormat textureFormat = TextureFormatLoader.getFormat();
 						if (textureFormat != null) {
-							int previousBinding = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
-							GlStateManager._bindTexture(pbrTexture.getId());
+							int previousBinding = GL_STATE_MANAGER.getActiveBoundTexture();
+							GL_STATE_MANAGER.bindTexture(pbrTexture.getId());
 							textureFormat.setupTextureParameters(pbrType, pbrTexture);
-							GlStateManager._bindTexture(previousBinding);
+							GL_STATE_MANAGER.bindTexture(previousBinding);
 						}
 
 						return pbrTexture.getId();

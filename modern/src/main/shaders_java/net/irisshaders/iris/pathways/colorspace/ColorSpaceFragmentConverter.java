@@ -1,7 +1,7 @@
 package net.irisshaders.iris.pathways.colorspace;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.program.Program;
@@ -41,7 +41,7 @@ public class ColorSpaceFragmentConverter implements ColorSpaceConverter {
 			program = null;
 			framebuffer.destroy();
 			framebuffer = null;
-			GlStateManager._deleteTexture(swapTexture);
+			GL_STATE_MANAGER.glDeleteTextures(swapTexture);
 			swapTexture = 0;
 		}
 
@@ -71,7 +71,7 @@ public class ColorSpaceFragmentConverter implements ColorSpaceConverter {
 		builder.uniformMatrix(UniformUpdateFrequency.ONCE, "projection", () -> new Matrix4f(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, -1, -1, 0, 1));
 		builder.addDynamicSampler(() -> target, "readImage");
 
-		swapTexture = GlStateManager._genTexture();
+		swapTexture = GL_STATE_MANAGER.glGenTextures();
 		IrisRenderSystem.texImage2D(swapTexture, GL30C.GL_TEXTURE_2D, 0, GL30C.GL_RGBA8, width, height, 0, GL30C.GL_RGBA, GL30C.GL_UNSIGNED_BYTE, null);
 
 		this.framebuffer = new GlFramebuffer();

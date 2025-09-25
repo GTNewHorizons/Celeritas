@@ -1,7 +1,7 @@
 package net.irisshaders.iris.pathways;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
@@ -35,8 +35,8 @@ public class CenterDepthSampler {
 	private boolean destroyed;
 
 	public CenterDepthSampler(IntSupplier depthSupplier, float halfLife) {
-		this.texture = GlStateManager._genTexture();
-		this.altTexture = GlStateManager._genTexture();
+		this.texture = GL_STATE_MANAGER.glGenTextures();
+		this.altTexture = GL_STATE_MANAGER.glGenTextures();
 		this.framebuffer = new GlFramebuffer();
 
 		InternalTextureFormat format = InternalTextureFormat.R32F;
@@ -109,8 +109,8 @@ public class CenterDepthSampler {
 	}
 
 	public void destroy() {
-		GlStateManager._deleteTexture(texture);
-		GlStateManager._deleteTexture(altTexture);
+		GL_STATE_MANAGER.glDeleteTextures(texture);
+		GL_STATE_MANAGER.glDeleteTextures(altTexture);
 		framebuffer.destroy();
 		program.destroy();
 		destroyed = true;

@@ -1,4 +1,5 @@
 package net.irisshaders.iris.pipeline;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -277,12 +278,12 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		);
 
 		// Don't clobber anything in texture unit 0. It probably won't cause issues, but we're just being cautious here.
-		GlStateManager._activeTexture(GL20C.GL_TEXTURE2);
+		GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE2);
 
 		customTextureManager = new CustomTextureManager(programSet.getPackDirectives(), programSet.getPack().getCustomTextureDataMap(), programSet.getPack().getIrisCustomTextureDataMap(), programSet.getPack().getCustomNoiseTexture());
 		whitePixel = new NativeImageBackedSingleColorTexture(255, 255, 255, 255);
 
-		GlStateManager._activeTexture(GL20C.GL_TEXTURE0);
+		GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE0);
 
 		BufferFlipper flipper = new BufferFlipper();
 
@@ -887,10 +888,10 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 			TextureFormat textureFormat = TextureFormatLoader.getFormat();
 			if (textureFormat != null) {
-				int previousBinding = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
+				int previousBinding = GL_STATE_MANAGER.getActiveBoundTexture();
 				textureFormat.setupTextureParameters(PBRType.NORMAL, pbrHolder.normalTexture());
 				textureFormat.setupTextureParameters(PBRType.SPECULAR, pbrHolder.specularTexture());
-				GlStateManager._bindTexture(previousBinding);
+				GL_STATE_MANAGER.bindTexture(previousBinding);
 			}
 
 			PBRTextureManager.notifyPBRTexturesChanged();
@@ -1246,15 +1247,15 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		//
 		// Without this code, there will be weird issues when reloading certain shaderpacks.
 		for (int i = 0; i < 16; i++) {
-			GlStateManager.glActiveTexture(GL20C.GL_TEXTURE0 + i);
+			GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE0 + i);
 			IrisRenderSystem.unbindAllSamplers();
-			GlStateManager._bindTexture(0);
+			GL_STATE_MANAGER.bindTexture(0);
 		}
 
 		// Set the active texture unit to unit 0
 		//
 		// This seems to be what most code expects. It's a sane default in any case.
-		GlStateManager.glActiveTexture(GL20C.GL_TEXTURE0);
+		GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE0);
 
 		for (int i = 0; i < 12; i++) {
 			// Clear all shader textures
@@ -1275,9 +1276,9 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		horizonRenderer.destroy();
 
-		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
-		GlStateManager._glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, 0);
-		GlStateManager._glBindFramebuffer(GL30C.GL_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, 0);
 
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
 

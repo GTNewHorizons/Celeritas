@@ -1,4 +1,5 @@
 package net.irisshaders.iris.gl.blending;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
@@ -24,8 +25,8 @@ public class DepthColorStorage {
 
 		depthColorLocked = false;
 
-		GlStateManager._depthMask(false);
-		GlStateManager._colorMask(false, false, false, false);
+		GL_STATE_MANAGER.glDepthMask(false);
+		GL_STATE_MANAGER.glColorMask(false, false, false, false);
 
 		depthColorLocked = true;
 	}
@@ -45,8 +46,8 @@ public class DepthColorStorage {
 
 		depthColorLocked = false;
 
-		GlStateManager._depthMask(originalDepthEnable);
+		GL_STATE_MANAGER.glDepthMask(originalDepthEnable);
 
-		GlStateManager._colorMask(originalColor.isRedMasked(), originalColor.isGreenMasked(), originalColor.isBlueMasked(), originalColor.isAlphaMasked());
+		GL_STATE_MANAGER.glColorMask(originalColor.isRedMasked(), originalColor.isGreenMasked(), originalColor.isBlueMasked(), originalColor.isAlphaMasked());
 	}
 }
