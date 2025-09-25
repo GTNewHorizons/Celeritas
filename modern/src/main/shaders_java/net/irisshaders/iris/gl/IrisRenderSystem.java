@@ -2,7 +2,8 @@ package net.irisshaders.iris.gl;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisLogging;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.sampler.SamplerLimits;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.minecraft.client.Minecraft;
@@ -44,13 +45,13 @@ public class IrisRenderSystem {
 	public static void initRenderer() {
 		if (GL.getCapabilities().OpenGL45) {
 			dsaState = new DSACore();
-			Iris.logger.info("OpenGL 4.5 detected, enabling DSA.");
+			IrisLogger.info("OpenGL 4.5 detected, enabling DSA.");
 		} else if (GL.getCapabilities().GL_ARB_direct_state_access) {
 			dsaState = new DSAARB();
-			Iris.logger.info("ARB_direct_state_access detected, enabling DSA.");
+			IrisLogger.info("ARB_direct_state_access detected, enabling DSA.");
 		} else {
 			dsaState = new DSAUnsupported();
-			Iris.logger.info("DSA support not detected.");
+			IrisLogger.info("DSA support not detected.");
 		}
 
 		hasMultibind = GL.getCapabilities().OpenGL45 || GL.getCapabilities().GL_ARB_multi_bind;

@@ -2,7 +2,7 @@ package net.irisshaders.iris.shaderpack.materialmap;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.*;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -108,8 +108,8 @@ public class BlockMaterialMapping {
 		}
 
         if (isAppearanceChangingBlock(block)) {
-            Iris.logger.warn("Warning while parsing the block ID map entry for \"" + "block." + intId + "\":");
-            Iris.logger.warn("- The block {} can change appearance, skipping!", resourceLocation);
+            IrisLogger.warn("Warning while parsing the block ID map entry for \"" + "block." + intId + "\":");
+            IrisLogger.warn("- The block {} can change appearance, skipping!", resourceLocation);
             return;
         }
 
@@ -137,8 +137,8 @@ public class BlockMaterialMapping {
 			Property<?> property = stateManager.getProperty(key);
 
 			if (property == null) {
-				Iris.logger.warn("Error while parsing the block ID map entry for \"" + "block." + intId + "\":");
-				Iris.logger.warn("- The block " + resourceLocation + " has no property with the name " + key + ", ignoring!");
+				IrisLogger.warn("Error while parsing the block ID map entry for \"" + "block." + intId + "\":");
+				IrisLogger.warn("- The block " + resourceLocation + " has no property with the name " + key + ", ignoring!");
 
 				return;
 			}

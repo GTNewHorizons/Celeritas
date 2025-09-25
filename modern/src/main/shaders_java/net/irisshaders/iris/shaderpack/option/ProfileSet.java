@@ -1,7 +1,7 @@
 package net.irisshaders.iris.shaderpack.option;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.IrisLogging;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.shaderpack.option.values.OptionValues;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,7 +78,7 @@ public class ProfileSet {
 			} else if (optionSet.isBooleanOption(option)) {
 				builder.option(option, "true");
 			} else {
-				Iris.logger.warn("Invalid pack option: " + option);
+				IrisLogger.warn("Invalid pack option: " + option);
 			}
 		}
 

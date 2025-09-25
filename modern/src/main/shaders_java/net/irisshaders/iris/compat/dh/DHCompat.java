@@ -1,6 +1,6 @@
 package net.irisshaders.iris.compat.dh;
 
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
@@ -81,7 +81,7 @@ public class DHCompat {
 					throw new RuntimeException("DH found, but one or more API methods are missing. Iris requires DH [2.0.4] or DH API version [1.1.0] or newer. Please make sure you are on the latest version of DH and Iris.", e);
 				}
 			} else {
-				Iris.logger.info("DH not found, and classes not found.");
+				IrisLogger.info("DH not found, and classes not found.");
 			}
 		}
 	}

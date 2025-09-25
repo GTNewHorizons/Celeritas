@@ -7,6 +7,7 @@ import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiGeneri
 import com.seibel.distanthorizons.api.objects.math.DhApiVec3f;
 import com.seibel.distanthorizons.coreapi.DependencyInjection.OverrideInjector;
 import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;
@@ -53,7 +54,7 @@ public class DHCompatInternal {
 		}
 
 		if (pipeline.getDHTerrainShader().isEmpty() && pipeline.getDHWaterShader().isEmpty()) {
-			Iris.logger.warn("No DH shader found in this pack.");
+			IrisLogger.warn("No DH shader found in this pack.");
 			incompatible = true;
 			return;
 		}

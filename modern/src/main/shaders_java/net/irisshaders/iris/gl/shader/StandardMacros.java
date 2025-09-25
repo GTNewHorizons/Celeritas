@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlUtil;
 import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pathways.HandRenderer;
@@ -118,7 +119,7 @@ public class StandardMacros {
 		String[] splitVersion = version.split("\\.");
 
 		if (splitVersion.length < 2) {
-			Iris.logger.error("Could not parse game version \"" + version + "\"");
+			IrisLogger.error("Could not parse game version \"" + version + "\"");
 			splitVersion = Iris.getBackupVersionNumber().split("\\.");
 		}
 

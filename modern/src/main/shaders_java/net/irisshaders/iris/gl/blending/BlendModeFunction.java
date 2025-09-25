@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.blending;
 
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Optional;
@@ -28,7 +28,7 @@ public enum BlendModeFunction {
 		try {
 			return Optional.of(BlendModeFunction.valueOf(name));
 		} catch (IllegalArgumentException e) {
-			Iris.logger.warn("Invalid blend mode! " + name);
+			IrisLogger.warn("Invalid blend mode! " + name);
 			return Optional.empty();
 		}
 	}

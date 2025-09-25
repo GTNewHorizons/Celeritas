@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -448,7 +449,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
         }
 
         watch.stop();
-        Iris.logger.info("Loaded shaders in {}", watch);
+        IrisLogger.info("Loaded shaders in {}", watch);
 
         // We need to defer creation of the block state mappings, like Iris 1.8, because tags may not exist at launch time
         blockIdsNeedPopulation = true;

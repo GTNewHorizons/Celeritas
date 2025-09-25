@@ -2,7 +2,7 @@ package net.irisshaders.iris.uniforms.custom.cached;
 
 import kroppeb.stareval.function.FunctionReturn;
 import kroppeb.stareval.function.Type;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +25,7 @@ public abstract class VectorCachedUniform<T> extends CachedUniform {
 	protected boolean doUpdate() {
 		T other = this.supplier.get();
 		if (other == null) {
-			Iris.logger.warn("Cached Uniform supplier gave null back");
+			IrisLogger.warn("Cached Uniform supplier gave null back");
 			return false;
 		}
 		if (!this.cached.equals(other)) {

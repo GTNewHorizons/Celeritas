@@ -1,6 +1,7 @@
 package net.irisshaders.iris.gui.element;
 
 import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.minecraft.ChatFormatting;
@@ -54,7 +55,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 				StandardWatchEventKinds.ENTRY_DELETE);
 			keyValid = true;
 		} catch (IOException e) {
-			Iris.logger.error("Couldn't register file watcher!", e);
+			IrisLogger.error("Couldn't register file watcher!", e);
 			watcher1 = null;
 			key1 = null;
 			keyValid = false;
@@ -118,7 +119,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 		try {
 			names = Iris.getShaderpacksDirectoryManager().enumerate();
 		} catch (Throwable e) {
-			Iris.logger.error("Error reading files while constructing selection UI", e);
+			IrisLogger.error("Error reading files while constructing selection UI", e);
 
 			// Not translating this since it's going to be seen very rarely,
 			// We're just trying to get more information on a seemingly untraceable bug:

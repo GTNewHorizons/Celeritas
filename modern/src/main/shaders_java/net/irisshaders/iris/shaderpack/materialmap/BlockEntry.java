@@ -1,10 +1,10 @@
 package net.irisshaders.iris.shaderpack.materialmap;
 
 import com.google.common.collect.Iterators;
-import net.irisshaders.iris.Iris;
 //? if <1.19.3 {
 /*import net.minecraft.core.Registry;
 *///?} else {
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 //?}
@@ -87,8 +87,8 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
 			String[] propertyParts = splitStates[index].split("=");
 
 			if (propertyParts.length != 2) {
-				Iris.logger.warn("Warning: the block ID map entry \"" + entry + "\" could not be fully parsed:");
-				Iris.logger.warn("- Block state property filters must be of the form \"key=value\", but "
+				IrisLogger.warn("Warning: the block ID map entry \"" + entry + "\" could not be fully parsed:");
+				IrisLogger.warn("- Block state property filters must be of the form \"key=value\", but "
 					+ splitStates[index] + " is not of that form!");
 
 				// Continue and ignore the invalid entry.
@@ -114,7 +114,7 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
             *///?}
 
             if (!tagOpt.isPresent()) {
-                Iris.logger.warn("Failed to find the block tag {}", tag.location());
+                IrisLogger.warn("Failed to find the block tag {}", tag.location());
                 return Collections.emptyList();
             }
 

@@ -8,7 +8,7 @@ import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.gl.IrisRenderSystem;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.blending.DepthColorStorage;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
@@ -118,7 +118,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         shouldSkip = shouldSkipList.computeIfAbsent(getClass(), x -> {
             try {
                 MethodHandle iris$skipDraw = MethodHandles.lookup().findVirtual(x, "iris$skipDraw", MethodType.methodType(boolean.class));
-                Iris.logger.warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
+                IrisLogger.warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
                 return iris$skipDraw;
             } catch (NoSuchMethodException | IllegalAccessException e) {
                 return NONE;

@@ -1,6 +1,7 @@
 package net.irisshaders.iris.texture.format;
 
 import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -55,14 +56,14 @@ public class TextureFormatLoader {
 							}
 							return factory.createFormat(name, version);
 						} else {
-							Iris.logger.warn("Invalid texture format '" + name + "' in file '" + LOCATION + "'");
+							IrisLogger.warn("Invalid texture format '" + name + "' in file '" + LOCATION + "'");
 						}
 					}
 				}
 			} catch (FileNotFoundException e) {
 				//
 			} catch (Exception e) {
-				Iris.logger.error("Failed to load texture format from file '" + LOCATION + "'", e);
+				IrisLogger.error("Failed to load texture format from file '" + LOCATION + "'", e);
 			}
 		}
 		return null;

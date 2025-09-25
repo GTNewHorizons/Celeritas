@@ -3,7 +3,7 @@ package net.irisshaders.iris.texture.pbr;
 import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.targets.backed.NativeImageBackedSingleColorTexture;
@@ -57,7 +57,7 @@ public class PBRTextureManager {
 		try {
 			dumpable.dumpContents(id, path);
 		} catch (IOException e) {
-			Iris.logger.error("Failed to dump texture {}", id, e);
+			IrisLogger.error("Failed to dump texture {}", id, e);
 		}
 	}
 
@@ -115,7 +115,7 @@ public class PBRTextureManager {
 					loader.load(texture, Minecraft.getInstance().getResourceManager(), consumer);
 					return consumer.toHolder();
 				} catch (Exception e) {
-					Iris.logger.debug("Failed to load PBR textures for texture " + id, e);
+					IrisLogger.debug("Failed to load PBR textures for texture " + id, e);
 				} finally {
 					GlStateManager._bindTexture(previousTextureBinding);
 				}

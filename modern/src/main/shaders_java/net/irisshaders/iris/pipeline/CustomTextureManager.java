@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.texture.GlTexture;
 import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.gl.texture.TextureType;
@@ -59,7 +59,7 @@ public class CustomTextureManager {
 				try {
 					customTextureIds.put(samplerName, createCustomTexture(textureData));
 				} catch (IOException | ResourceLocationException e) {
-					Iris.logger.error("Unable to parse the image data for the custom texture on stage "
+					IrisLogger.error("Unable to parse the image data for the custom texture on stage "
 						+ textureStage + ", sampler " + samplerName, e);
 				}
 			});
@@ -71,7 +71,7 @@ public class CustomTextureManager {
 			try {
 				irisCustomTextures.put(name, createCustomTexture(texture));
 			} catch (IOException e) {
-				Iris.logger.error("Unable to parse the image data for the custom texture on sampler " + name, e);
+				IrisLogger.error("Unable to parse the image data for the custom texture on sampler " + name, e);
 			}
 		});
 
@@ -79,7 +79,7 @@ public class CustomTextureManager {
 			try {
 				return Optional.of(createCustomTexture(textureData));
 			} catch (IOException | ResourceLocationException e) {
-				Iris.logger.error("Unable to parse the image data for the custom noise texture", e);
+				IrisLogger.error("Unable to parse the image data for the custom noise texture", e);
 
 				return Optional.empty();
 			}

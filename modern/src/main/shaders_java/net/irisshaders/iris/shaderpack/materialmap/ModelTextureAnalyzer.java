@@ -4,7 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.*;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -184,7 +184,7 @@ public class ModelTextureAnalyzer {
         Stopwatch watch = Stopwatch.createStarted();
         var result = runAnalysis(blockStateIds).join();
         watch.stop();
-        Iris.logger.info("Analyzed texture materials in {}", watch);
+        IrisLogger.info("Analyzed texture materials in {}", watch);
         return result;
     }
 
@@ -305,7 +305,7 @@ public class ModelTextureAnalyzer {
             try {
                 this.tasks.forEach(this::voteOnStates);
             } catch(Throwable e) {
-                Iris.logger.error("Exception encountered during texture analysis", e);
+                IrisLogger.error("Exception encountered during texture analysis", e);
             } finally {
                 this.completableFuture.complete(null);
             }

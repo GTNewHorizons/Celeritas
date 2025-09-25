@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class IrisLogging {
+
+	public static final IrisLogging IrisLogger = new IrisLogging(IrisConstants.MODNAME);
 	public static boolean ENABLE_SPAM = false; // FabricLoader.getInstance().isDevelopmentEnvironment();
 
 	private final Logger logger;

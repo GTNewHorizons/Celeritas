@@ -2,7 +2,7 @@ package net.irisshaders.iris.shaderpack.include;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.shaderpack.error.RusticError;
 import net.irisshaders.iris.shaderpack.transform.line.LineTransform;
 
@@ -196,7 +196,7 @@ public class IncludeGraph {
 						""");
 
 				// TODO: Expose this to the caller (more semantic error handling)
-				Iris.logger.error(error.toString());
+				IrisLogger.error(error.toString());
 
 				throw new IllegalStateException("Cycle detected in #include graph, see previous messages for details");
 			}

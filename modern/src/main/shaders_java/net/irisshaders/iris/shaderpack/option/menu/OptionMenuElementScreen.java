@@ -1,6 +1,6 @@
 package net.irisshaders.iris.shaderpack.option.menu;
 
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.properties.ShaderProperties;
 
@@ -34,7 +34,7 @@ public class OptionMenuElementScreen {
 					}
 				}
 			} catch (IllegalArgumentException error) {
-				Iris.logger.warn(error.getMessage());
+				IrisLogger.warn(error.getMessage());
 
 				this.elements.add(OptionMenuElement.EMPTY);
 			}

@@ -1,6 +1,6 @@
 package net.irisshaders.iris.shaderpack.properties;
 
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 
 import java.util.Optional;
 
@@ -13,7 +13,7 @@ public enum ParticleRenderingSettings {
 		try {
 			return Optional.of(ParticleRenderingSettings.valueOf(name));
 		} catch (IllegalArgumentException e) {
-			Iris.logger.warn("Invalid particle rendering settings! " + name);
+			IrisLogger.warn("Invalid particle rendering settings! " + name);
 			return Optional.empty();
 		}
 	}

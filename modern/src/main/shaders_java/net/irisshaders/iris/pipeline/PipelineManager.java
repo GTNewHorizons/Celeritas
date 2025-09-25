@@ -1,7 +1,7 @@
 package net.irisshaders.iris.pipeline;
 
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
@@ -29,7 +29,7 @@ public class PipelineManager {
 			SystemTimeUniforms.COUNTER.reset();
 			SystemTimeUniforms.TIMER.reset();
 
-			Iris.logger.info("Creating pipeline for dimension {}", currentDimension);
+			IrisLogger.info("Creating pipeline for dimension {}", currentDimension);
 			pipeline = pipelineFactory.apply(currentDimension);
 			pipelinesPerDimension.put(currentDimension, pipeline);
 
@@ -76,7 +76,7 @@ public class PipelineManager {
 	 */
 	public void destroyPipeline() {
 		pipelinesPerDimension.forEach((dimensionId, pipeline) -> {
-			Iris.logger.info("Destroying pipeline {}", dimensionId);
+			IrisLogger.info("Destroying pipeline {}", dimensionId);
 			resetTextureState();
 			pipeline.destroy();
 		});

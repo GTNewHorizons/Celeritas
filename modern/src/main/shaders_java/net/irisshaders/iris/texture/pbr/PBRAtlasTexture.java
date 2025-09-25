@@ -1,7 +1,7 @@
 package net.irisshaders.iris.texture.pbr;
 
 import com.mojang.blaze3d.platform.TextureUtil;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.mixin.texture.SpriteContentsAnimatedTextureAccessor;
 import net.irisshaders.iris.mixin.texture.SpriteContentsFrameInfoAccessor;
 import net.irisshaders.iris.mixin.texture.SpriteContentsTickerAccessor;
@@ -88,7 +88,7 @@ public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
 				writer.write(String.format(Locale.ROOT, "%s\tx=%d\ty=%d\tw=%d\th=%d%n", entry.getKey(), sprite.getX(), sprite.getY(), sprite.contents().width(), sprite.contents().height()));
 			}
 		} catch (IOException e) {
-			Iris.logger.warn("Failed to write file {}", path, e);
+			IrisLogger.warn("Failed to write file {}", path, e);
 		}
 	}
 

@@ -1,6 +1,7 @@
 package net.irisshaders.iris.apiimpl;
 
 import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.api.v0.IrisApiConfig;
 import net.irisshaders.iris.config.IrisConfig;
 
@@ -21,13 +22,13 @@ public class IrisApiV0ConfigImpl implements IrisApiConfig {
 		try {
 			config.save();
 		} catch (IOException e) {
-			Iris.logger.error("Error saving configuration file!", e);
+			IrisLogger.error("Error saving configuration file!", e);
 		}
 
 		try {
 			Iris.reload();
 		} catch (IOException e) {
-			Iris.logger.error("Error reloading shader pack while applying changes!", e);
+			IrisLogger.error("Error reloading shader pack while applying changes!", e);
 		}
 	}
 }

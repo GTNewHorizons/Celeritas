@@ -3,7 +3,7 @@ package net.irisshaders.iris.uniforms.custom;
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import kroppeb.stareval.function.Type;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.uniform.FloatSupplier;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
@@ -71,7 +71,7 @@ public class CustomUniformFixedInputUniformsHolder {
 
 		private Builder put(String name, CachedUniform uniform) {
 			if (inputVariables.containsKey(name)) {
-				Iris.logger.warn("Duplicated fixed uniform supplied as inputs to the Custom uniform holder: " + name);
+				IrisLogger.warn("Duplicated fixed uniform supplied as inputs to the Custom uniform holder: " + name);
 				return this;
 			}
 			inputVariables.put(name, uniform);

@@ -1,7 +1,7 @@
 package net.irisshaders.iris.mixin.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.texture.SpriteContentsExtension;
 import net.irisshaders.iris.texture.mipmap.CustomMipmapGenerator;
 import net.minecraft.client.renderer.texture.MipmapGenerator;
@@ -29,7 +29,7 @@ public class MixinSpriteContents implements SpriteContentsExtension {
 				try {
 					return generator.generateMipLevels(nativeImages, mipLevel);
 				} catch (Exception e) {
-					Iris.logger.error("ERROR MIPMAPPING", e);
+					IrisLogger.error("ERROR MIPMAPPING", e);
 				}
 			}
 		}

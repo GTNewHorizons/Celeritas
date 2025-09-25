@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.buffer.ShaderStorageInfo;
 import net.irisshaders.iris.gl.texture.TextureScaleOverride;
 import net.irisshaders.iris.gl.texture.TextureType;
@@ -285,7 +285,7 @@ public class PackDirectives {
 			if (index != -1) {
 				explicitFlips.put(index, shouldFlip);
 			} else {
-				Iris.logger.warn("Unknown buffer with ID " + buffer + " specified in flip directive for pass "
+				IrisLogger.warn("Unknown buffer with ID " + buffer + " specified in flip directive for pass "
 					+ pass);
 			}
 		});

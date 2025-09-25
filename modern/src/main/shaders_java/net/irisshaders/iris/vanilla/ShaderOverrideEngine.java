@@ -3,6 +3,7 @@ package net.irisshaders.iris.vanilla;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.pathways.HandRenderer;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
@@ -53,7 +54,7 @@ public class ShaderOverrideEngine {
         if (overrideSupplier != null) {
             return overrideSupplier.get();
         } else if (missingOverrides.add(name)) {
-            Iris.logger.warn("Missing shader override for '{}'", name);
+            IrisLogger.warn("Missing shader override for '{}'", name);
         }
 
         return null;

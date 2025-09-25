@@ -1,6 +1,6 @@
 package net.irisshaders.iris.shaderpack.option.values;
 
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.shaderpack.option.OptionSet;
 
@@ -14,7 +14,7 @@ public interface OptionValues {
 	default boolean getBooleanValueOrDefault(String name) {
 		return getBooleanValue(name).orElseGet(() -> {
 			if (!getOptionSet().getBooleanOptions().containsKey(name)) {
-				Iris.logger.warn("Tried to get boolean value for unknown option: " + name + ", defaulting to true!");
+				IrisLogger.warn("Tried to get boolean value for unknown option: " + name + ", defaulting to true!");
 				return true;
 			}
 			return getOptionSet().getBooleanOptions().get(name).getOption().getDefaultValue();

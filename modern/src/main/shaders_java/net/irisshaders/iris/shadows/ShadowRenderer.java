@@ -11,6 +11,7 @@ import net.irisshaders.batchedentityrendering.impl.FullyBufferedMultiBufferSourc
 import net.irisshaders.batchedentityrendering.impl.MemoryTrackingRenderBuffers;
 import net.irisshaders.batchedentityrendering.impl.RenderBuffersExt;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
@@ -718,26 +719,26 @@ public class ShadowRenderer {
 
 	public void addDebugText(List<String> messages) {
 		if (IrisVideoSettings.getOverriddenShadowDistance(IrisVideoSettings.shadowDistance) == 0) {
-			messages.add("[" + Iris.MODNAME + "] Shadow Maps: off, shadow distance 0");
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Maps: off, shadow distance 0");
 			return;
 		}
 
 		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
-			messages.add("[" + Iris.MODNAME + "] Shadow Maps: " + debugStringOverall);
-			messages.add("[" + Iris.MODNAME + "] Shadow Distance Terrain: " + terrainFrustumHolder.getDistanceInfo() + " Entity: " + entityFrustumHolder.getDistanceInfo());
-			messages.add("[" + Iris.MODNAME + "] Shadow Culling Terrain: " + terrainFrustumHolder.getCullingInfo() + " Entity: " + entityFrustumHolder.getCullingInfo());
-			messages.add("[" + Iris.MODNAME + "] Shadow Terrain: " + debugStringTerrain
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Maps: " + debugStringOverall);
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Distance Terrain: " + terrainFrustumHolder.getDistanceInfo() + " Entity: " + entityFrustumHolder.getDistanceInfo());
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Culling Terrain: " + terrainFrustumHolder.getCullingInfo() + " Entity: " + entityFrustumHolder.getCullingInfo());
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Terrain: " + debugStringTerrain
 				+ (shouldRenderTerrain ? "" : " (no terrain) ") + (shouldRenderTranslucent ? "" : "(no translucent)"));
-			messages.add("[" + Iris.MODNAME + "] Shadow Entities: " + getEntitiesDebugString());
-			messages.add("[" + Iris.MODNAME + "] Shadow Block Entities: " + getBlockEntitiesDebugString());
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Entities: " + getEntitiesDebugString());
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Block Entities: " + getBlockEntitiesDebugString());
 
 			if (buffers instanceof DrawCallTrackingRenderBuffers drawCallTracker && (shouldRenderEntities || shouldRenderPlayer)) {
-				messages.add("[" + Iris.MODNAME + "] Shadow Entity Batching: " + BatchingDebugMessageHelper.getDebugMessage(drawCallTracker));
+				messages.add("[" + IrisConstants.MODNAME + "] Shadow Entity Batching: " + BatchingDebugMessageHelper.getDebugMessage(drawCallTracker));
 			}
 		} else {
-			messages.add("[" + Iris.MODNAME + "] Shadow info: " + debugStringTerrain);
-			messages.add("[" + Iris.MODNAME + "] E: " + renderedShadowEntities);
-			messages.add("[" + Iris.MODNAME + "] BE: " + renderedShadowBlockEntities);
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow info: " + debugStringTerrain);
+			messages.add("[" + IrisConstants.MODNAME + "] E: " + renderedShadowEntities);
+			messages.add("[" + IrisConstants.MODNAME + "] BE: " + renderedShadowBlockEntities);
 		}
 	}
 

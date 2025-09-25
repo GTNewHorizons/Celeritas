@@ -3,7 +3,7 @@ package net.irisshaders.iris.shaderpack.properties;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.texture.InternalTextureFormat;
 import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.shaderpack.parsing.DirectiveHolder;
@@ -339,7 +339,7 @@ public class PackShadowDirectives {
 				if (internalFormat.isPresent()) {
 					settings.computeIfAbsent(finalI, sa -> new SamplingSettings()).setFormat(internalFormat.get());
 				} else {
-					Iris.logger.warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
+					IrisLogger.warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
 				}
 			});
 

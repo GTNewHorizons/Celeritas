@@ -2,7 +2,7 @@ package net.irisshaders.iris.config;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 
@@ -154,7 +154,7 @@ public class IrisConfig {
 			IrisVideoSettings.shadowDistance = Integer.parseInt(properties.getProperty("maxShadowRenderDistance", "32"));
 			IrisVideoSettings.colorSpace = ColorSpace.valueOf(properties.getProperty("colorSpace", "SRGB"));
 		} catch (IllegalArgumentException e) {
-			Iris.logger.error("Shadow distance setting reset; value is invalid.");
+			IrisLogger.error("Shadow distance setting reset; value is invalid.");
 			IrisVideoSettings.shadowDistance = 32;
 			IrisVideoSettings.colorSpace = ColorSpace.SRGB;
 			save();

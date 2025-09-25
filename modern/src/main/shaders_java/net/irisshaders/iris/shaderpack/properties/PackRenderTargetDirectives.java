@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.IrisLimits;
 import net.irisshaders.iris.gl.texture.InternalTextureFormat;
 import net.irisshaders.iris.shaderpack.parsing.DirectiveHolder;
@@ -80,7 +80,7 @@ public class PackRenderTargetDirectives {
 				} else if ("RGB16".equals(format)) {
 					colortex7.requestedFormat = InternalTextureFormat.RGB16;
 				} else {
-					Iris.logger.warn("Ignoring GAUX4FORMAT directive /* GAUX4FORMAT:" + format + "*/ because " + format
+					IrisLogger.warn("Ignoring GAUX4FORMAT directive /* GAUX4FORMAT:" + format + "*/ because " + format
 						+ " must be RGBA32F, RGB32F, or RGB16. Use `const int colortex7Format = " + format + ";` + instead.");
 				}
 			});
@@ -112,7 +112,7 @@ public class PackRenderTargetDirectives {
 			if (internalFormat.isPresent()) {
 				settings.requestedFormat = internalFormat.get();
 			} else {
-				Iris.logger.warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
+				IrisLogger.warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
 			}
 		});
 

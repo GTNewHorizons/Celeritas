@@ -1,6 +1,7 @@
 package net.irisshaders.iris.mixin.fabulous;
 
 import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -35,7 +36,7 @@ public class MixinDisableFabulousGraphics {
 		}
 
 		if (options.graphicsMode().get() == GraphicsStatus.FABULOUS) {
-            Iris.logger.warn("Fabulous mode is forcefully disabled if shaders are on");
+            IrisLogger.warn("Fabulous mode is forcefully disabled if shaders are on");
 			// Disable fabulous graphics when shaders are enabled.
 			options.graphicsMode().set(GraphicsStatus.FANCY);
 		}

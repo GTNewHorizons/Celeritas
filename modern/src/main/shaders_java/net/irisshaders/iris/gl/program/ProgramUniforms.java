@@ -2,7 +2,7 @@ package net.irisshaders.iris.gl.program;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.state.ValueUpdateNotifier;
 import net.irisshaders.iris.gl.uniform.DynamicLocationalUniformHolder;
@@ -301,7 +301,7 @@ public class ProgramUniforms {
 				locations.put(id, name);
 				uniformNames.put(name, type);
 			} else {
-				Iris.logger.warn("[" + this.name + "] Duplicate uniform: " + type.toString().toLowerCase() + " " + name);
+				IrisLogger.warn("[" + this.name + "] Duplicate uniform: " + type.toString().toLowerCase() + " " + name);
 
 				return OptionalInt.empty();
 			}
@@ -339,7 +339,7 @@ public class ProgramUniforms {
 						expectedName = "(unsupported type: " + getTypeName(type) + ")";
 					}
 
-					Iris.logger.error("[" + this.name + "] Wrong uniform type for " + name + ": Iris is providing " + provided + " but the program expects " + expectedName + ". Disabling that uniform.");
+					IrisLogger.error("[" + this.name + "] Wrong uniform type for " + name + ": Iris is providing " + provided + " but the program expects " + expectedName + ". Disabling that uniform.");
 
 					once.remove(name);
 					perTick.remove(name);

@@ -26,6 +26,7 @@ import com.seibel.distanthorizons.api.methods.events.sharedParameterObjects.DhAp
 import com.seibel.distanthorizons.api.objects.math.DhApiVec3f;
 import com.seibel.distanthorizons.coreapi.DependencyInjection.OverrideInjector;
 import net.irisshaders.iris.Iris;
+import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shadows.ShadowRenderer;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
@@ -33,7 +34,6 @@ import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL43C;
-import org.lwjgl.opengl.GL46C;
 
 public class LodRendererEvents {
 	private static boolean eventHandlersBound = false;
@@ -48,12 +48,12 @@ public class LodRendererEvents {
 	public static void setupEventHandlers() {
 		if (!eventHandlersBound) {
 			eventHandlersBound = true;
-			Iris.logger.info("Queuing DH event binding...");
+			IrisLogger.info("Queuing DH event binding...");
 
 			DhApiAfterDhInitEvent beforeCleanupEvent = new DhApiAfterDhInitEvent() {
 				@Override
 				public void afterDistantHorizonsInit(DhApiEventParam<Void> event) {
-					Iris.logger.info("DH Ready, binding Iris event handlers...");
+					IrisLogger.info("DH Ready, binding Iris event handlers...");
 
 					Iris.loadShaderpackWhenPossible();
 
@@ -69,7 +69,7 @@ public class LodRendererEvents {
 					setupBeforeRenderPassEvent();
 					setupBeforeApplyShaderEvent();
 					DHCompatInternal.dhEnabled = DhApi.Delayed.configs.graphics().renderingEnabled().getValue();
-					Iris.logger.info("DH Iris events bound.");
+					IrisLogger.info("DH Iris events bound.");
 				}
 			};
 			DhApi.events.bind(DhApiAfterDhInitEvent.class, beforeCleanupEvent);
@@ -273,7 +273,7 @@ public class LodRendererEvents {
 					DhApi.Delayed.configs.graphics().fog().drawMode().setValue(EDhApiFogDrawMode.FOG_DISABLED);
 
 					if (event.value.renderPass == EDhApiRenderPass.OPAQUE_AND_TRANSPARENT) {
-						Iris.logger.error("Unexpected; somehow the Opaque + Translucent pass ran with shaders on.");
+						IrisLogger.error("Unexpected; somehow the Opaque + Translucent pass ran with shaders on.");
 					}
 				} else {
 					DhApi.Delayed.configs.graphics().ambientOcclusion().enabled().clearValue();
