@@ -1,7 +1,7 @@
 package net.irisshaders.iris.compat.sodium.impl.shader_overrides;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
@@ -97,7 +97,7 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
         if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) {
             // No back face culling during the shadow pass
             // TODO: Hopefully this won't be necessary in the future...
-            RenderSystem.disableCull();
+            RENDER_SYSTEM.disableCullFace();
         }
 
 		// See IrisSamplers#addLevelSamplers

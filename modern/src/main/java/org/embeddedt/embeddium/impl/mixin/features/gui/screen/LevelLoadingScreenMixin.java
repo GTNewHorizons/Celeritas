@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.mixin.features.gui.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.client.Minecraft;
@@ -77,7 +78,7 @@ public class LevelLoadingScreenMixin {
         RenderSystem.enableBlend();
         //? if <1.17
         /^RenderSystem.disableTexture();^/
-        RenderSystem.defaultBlendFunc();
+        RENDER_SYSTEM.defaultBlendFunc();
 
         BufferBuilder bufferBuilder = tessellator.getBuilder();
         //? if >=1.17 {

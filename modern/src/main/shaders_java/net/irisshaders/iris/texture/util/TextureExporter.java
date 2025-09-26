@@ -1,7 +1,7 @@
 package net.irisshaders.iris.texture.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FilenameUtils;
@@ -19,7 +19,7 @@ public class TextureExporter {
 
 	public static void exportTexture(String directory, String filename, int textureId, int level, int width, int height) {
 		NativeImage nativeImage = new NativeImage(width, height, false);
-		RenderSystem.bindTexture(textureId);
+		RENDER_SYSTEM.bindTexture(textureId);
 		nativeImage.downloadTexture(level, false);
 
 		File dir = new File(Minecraft.getInstance().gameDirectory, directory);

@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -916,7 +917,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
         }
 
 		// Make sure we're using texture unit 0 for this.
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		RENDER_SYSTEM.glActiveTexture(GL15C.GL_TEXTURE0);
 		Vector4f emptyClearColor = new Vector4f(1.0F);
 
         GLDebug.pushGroup(100, "Clear textures");
@@ -938,7 +939,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			} else {
 				// Clear depth first, regardless of any color clearing.
 				shadowRenderTargets.getDepthSourceFb().bind();
-				RenderSystem.clear(GL21C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+				RENDER_SYSTEM.clear(GL21C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
 				ImmutableList<ClearPass> passes;
 
@@ -1064,15 +1065,15 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		DimensionSpecialEffects.SkyType skyType = Minecraft.getInstance().level.effects().skyType();
 
 		if (skyType == DimensionSpecialEffects.SkyType.NORMAL) {
-			RenderSystem.depthMask(false);
+			RENDER_SYSTEM.depthMask(false);
 
-			RenderSystem.setShaderColor(fogColor.x, fogColor.y, fogColor.z, fogColor.w);
+			RENDER_SYSTEM.setShaderColor(fogColor.x, fogColor.y, fogColor.z, fogColor.w);
 
 			horizonRenderer.renderHorizon(CapturedRenderingState.INSTANCE.getGbufferModelView(), CapturedRenderingState.INSTANCE.getGbufferProjection(), GameRenderer.getPositionShader());
 
-			RenderSystem.depthMask(true);
+			RENDER_SYSTEM.depthMask(true);
 
-			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+			RENDER_SYSTEM.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 	}
 
@@ -1126,7 +1127,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		deferredRenderer.renderAll();
 
-		RenderSystem.enableBlend();
+		RENDER_SYSTEM.enableBlend();
 
 		// note: we are careful not to touch the lightmap texture unit or overlay color texture unit here,
 		// so we don't need to do anything to restore them if needed.
@@ -1259,7 +1260,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		for (int i = 0; i < 12; i++) {
 			// Clear all shader textures
-			RenderSystem.setShaderTexture(i, 0);
+			RENDER_SYSTEM.setShaderTexture(i, 0);
 		}
 
 		if (shadowCompositeRenderer != null) {

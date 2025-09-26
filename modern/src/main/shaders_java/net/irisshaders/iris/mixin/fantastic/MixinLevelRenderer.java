@@ -1,8 +1,9 @@
 package net.irisshaders.iris.mixin.fantastic;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.*;
@@ -89,7 +90,7 @@ public class MixinLevelRenderer {
 	}
 
     private void celeritas$restoreNormalRenderState() {
-        RenderSystem.enableCull();
+        RENDER_SYSTEM.enableCullFace();
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=particles"))

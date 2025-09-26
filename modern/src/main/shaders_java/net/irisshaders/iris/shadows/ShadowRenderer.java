@@ -1,8 +1,9 @@
 package net.irisshaders.iris.shadows;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.irisshaders.batchedentityrendering.impl.BatchingDebugMessageHelper;
@@ -217,7 +218,7 @@ public class ShadowRenderer {
 		final Int2ObjectMap<PackShadowDirectives.SamplingSettings> colorSamplingSettings =
 			shadowDirectives.getColorSamplingSettings();
 
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE4);
+		RENDER_SYSTEM.glActiveTexture(GL20C.GL_TEXTURE4);
 
 		configureDepthSampler(targets.getDepthTexture().getTextureId(), depthSamplingSettings.get(0));
 
@@ -231,7 +232,7 @@ public class ShadowRenderer {
 			}
 		}
 
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE0);
+		RENDER_SYSTEM.glActiveTexture(GL20C.GL_TEXTURE0);
 	}
 
 	private void configureDepthSampler(int glTextureId, PackShadowDirectives.DepthSamplingSettings settings) {
@@ -266,13 +267,13 @@ public class ShadowRenderer {
 	}
 
 	private void generateMipmaps() {
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE4);
+		RENDER_SYSTEM.glActiveTexture(GL20C.GL_TEXTURE4);
 
 		for (MipmapPass mipmapPass : mipmapPasses) {
 			setupMipmappingForTexture(mipmapPass.texture(), mipmapPass.targetFilteringMode());
 		}
 
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE0);
+		RENDER_SYSTEM.glActiveTexture(GL20C.GL_TEXTURE0);
 	}
 
 	private void setupMipmappingForTexture(int texture, int filteringMode) {
@@ -362,7 +363,7 @@ public class ShadowRenderer {
 
 	public void setupShadowViewport() {
 		// Set up the viewport
-		RenderSystem.viewport(0, 0, resolution, resolution);
+		RENDER_SYSTEM.glViewport(0, 0, resolution, resolution);
 	}
 
 	public void renderShadows(LevelRendererAccessor levelRenderer, Camera playerCamera) {
@@ -463,7 +464,7 @@ public class ShadowRenderer {
 		// However, it only partially resolves issues of light leaking into caves.
 		//
 		// TODO: Better way of preventing light from leaking into places where it shouldn't
-		RenderSystem.disableCull();
+		RENDER_SYSTEM.disableCullFace();
 
 		// Render all opaque terrain unless pack requests not to
 		if (shouldRenderTerrain) {
@@ -479,7 +480,7 @@ public class ShadowRenderer {
 		}
 
 		// Reset our viewport in case Sodium overrode it
-		RenderSystem.viewport(0, 0, resolution, resolution);
+		RENDER_SYSTEM.glViewport(0, 0, resolution, resolution);
 
 		levelRenderer.getLevel().getProfiler().popPush("entities");
 
@@ -587,12 +588,12 @@ public class ShadowRenderer {
 		levelRenderer.getLevel().getProfiler().popPush("restore gl state");
 
 		// Restore backface culling
-		RenderSystem.enableCull();
+		RENDER_SYSTEM.enableCullFace();
 
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
 
 		// Restore the old viewport
-		RenderSystem.viewport(0, 0, client.getMainRenderTarget().width, client.getMainRenderTarget().height);
+		RENDER_SYSTEM.glViewport(0, 0, client.getMainRenderTarget().width, client.getMainRenderTarget().height);
 
         pipeline.removePhaseIfNeeded();
         GLDebug.pushGroup(901, "shadowcomp");

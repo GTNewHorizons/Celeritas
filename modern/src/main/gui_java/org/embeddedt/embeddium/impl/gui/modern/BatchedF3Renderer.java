@@ -5,6 +5,7 @@ package org.embeddedt.embeddium.impl.gui.modern;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -50,7 +51,7 @@ public class BatchedF3Renderer {
 
         RenderSystem.enableBlend();
         RenderSystem.disableTexture();
-        RenderSystem.defaultBlendFunc();
+        RENDER_SYSTEM.defaultBlendFunc();
 
         int color = 0x90505050;
 

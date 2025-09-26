@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.uniform;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import net.irisshaders.iris.gl.state.ValueUpdateNotifier;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
@@ -45,7 +45,7 @@ public class MatrixUniform extends Uniform {
 			cachedValue.get(buffer);
 			buffer.rewind();
 
-			RenderSystem.glUniformMatrix4(location, false, buffer);
+			RENDER_SYSTEM.glUniformMatrix4(location, false, buffer);
 		}
 	}
 }

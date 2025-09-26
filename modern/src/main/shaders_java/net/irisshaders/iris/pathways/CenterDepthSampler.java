@@ -2,7 +2,7 @@ package net.irisshaders.iris.pathways;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.program.Program;
@@ -42,7 +42,7 @@ public class CenterDepthSampler {
 		InternalTextureFormat format = InternalTextureFormat.R32F;
 		setupColorTexture(texture, format);
 		setupColorTexture(altTexture, format);
-		RenderSystem.bindTexture(0);
+		RENDER_SYSTEM.bindTexture(0);
 
 		this.framebuffer.addColorAttachment(0, texture);
 		ProgramBuilder builder;
@@ -77,7 +77,7 @@ public class CenterDepthSampler {
 		this.framebuffer.bind();
 		this.program.use();
 
-		RenderSystem.viewport(0, 0, 1, 1);
+		RENDER_SYSTEM.glViewport(0, 0, 1, 1);
 
 		FullScreenQuadRenderer.INSTANCE.render();
 

@@ -1,7 +1,7 @@
 package net.irisshaders.iris.gl.texture;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
-import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import org.lwjgl.opengl.GL;
@@ -73,7 +73,7 @@ public interface DepthCopyStrategy {
 				// height
 				height);
 
-			RenderSystem.bindTexture(previousTexture);
+			RENDER_SYSTEM.bindTexture(previousTexture);
 		}
 	}
 

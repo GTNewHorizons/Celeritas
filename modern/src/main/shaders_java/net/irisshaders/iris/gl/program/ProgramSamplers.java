@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.sampler.GlSampler;
@@ -64,7 +64,7 @@ public class ProgramSamplers {
 
 		if (initializer != null) {
 			for (GlUniform1iCall call : initializer) {
-				RenderSystem.glUniform1i(call.location(), call.value());
+				RENDER_SYSTEM.glUniform1i(call.location(), call.value());
 			}
 
 			initializer = null;
@@ -78,7 +78,7 @@ public class ProgramSamplers {
 			samplerBinding.update();
 		}
 
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE0 + activeTexture);
+		RENDER_SYSTEM.glActiveTexture(GL20C.GL_TEXTURE0 + activeTexture);
 	}
 
 	public void removeListeners() {

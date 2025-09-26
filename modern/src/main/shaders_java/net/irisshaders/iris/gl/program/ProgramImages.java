@@ -2,7 +2,7 @@ package net.irisshaders.iris.gl.program;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import net.irisshaders.iris.gl.image.ImageBinding;
 import net.irisshaders.iris.gl.image.ImageHolder;
 import net.irisshaders.iris.gl.image.ImageLimits;
@@ -28,7 +28,7 @@ public class ProgramImages {
 	public void update() {
 		if (initializer != null) {
 			for (GlUniform1iCall call : initializer) {
-				RenderSystem.glUniform1i(call.location(), call.value());
+				RENDER_SYSTEM.glUniform1i(call.location(), call.value());
 			}
 
 			initializer = null;
