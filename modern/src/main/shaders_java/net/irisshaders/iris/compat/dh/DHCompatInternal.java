@@ -1,6 +1,7 @@
 package net.irisshaders.iris.compat.dh;
 
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiFramebuffer;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiGenericObjectShaderProgram;
@@ -61,7 +62,7 @@ public class DHCompatInternal {
 
 		cachedVersion = ((Blaze3dRenderTargetExt) Minecraft.getInstance().getMainRenderTarget()).iris$getDepthBufferVersion();
 
-		createDepthTex(Minecraft.getInstance().getMainRenderTarget().width, Minecraft.getInstance().getMainRenderTarget().height);
+		createDepthTex(MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight());
 		translucentDepthDirty = true;
 
 		ProgramSource terrain = pipeline.getDHTerrainShader().get();
@@ -135,14 +136,14 @@ public class DHCompatInternal {
 
 	public static boolean checkFrame() {
 		if (guiScale == -1) {
-			guiScale = Minecraft.getInstance().options.guiScale().get();
+			guiScale = MINECRAFT.getGuiScale();
 		}
 
 		if (DhApi.Delayed.configs == null) return dhEnabled;
 
-		if ((dhEnabled != DhApi.Delayed.configs.graphics().renderingEnabled().getValue() || guiScale != Minecraft.getInstance().options.guiScale().get())
+		if ((dhEnabled != DhApi.Delayed.configs.graphics().renderingEnabled().getValue() || guiScale != MINECRAFT.getGuiScale())
 			&& Iris.getPipelineManager().getPipelineNullable() instanceof IrisRenderingPipeline) {
-			guiScale = Minecraft.getInstance().options.guiScale().get();
+			guiScale = MINECRAFT.getGuiScale();
 			dhEnabled = DhApi.Delayed.configs.graphics().renderingEnabled().getValue();
 			try {
 				Iris.reload();
@@ -161,7 +162,7 @@ public class DHCompatInternal {
 	public void reconnectDHTextures(int depthTex) {
 		if (((Blaze3dRenderTargetExt) Minecraft.getInstance().getMainRenderTarget()).iris$getDepthBufferVersion() != cachedVersion) {
 			cachedVersion = ((Blaze3dRenderTargetExt) Minecraft.getInstance().getMainRenderTarget()).iris$getDepthBufferVersion();
-			createDepthTex(Minecraft.getInstance().getMainRenderTarget().width, Minecraft.getInstance().getMainRenderTarget().height);
+			createDepthTex(MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight());
 		}
 		if (storedDepthTex != depthTex && dhTerrainFramebuffer != null) {
 			storedDepthTex = depthTex;

@@ -14,6 +14,8 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Math;
 
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
+
 // These expressions are copied directly from BSL and Complementary.
 
 // TODO: Remove once custom uniforms are actually supported, this is just a temporary thing to get BSL & Complementary
@@ -24,8 +26,12 @@ public class HardcodedCustomUniforms {
 
 	public static void addHardcodedCustomUniforms(UniformHolder holder, FrameUpdateNotifier updateNotifier) {
 		updateNotifier.addListener(() -> {
-			if (Minecraft.getInstance().level != null) {
-				storedBiome = Minecraft.getInstance().level.getBiome(Minecraft.getInstance().getCameraEntity().blockPosition());
+			if (MINECRAFT.isLevelLoaded()) {
+				// Need to get camera entity position first, then get biome
+				// This is a complex case that would benefit from a dedicated shim method
+				if (Minecraft.getInstance().level != null) {
+					storedBiome = Minecraft.getInstance().level.getBiome(Minecraft.getInstance().getCameraEntity().blockPosition());
+				}
 			} else {
 				storedBiome = null;
 			}
@@ -95,11 +101,11 @@ public class HardcodedCustomUniforms {
 	}
 
 	private static float getBurnFactor() {
-		return Minecraft.getInstance().player.isOnFire() ? 1.0f : 0f;
+		return MINECRAFT.isBurning() ? 1.0f : 0f;
 	}
 
 	private static float getSneakFactor() {
-		return Minecraft.getInstance().player.isCrouching() ? 1.0f : 0f;
+		return MINECRAFT.isSneaking() ? 1.0f : 0f;
 	}
 
 	private static float getHurtFactor() {

@@ -1,5 +1,6 @@
 package net.irisshaders.iris.shadows;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -194,8 +195,7 @@ public class ShadowCompositeRenderer {
 					ranCompute = true;
 					computeProgram.use();
 					this.customUniforms.push(computeProgram);
-					com.mojang.blaze3d.pipeline.RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
-					computeProgram.dispatch(main.width, main.height);
+					computeProgram.dispatch(MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight());
 				}
 			}
 

@@ -64,8 +64,6 @@ import java.util.zip.ZipException;
 public class Iris {
 
 	private static final Map<String, String> shaderPackOptionQueue = new HashMap<>();
-	// Change this for snapshots!
-	private static final String backupVersionNumber = "1.20.3";
 	public static NamespacedId lastDimension = null;
 	public static boolean testing = false;
 	private static Path shaderpacksDirectory;
@@ -691,21 +689,6 @@ public class Iris {
 		}
 
 		return color + version;
-	}
-
-	/**
-	 * Gets the current release target. Since 1.19.3, Mojang no longer stores this information, so we must manually provide it for snapshots.
-	 *
-	 * @return Release target
-	 */
-	public static String getReleaseTarget() {
-		// If this is a snapshot, you must change backupVersionNumber!
-		SharedConstants.tryDetectVersion();
-		return SharedConstants.getCurrentVersion().isStable() ? SharedConstants.getCurrentVersion().getName() : backupVersionNumber;
-	}
-
-	public static String getBackupVersionNumber() {
-		return backupVersionNumber;
 	}
 
 	public static Path getShaderpacksDirectory() {

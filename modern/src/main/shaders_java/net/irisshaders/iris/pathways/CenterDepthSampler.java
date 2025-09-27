@@ -3,6 +3,7 @@ import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import com.google.common.collect.ImmutableSet;
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.program.Program;
@@ -88,7 +89,7 @@ public class CenterDepthSampler {
 		DepthCopyStrategy.fastest(false).copy(this.framebuffer, texture, null, altTexture, 1, 1);
 
 		//Reset viewport
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+		MINECRAFT.bindMainFramebufferWrite(true);
 	}
 
 	public void setupColorTexture(int texture, InternalTextureFormat format) {

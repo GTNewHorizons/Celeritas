@@ -26,6 +26,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.GameType;
 import org.joml.Matrix4f;
 
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
+
 import java.util.function.BooleanSupplier;
 
 public class HandRenderer {
@@ -48,7 +50,7 @@ public class HandRenderer {
 
 		((GameRendererAccessor) gameRenderer).invokeBobHurt(poseStack, tickDelta);
 
-		if (Minecraft.getInstance().options.bobView().get()) {
+		if (MINECRAFT.getBobView()) {
 			((GameRendererAccessor) gameRenderer).invokeBobView(poseStack, tickDelta);
 		}
 	}
@@ -58,9 +60,9 @@ public class HandRenderer {
 			|| camera.isDetached()
 			|| !(camera.getEntity() instanceof Player)
 			|| ((GameRendererAccessor) gameRenderer).getPanoramicMode()
-			|| Minecraft.getInstance().options.hideGui
+			|| MINECRAFT.hideGui()
 			|| (camera.getEntity() instanceof LivingEntity && ((LivingEntity) camera.getEntity()).isSleeping())
-			|| Minecraft.getInstance().gameMode.getPlayerMode() == GameType.SPECTATOR);
+			|| MINECRAFT.isSpectator());
 	}
 
 	public boolean isHandTranslucent(InteractionHand hand) {

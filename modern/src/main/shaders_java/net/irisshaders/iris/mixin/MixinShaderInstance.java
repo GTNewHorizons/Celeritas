@@ -1,5 +1,7 @@
 package net.irisshaders.iris.mixin;
 
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -174,7 +176,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
             if (!isKnownShader() && shouldOverrideShaders()) {
                 WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
                 if (pipeline instanceof IrisRenderingPipeline) {
-                    Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+                    MINECRAFT.bindMainFramebufferWrite(false);
                 }
             }
 

@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -35,7 +36,7 @@ public class VanillaRenderingPipeline implements WorldRenderingPipeline {
 	@Override
 	public void beginLevelRendering() {
 		// Use the default Minecraft framebuffer and ensure that no programs are in use
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+		MINECRAFT.bindMainFramebufferWrite(true);
 		GL_STATE_MANAGER.glUseProgram(0);
 	}
 

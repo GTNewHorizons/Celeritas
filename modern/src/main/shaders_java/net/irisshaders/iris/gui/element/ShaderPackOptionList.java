@@ -15,6 +15,8 @@ import net.irisshaders.iris.shaderpack.option.menu.OptionMenuContainer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -269,7 +271,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 			// Displaying a dialog when the game is full-screened can cause severe issues
 			// https://github.com/IrisShaders/Iris/issues/1258
-			if (Minecraft.getInstance().getWindow().isFullscreen()) {
+			if (MINECRAFT.isFullscreen()) {
 				this.screen.displayNotification(
 					Component.translatable("options.iris.mustDisableFullscreen")
 						.withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD));
@@ -307,7 +309,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 			// Displaying a dialog when the game is full-screened can cause severe issues
 			// https://github.com/IrisShaders/Iris/issues/1258
-			if (Minecraft.getInstance().getWindow().isFullscreen()) {
+			if (MINECRAFT.isFullscreen()) {
 				this.screen.displayNotification(
 					Component.translatable("options.iris.mustDisableFullscreen")
 						.withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD));

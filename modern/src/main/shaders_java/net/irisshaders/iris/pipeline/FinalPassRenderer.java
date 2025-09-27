@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -42,7 +43,6 @@ import net.irisshaders.iris.targets.RenderTargets;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
-import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.jetbrains.annotations.Nullable;
@@ -118,8 +118,8 @@ public class FinalPassRenderer {
 		// passes that write to framebuffers).
 		this.baseline = renderTargets.createGbufferFramebuffer(flippedBuffers, new int[]{0});
 		this.colorHolder = new GlFramebuffer();
-		this.lastColorTextureId = Minecraft.getInstance().getMainRenderTarget().getColorTextureId();
-		this.lastColorTextureVersion = ((Blaze3dRenderTargetExt) Minecraft.getInstance().getMainRenderTarget()).iris$getColorBufferVersion();
+		this.lastColorTextureId = MINECRAFT.getColorTextureId();
+		this.lastColorTextureVersion = MINECRAFT.getColorBufferVersion();
 		this.colorHolder.addColorAttachment(0, lastColorTextureId);
 
 		// TODO: We don't actually fully swap the content, we merely copy it from alt to main
@@ -197,9 +197,8 @@ public class FinalPassRenderer {
 		RENDER_SYSTEM.disableBlend();
 		RENDER_SYSTEM.depthMask(false);
 
-		final com.mojang.blaze3d.pipeline.RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
-		final int baseWidth = main.width;
-		final int baseHeight = main.height;
+		final int baseWidth = MINECRAFT.getMainFramebufferWidth();
+		final int baseHeight = MINECRAFT.getMainFramebufferHeight();
 
 		// Note that since DeferredWorldRenderingPipeline uses the depth texture of the main Minecraft framebuffer,
 		// we'll be writing to that depth buffer directly automatically and won't need to futz around with copying
@@ -214,9 +213,11 @@ public class FinalPassRenderer {
 		//
 		// This is not a concern for depthtex1 / depthtex2 since the copy call extracts the depth values, and the
 		// shader pack only ever uses them to read the depth values.
-		if (((Blaze3dRenderTargetExt) main).iris$getColorBufferVersion() != lastColorTextureVersion || main.getColorTextureId() != lastColorTextureId) {
-			lastColorTextureVersion = ((Blaze3dRenderTargetExt) main).iris$getColorBufferVersion();
-			this.lastColorTextureId = main.getColorTextureId();
+		int currentColorBufferVersion = MINECRAFT.getColorBufferVersion();
+		int currentColorTextureId = MINECRAFT.getColorTextureId();
+		if (currentColorBufferVersion != lastColorTextureVersion || currentColorTextureId != lastColorTextureId) {
+			lastColorTextureVersion = currentColorBufferVersion;
+			this.lastColorTextureId = currentColorTextureId;
 			colorHolder.addColorAttachment(0, lastColorTextureId);
 		}
 
@@ -269,7 +270,7 @@ public class FinalPassRenderer {
 			// https://stackoverflow.com/a/23994979/18166885
 			this.baseline.bindAsReadBuffer();
 
-			IrisRenderSystem.copyTexSubImage2D(main.getColorTextureId(), GL11C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, baseWidth, baseHeight);
+			IrisRenderSystem.copyTexSubImage2D(MINECRAFT.getColorTextureId(), GL11C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, baseWidth, baseHeight);
 		}
 
 		RENDER_SYSTEM.glActiveTexture(GL15C.GL_TEXTURE0);
@@ -296,7 +297,7 @@ public class FinalPassRenderer {
 
 		// Make sure to reset the viewport to how it was before... Otherwise weird issues could occur.
 		// Also bind the "main" framebuffer if it isn't already bound.
-		main.bindWrite(true);
+		MINECRAFT.bindMainFramebufferWrite(true);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
 		GL_STATE_MANAGER.glUseProgram(0);

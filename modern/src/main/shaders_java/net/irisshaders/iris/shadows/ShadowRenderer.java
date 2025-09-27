@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.irisshaders.batchedentityrendering.impl.BatchingDebugMessageHelper;
@@ -296,8 +297,8 @@ public class ShadowRenderer {
 				reason = "(voxelization detected)";
 			}
 
-			if (distance <= 0 || distance > Minecraft.getInstance().options.getEffectiveRenderDistance() * 16) {
-				distanceInfo = "render distance = " + Minecraft.getInstance().options.getEffectiveRenderDistance() * 16
+			if (distance <= 0 || distance > MINECRAFT.getEffectiveRenderDistance() * 16) {
+				distanceInfo = "render distance = " + MINECRAFT.getEffectiveRenderDistance() * 16
 					+ " blocks ";
 				distanceInfo += Minecraft.getInstance().isLocalServer() ? "(capped by normal render distance)" : "(capped by normal/server render distance)";
 				cullingInfo = "disabled " + reason;
@@ -324,8 +325,8 @@ public class ShadowRenderer {
 				setter = "(set by user)";
 			}
 
-			if (distance >= Minecraft.getInstance().options.getEffectiveRenderDistance() * 16 && !isReversed) {
-				distanceInfo = "render distance = " + Minecraft.getInstance().options.getEffectiveRenderDistance() * 16
+			if (distance >= MINECRAFT.getEffectiveRenderDistance() * 16 && !isReversed) {
+				distanceInfo = "render distance = " + MINECRAFT.getEffectiveRenderDistance() * 16
 					+ " blocks ";
 				distanceInfo += Minecraft.getInstance().isLocalServer() ? "(capped by normal render distance)" : "(capped by normal/server render distance)";
 				boxCuller = null;
@@ -590,7 +591,7 @@ public class ShadowRenderer {
 		// Restore backface culling
 		RENDER_SYSTEM.enableCullFace();
 
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+		MINECRAFT.bindMainFramebufferWrite(false);
 
 		// Restore the old viewport
 		RENDER_SYSTEM.glViewport(0, 0, client.getMainRenderTarget().width, client.getMainRenderTarget().height);

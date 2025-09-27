@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -231,7 +232,8 @@ public class CompositeRenderer {
 		RENDER_SYSTEM.disableBlend();
 
 		FullScreenQuadRenderer.INSTANCE.begin();
-		com.mojang.blaze3d.pipeline.RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
+		final int mainWidth = MINECRAFT.getMainFramebufferWidth();
+		final int mainHeight = MINECRAFT.getMainFramebufferHeight();
 
 		for (Pass renderPass : passes) {
 			boolean ranCompute = false;
@@ -240,7 +242,7 @@ public class CompositeRenderer {
 					ranCompute = true;
 					computeProgram.use();
 					this.customUniforms.push(computeProgram);
-					computeProgram.dispatch(main.width, main.height);
+					computeProgram.dispatch(mainWidth, mainHeight);
 				}
 			}
 
@@ -288,7 +290,7 @@ public class CompositeRenderer {
 
 		// Make sure to reset the viewport to how it was before... Otherwise weird issues could occur.
 		// Also bind the "main" framebuffer if it isn't already bound.
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+		MINECRAFT.bindMainFramebufferWrite(true);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
 		GL_STATE_MANAGER.glUseProgram(0);

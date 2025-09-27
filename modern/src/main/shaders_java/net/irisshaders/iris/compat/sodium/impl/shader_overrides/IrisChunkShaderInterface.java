@@ -1,5 +1,6 @@
 package net.irisshaders.iris.compat.sodium.impl.shader_overrides;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import net.irisshaders.iris.Iris;
@@ -228,7 +229,7 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
         SodiumTerrainPipeline pipeline = getSodiumTerrainPipeline();
 
         if (pipeline != null) {
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+            MINECRAFT.bindMainFramebufferWrite(false);
         }
     }
 }

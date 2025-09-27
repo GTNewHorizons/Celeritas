@@ -1,6 +1,7 @@
 package net.irisshaders.iris.compat.dh;
 
 import static net.irisshaders.iris.IrisLogging.IrisLogger;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
@@ -111,7 +112,7 @@ public class DHCompat {
 	}
 
 	public static int getRenderDistance() {
-		if (!dhPresent) return Minecraft.getInstance().options.getEffectiveRenderDistance();
+		if (!dhPresent) return MINECRAFT.getEffectiveRenderDistance();
 
 		try {
 			return (int) getRenderDistance.invoke();

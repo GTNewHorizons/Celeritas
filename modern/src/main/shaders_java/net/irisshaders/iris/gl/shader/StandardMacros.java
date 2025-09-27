@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.GlUtil;
 import net.irisshaders.iris.Iris;
 import static net.irisshaders.iris.IrisLogging.IrisLogger;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
+
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pathways.HandRenderer;
@@ -45,7 +47,7 @@ public class StandardMacros {
 		ArrayList<StringPair> standardDefines = new ArrayList<>();
 
 		define(standardDefines, "MC_VERSION", getMcVersion());
-        define(standardDefines, "MC_MIPMAP_LEVEL", String.valueOf(Minecraft.getInstance().options.mipmapLevels().get()));
+        define(standardDefines, "MC_MIPMAP_LEVEL", String.valueOf(MINECRAFT.getMipmapLevels()));
 		define(standardDefines, "MC_GL_VERSION", getGlVersion(GL20C.GL_VERSION));
 		define(standardDefines, "MC_GLSL_VERSION", getGlVersion(GL20C.GL_SHADING_LANGUAGE_VERSION));
 		define(standardDefines, getOsString());
@@ -110,7 +112,7 @@ public class StandardMacros {
 	 * @see <a href="https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L696-L699">Optifine Doc</a>
 	 */
 	public static String getMcVersion() {
-		String version = Iris.getReleaseTarget();
+		String version = MINECRAFT.getMcVersion();
 
 		if (version == null) {
 			throw new IllegalStateException("Could not get the current minecraft version!");
@@ -120,7 +122,7 @@ public class StandardMacros {
 
 		if (splitVersion.length < 2) {
 			IrisLogger.error("Could not parse game version \"" + version + "\"");
-			splitVersion = Iris.getBackupVersionNumber().split("\\.");
+			splitVersion = MINECRAFT.getBackupVersionNumber().split("\\.");
 		}
 
 		String major = splitVersion[0];

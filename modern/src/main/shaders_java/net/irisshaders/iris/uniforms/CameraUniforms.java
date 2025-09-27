@@ -3,6 +3,8 @@ package net.irisshaders.iris.uniforms;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.helpers.JomlConversions;
 import net.minecraft.client.Minecraft;
+
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -24,7 +26,7 @@ public class CameraUniforms {
 
 		uniforms
 			.uniform1f(ONCE, "near", () -> 0.05)
-			.uniform1f(PER_FRAME, "far", CameraUniforms::getRenderDistanceInBlocks)
+			.uniform1f(PER_FRAME, "far", MINECRAFT::getRenderDistanceInBlocks)
 			.uniform3d(PER_FRAME, "cameraPosition", tracker::getCurrentCameraPosition)
 			.uniform1f(PER_FRAME, "eyeAltitude", tracker::getCurrentCameraPositionY)
 			.uniform3d(PER_FRAME, "previousCameraPosition", tracker::getPreviousCameraPosition)
@@ -34,13 +36,9 @@ public class CameraUniforms {
 			.uniform3f(PER_FRAME, "previousCameraPositionFract", () -> getCameraPositionFract(tracker.getPreviousCameraPositionUnshifted()));
 	}
 
-	private static int getRenderDistanceInBlocks() {
-		// TODO: Should we ask the game renderer for this?
-		return client.options.getEffectiveRenderDistance() * 16;
-	}
 
 	public static Vector3d getUnshiftedCameraPosition() {
-		return JomlConversions.fromVec3(client.gameRenderer.getMainCamera().getPosition());
+		return MINECRAFT.getUnshiftedCameraPosition();
 	}
 
 	public static Vector3f getCameraPositionFract(Vector3d originalPos) {

@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline.programs;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
 import com.mojang.blaze3d.shaders.ProgramManager;
 import com.mojang.blaze3d.shaders.Uniform;
@@ -68,7 +69,7 @@ public class FallbackShader extends ShaderInstance {
 			BlendModeOverride.restore();
 		}
 
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+		MINECRAFT.bindMainFramebufferWrite(false);
 	}
 
 	@Override

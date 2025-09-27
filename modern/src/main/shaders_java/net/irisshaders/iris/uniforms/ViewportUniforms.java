@@ -4,6 +4,7 @@ import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.minecraft.client.Minecraft;
 
 import static net.irisshaders.iris.gl.uniform.UniformUpdateFrequency.PER_FRAME;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
 /**
  * Implements uniforms relating the current viewport
@@ -24,8 +25,8 @@ public final class ViewportUniforms {
 		// TODO: What about the custom scale.composite3 property?
 		// NB: It is not safe to cache the render target due to mods like Resolution Control modifying the render target field.
 		uniforms
-			.uniform1f(PER_FRAME, "viewHeight", () -> Minecraft.getInstance().getMainRenderTarget().height)
-			.uniform1f(PER_FRAME, "viewWidth", () -> Minecraft.getInstance().getMainRenderTarget().width)
+			.uniform1f(PER_FRAME, "viewHeight", () -> MINECRAFT.getMainFramebufferHeight())
+			.uniform1f(PER_FRAME, "viewWidth", () -> MINECRAFT.getMainFramebufferWidth())
 			.uniform1f(PER_FRAME, "aspectRatio", ViewportUniforms::getAspectRatio);
 	}
 
@@ -33,6 +34,6 @@ public final class ViewportUniforms {
 	 * @return the current viewport aspect ratio, calculated from the current Minecraft window size
 	 */
 	private static float getAspectRatio() {
-		return ((float) Minecraft.getInstance().getMainRenderTarget().width) / ((float) Minecraft.getInstance().getMainRenderTarget().height);
+		return ((float) MINECRAFT.getMainFramebufferWidth()) / ((float) MINECRAFT.getMainFramebufferHeight());
 	}
 }

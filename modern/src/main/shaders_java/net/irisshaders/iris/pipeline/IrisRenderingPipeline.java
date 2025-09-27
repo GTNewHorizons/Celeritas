@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -219,14 +220,13 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		this.resolver = new ProgramFallbackResolver(programSet);
 		this.pack = programSet.getPack();
 
-		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
-		int depthTextureId = main.getDepthTextureId();
+		int depthTextureId = MINECRAFT.getDepthTextureId();
 		int internalFormat = TextureInfoCache.INSTANCE.getInfo(depthTextureId).getInternalFormat();
 		DepthBufferFormat depthBufferFormat = DepthBufferFormat.fromGlEnumOrDefault(internalFormat);
 
 		if (!programSet.getPackDirectives().getBufferObjects().isEmpty()) {
 			if (IrisRenderSystem.supportsSSBO()) {
-				this.shaderStorageBufferHolder = new ShaderStorageBufferHolder(programSet.getPackDirectives().getBufferObjects(), main.width, main.height);
+				this.shaderStorageBufferHolder = new ShaderStorageBufferHolder(programSet.getPackDirectives().getBufferObjects(), MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight());
 
 				this.shaderStorageBufferHolder.setupBuffers();
 			} else {
@@ -241,7 +241,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		this.customImages = new HashSet<>();
 		for (ImageInformation information : programSet.getPack().getIrisCustomImages()) {
 			if (information.isRelative()) {
-				customImages.add(new GlImage.Relative(information.name(), information.samplerName(), information.format(), information.internalTextureFormat(), information.type(), information.clear(), information.relativeWidth(), information.relativeHeight(), main.width, main.height));
+				customImages.add(new GlImage.Relative(information.name(), information.samplerName(), information.format(), information.internalTextureFormat(), information.type(), information.clear(), information.relativeWidth(), information.relativeHeight(), MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight()));
 			} else {
 				customImages.add(new GlImage(information.name(), information.samplerName(), information.target(), information.format(), information.internalTextureFormat(), information.type(), information.clear(), information.width(), information.height(), information.depth()));
 			}
@@ -257,7 +257,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			}
 		});
 
-		this.renderTargets = new RenderTargets(main.width, main.height, depthTextureId, ((Blaze3dRenderTargetExt) main).iris$getDepthBufferVersion(), depthBufferFormat, programSet.getPackDirectives().getRenderTargetDirectives().getRenderTargetSettings(), programSet.getPackDirectives());
+		this.renderTargets = new RenderTargets(MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight(), depthTextureId, MINECRAFT.getDepthBufferVersion(), depthBufferFormat, programSet.getPackDirectives().getRenderTargetDirectives().getRenderTargetSettings(), programSet.getPackDirectives());
 		this.sunPathRotation = programSet.getPackDirectives().getSunPathRotation();
 
 		PackShadowDirectives shadowDirectives = programSet.getPackDirectives().getShadowDirectives();
@@ -552,9 +552,9 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		} else {
 			// TODO: Fix grid appearing on some devices with compute converter
 			//if (IrisRenderSystem.supportsCompute()) {
-			//	colorSpaceConverter = new ColorSpaceComputeConverter(main.width, main.height, IrisVideoSettings.colorSpace);
+			//	colorSpaceConverter = new ColorSpaceComputeConverter(MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight(), IrisVideoSettings.colorSpace);
 			//} else {
-			colorSpaceConverter = new ColorSpaceFragmentConverter(main.width, main.height, IrisVideoSettings.colorSpace);
+			colorSpaceConverter = new ColorSpaceFragmentConverter(MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight(), IrisVideoSettings.colorSpace);
 			//}
 		}
 
@@ -972,14 +972,12 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		// Update custom uniforms
 		this.customUniforms.update();
 
-		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
-
-		int depthTextureId = main.getDepthTextureId();
+		int depthTextureId = MINECRAFT.getDepthTextureId();
 		int internalFormat = TextureInfoCache.INSTANCE.getInfo(depthTextureId).getInternalFormat();
 		DepthBufferFormat depthBufferFormat = DepthBufferFormat.fromGlEnumOrDefault(internalFormat);
 
-		boolean changed = renderTargets.resizeIfNeeded(((Blaze3dRenderTargetExt) main).iris$getDepthBufferVersion(), depthTextureId, main.width,
-			main.height, depthBufferFormat, packDirectives);
+		boolean changed = renderTargets.resizeIfNeeded(MINECRAFT.getDepthBufferVersion(), depthTextureId, MINECRAFT.getMainFramebufferWidth(),
+			MINECRAFT.getMainFramebufferHeight(), depthBufferFormat, packDirectives);
 
 		if (changed) {
 			beginRenderer.recalculateSizes();
@@ -988,10 +986,10 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			compositeRenderer.recalculateSizes();
 			finalPassRenderer.recalculateSwapPassSize();
 			if (shaderStorageBufferHolder != null) {
-				shaderStorageBufferHolder.hasResizedScreen(main.width, main.height);
+				shaderStorageBufferHolder.hasResizedScreen(MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight());
 			}
 
-			customImages.forEach(image -> image.updateNewSize(main.width, main.height));
+			customImages.forEach(image -> image.updateNewSize(MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight()));
 
 			this.clearPassesFull.forEach(clearPass -> renderTargets.destroyFramebuffer(clearPass.getFramebuffer()));
 			this.clearPasses.forEach(clearPass -> renderTargets.destroyFramebuffer(clearPass.getFramebuffer()));
@@ -1004,7 +1002,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		if (changed || IrisVideoSettings.colorSpace != currentColorSpace) {
 			currentColorSpace = IrisVideoSettings.colorSpace;
-			colorSpaceConverter.rebuildProgram(main.width, main.height, currentColorSpace);
+			colorSpaceConverter.rebuildProgram(MINECRAFT.getMainFramebufferWidth(), MINECRAFT.getMainFramebufferHeight(), currentColorSpace);
 		}
 
 		final ImmutableList<ClearPass> passes;
@@ -1033,7 +1031,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		//
 		// If we forget to do this, then weird lines appear at the top of the screen and the right of the screen
 		// on Sildur's Vibrant Shaders.
-		main.bindWrite(true);
+		MINECRAFT.bindMainFramebufferWrite(true);
 		isMainBound = true;
 
 		if (changed) {
@@ -1152,7 +1150,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 	@Override
 	public void finalizeGameRendering() {
-		colorSpaceConverter.process(Minecraft.getInstance().getMainRenderTarget().getColorTextureId());
+		colorSpaceConverter.process(MINECRAFT.getColorTextureId());
 	}
 
 	@Override
@@ -1281,7 +1279,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, 0);
 		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, 0);
 
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+		MINECRAFT.bindMainFramebufferWrite(false);
 
 		renderTargets.destroy();
 		dhCompat.clearPipeline();

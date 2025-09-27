@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
+import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.embeddedt.embeddium.api.vertex.format.common.PositionVertex;
 import org.joml.Matrix4f;
@@ -45,7 +46,7 @@ public class HorizonRenderer {
 	private int currentRenderDistance;
 
 	public HorizonRenderer() {
-		currentRenderDistance = Minecraft.getInstance().options.getEffectiveRenderDistance();
+		currentRenderDistance = MINECRAFT.getEffectiveRenderDistance();
 
 		rebuildBuffer();
 	}
@@ -159,8 +160,8 @@ public class HorizonRenderer {
 	}
 
 	public void renderHorizon(Matrix4f modelView, Matrix4f projection, ShaderInstance shader) {
-		if (currentRenderDistance != Minecraft.getInstance().options.getEffectiveRenderDistance()) {
-			currentRenderDistance = Minecraft.getInstance().options.getEffectiveRenderDistance();
+		if (currentRenderDistance != MINECRAFT.getEffectiveRenderDistance()) {
+			currentRenderDistance = MINECRAFT.getEffectiveRenderDistance();
 			rebuildBuffer();
 		}
 
