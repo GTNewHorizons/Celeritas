@@ -3,10 +3,12 @@ package org.embeddedt.embeddium.impl.gl.functions;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBuffer;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBufferTarget;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
-import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.lwjgl.opengl.GL15;
+import com.mitchej123.lwjgl.GLExtension;
+
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.NULL;
+import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL31C;
-import org.lwjgl.system.MemoryUtil;
 
 public enum BufferCopyFunctions {
     CORE {
@@ -14,7 +16,7 @@ public enum BufferCopyFunctions {
         public void copyBufferSubData(CommandList commandList, GlBuffer src, GlBuffer dst, long readOffset, long writeOffset, long bytes) {
             commandList.bindBuffer(GlBufferTarget.COPY_READ_BUFFER, src);
             commandList.bindBuffer(GlBufferTarget.COPY_WRITE_BUFFER, dst);
-            GL31C.glCopyBufferSubData(GL31C.GL_COPY_READ_BUFFER, GL31C.GL_COPY_WRITE_BUFFER, readOffset, writeOffset, bytes);
+            LWJGL.glCopyBufferSubData(GL31C.GL_COPY_READ_BUFFER, GL31C.GL_COPY_WRITE_BUFFER, readOffset, writeOffset, bytes);
         }
     },
     PIXEL_PACK {
@@ -25,17 +27,17 @@ public enum BufferCopyFunctions {
             }
             commandList.bindBuffer(GlBufferTarget.PIXEL_PACK_BUFFER, src);
             commandList.bindBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER, dst);
-            long srcBufPtr = GL15.nglMapBuffer(GlBufferTarget.PIXEL_PACK_BUFFER.getTargetParameter(), GL15.GL_READ_ONLY);
-            if (srcBufPtr == 0L) {
+            long srcBufPtr = LWJGL.nglMapBuffer(GlBufferTarget.PIXEL_PACK_BUFFER.getTargetParameter(), GL15C.GL_READ_ONLY);
+            if (srcBufPtr == NULL) {
                 throw new IllegalStateException("Source buffer could not be mapped");
             }
-            long dstBufPtr = GL15.nglMapBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER.getTargetParameter(), GL15.GL_WRITE_ONLY);
-            if (dstBufPtr == 0L) {
+            long dstBufPtr = LWJGL.nglMapBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER.getTargetParameter(), GL15C.GL_WRITE_ONLY);
+            if (dstBufPtr == NULL) {
                 throw new IllegalStateException("Destination buffer could not be mapped");
             }
-            MemoryUtil.memCopy(srcBufPtr + readOffset, dstBufPtr + writeOffset, bytes);
-            GL15.glUnmapBuffer(GlBufferTarget.PIXEL_PACK_BUFFER.getTargetParameter());
-            GL15.glUnmapBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER.getTargetParameter());
+            LWJGL.memCopy(srcBufPtr + readOffset, dstBufPtr + writeOffset, bytes);
+            LWJGL.glUnmapBuffer(GlBufferTarget.PIXEL_PACK_BUFFER.getTargetParameter());
+            LWJGL.glUnmapBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER.getTargetParameter());
             commandList.bindBuffer(GlBufferTarget.PIXEL_PACK_BUFFER, null);
             commandList.bindBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER, null);
         }
@@ -43,9 +45,8 @@ public enum BufferCopyFunctions {
 
     public abstract void copyBufferSubData(CommandList commandList, GlBuffer src, GlBuffer dst, long readOffset, long writeOffset, long bytes);
 
-    public static BufferCopyFunctions pickBest(RenderDevice device) {
-        var caps = device.getCapabilities();
-        if (caps.OpenGL31 || caps.GL_ARB_copy_buffer) {
+    public static BufferCopyFunctions pickBest() {
+        if (LWJGL.isOpenGLVersionSupported(3, 1) || LWJGL.isExtensionSupported(GLExtension.ARB_copy_buffer)) {
             return CORE;
         } else {
             return PIXEL_PACK;

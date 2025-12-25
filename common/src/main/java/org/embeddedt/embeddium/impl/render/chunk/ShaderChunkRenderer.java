@@ -3,13 +3,12 @@ package org.embeddedt.embeddium.impl.render.chunk;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.shader.*;
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
 import org.embeddedt.embeddium.impl.render.chunk.shader.*;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +34,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     public ShaderChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
         this.device = device;
         this.renderPassConfiguration = renderPassConfiguration;
-        this.enableLegacyGLPatches = !device.getCapabilities().OpenGL32;
+        this.enableLegacyGLPatches = !LWJGL.isOpenGLVersionSupported(3, 2);
         if (this.enableLegacyGLPatches) {
             LOGGER.warn("System does not support modern GLSL, will attempt to patch terrain shaders");
         }

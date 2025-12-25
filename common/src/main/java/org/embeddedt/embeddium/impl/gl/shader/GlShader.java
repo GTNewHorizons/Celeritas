@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL43C;
 
@@ -18,17 +19,17 @@ public class GlShader extends GlObject {
     public GlShader(ShaderType type, String name, String src) {
         this.name = name;
 
-        int handle = GL20C.glCreateShader(type.id);
-        ShaderWorkarounds.safeShaderSource(handle, src);
-        GL20C.glCompileShader(handle);
+        int handle = LWJGL.glCreateShader(type.id);
+        LWJGL.glShaderSourceSafe(handle, src);
+        LWJGL.glCompileShader(handle);
 
-        String log = GL20C.glGetShaderInfoLog(handle);
+        String log = LWJGL.glGetShaderInfoLog(handle, 4096);
 
         if (!log.isEmpty()) {
             LOGGER.warn("Shader compilation log for " + this.name + ": " + log);
         }
 
-        int result = GL20C.glGetShaderi(handle, GL20C.GL_COMPILE_STATUS);
+        int result = LWJGL.glGetShaderi(handle, GL20C.GL_COMPILE_STATUS);
 
         if (result != GL20C.GL_TRUE) {
             throw new RuntimeException("Shader compilation failed, see log for details");
@@ -45,6 +46,6 @@ public class GlShader extends GlObject {
 
     @Override
     protected void destroyInternal() {
-        GL20C.glDeleteShader(this.handle());
+        LWJGL.glDeleteShader(this.handle());
     }
 }

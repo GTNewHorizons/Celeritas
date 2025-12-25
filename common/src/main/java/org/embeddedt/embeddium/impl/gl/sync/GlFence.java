@@ -1,11 +1,14 @@
 package org.embeddedt.embeddium.impl.gl.sync;
 
+import com.mitchej123.lwjgl.MemoryStack;
+
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
 import org.lwjgl.opengl.GL32C;
-import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
 public class GlFence {
+
     private final long id;
     private boolean disposed;
 
@@ -18,9 +21,9 @@ public class GlFence {
 
         int result;
 
-        try (MemoryStack stack = MemoryStack.stackPush()) {
+        try (MemoryStack stack = LWJGL.stackPush()) {
             IntBuffer count = stack.callocInt(1);
-            result = GL32C.glGetSynci(this.id, GL32C.GL_SYNC_STATUS, count);
+            result = LWJGL.glGetSynci(this.id, GL32C.GL_SYNC_STATUS, count);
 
             if (count.get(0) != 1) {
                 throw new RuntimeException("glGetSync returned more than one value");
@@ -37,11 +40,11 @@ public class GlFence {
 
     public void sync(long timeout) {
         this.checkDisposed();
-        GL32C.glWaitSync(this.id, GL32C.GL_SYNC_FLUSH_COMMANDS_BIT, timeout);
+        LWJGL.glWaitSync(this.id, GL32C.GL_SYNC_FLUSH_COMMANDS_BIT, timeout);
     }
 
     public void delete() {
-        GL32C.glDeleteSync(this.id);
+        LWJGL.glDeleteSync(this.id);
         this.disposed = true;
     }
 

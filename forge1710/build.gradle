@@ -110,8 +110,8 @@ dependencies {
     implementation("org.joml:joml:1.10.5")
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
-    implementation("com.github.GTNewHorizons:lwjgl3ify:2.1.5")
-    implementation("com.github.GTNewHorizons:lwjgl3ify:2.1.5:forgePatches")
+    implementation("com.github.GTNewHorizons:lwjgl3ify:2.1.18")
+    implementation("com.github.GTNewHorizons:lwjgl3ify:2.1.18:forgePatches")
     def lwjglVersion = "3.3.3"
     implementation "org.lwjgl:lwjgl:${lwjglVersion}"
     implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}"

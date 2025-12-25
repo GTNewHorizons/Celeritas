@@ -1,8 +1,9 @@
 package org.embeddedt.embeddium.impl.gl.device;
 
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.NULL;
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.POINTER_SIZE;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.Pointer;
 import java.nio.IntBuffer;
 
 /**
@@ -10,6 +11,7 @@ import java.nio.IntBuffer;
  * {@link org.lwjgl.opengl.GL33C#glMultiDrawElementsBaseVertex(int, IntBuffer, int, PointerBuffer, IntBuffer)}.
  */
 public final class MultiDrawBatch {
+
     public final long pElementPointer;
     public final long pElementCount;
     public final long pBaseVertex;
@@ -19,21 +21,21 @@ public final class MultiDrawBatch {
     public int size;
 
     public MultiDrawBatch(int capacity) {
-        this.pElementPointer = MemoryUtil.nmemAlignedAlloc(32, (long) capacity * Pointer.POINTER_SIZE);
-        if (this.pElementPointer == MemoryUtil.NULL) {
+        this.pElementPointer = LWJGL.nmemAlignedAlloc(32, (long) capacity * POINTER_SIZE);
+        if (this.pElementPointer == NULL) {
             throw new OutOfMemoryError("Failed to allocate element pointer array");
         }
-        MemoryUtil.memSet(this.pElementPointer, 0x0, (long) capacity * Pointer.POINTER_SIZE);
+        LWJGL.memSet(this.pElementPointer, 0x0, (long) capacity * POINTER_SIZE);
 
-        this.pElementCount = MemoryUtil.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
-        if (this.pElementCount == MemoryUtil.NULL) {
-            MemoryUtil.nmemAlignedFree(this.pElementPointer);
+        this.pElementCount = LWJGL.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
+        if (this.pElementCount == NULL) {
+            LWJGL.nmemAlignedFree(this.pElementPointer);
             throw new OutOfMemoryError("Failed to allocate element count array");
         }
-        this.pBaseVertex = MemoryUtil.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
-        if (this.pBaseVertex == MemoryUtil.NULL) {
-            MemoryUtil.nmemAlignedFree(this.pElementPointer);
-            MemoryUtil.nmemAlignedFree(this.pElementCount);
+        this.pBaseVertex = LWJGL.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
+        if (this.pBaseVertex == NULL) {
+            LWJGL.nmemAlignedFree(this.pElementPointer);
+            LWJGL.nmemAlignedFree(this.pElementCount);
             throw new OutOfMemoryError("Failed to allocate base vertex array");
         }
 
@@ -53,9 +55,9 @@ public final class MultiDrawBatch {
     }
 
     public void delete() {
-        MemoryUtil.nmemAlignedFree(this.pElementPointer);
-        MemoryUtil.nmemAlignedFree(this.pElementCount);
-        MemoryUtil.nmemAlignedFree(this.pBaseVertex);
+        LWJGL.nmemAlignedFree(this.pElementPointer);
+        LWJGL.nmemAlignedFree(this.pElementCount);
+        LWJGL.nmemAlignedFree(this.pBaseVertex);
     }
 
     public boolean isEmpty() {
@@ -66,7 +68,7 @@ public final class MultiDrawBatch {
         int elements = 0;
 
         for (var index = 0; index < this.size; index++) {
-            elements = Math.max(elements, MemoryUtil.memGetInt(this.pElementCount + ((long) index * Integer.BYTES)));
+            elements = Math.max(elements, LWJGL.memGetInt(this.pElementCount + ((long) index * Integer.BYTES)));
         }
 
         return elements;

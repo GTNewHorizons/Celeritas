@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.gl.profiling;
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import lombok.Getter;
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
 import org.lwjgl.opengl.GL32C;
 import org.lwjgl.opengl.GL33C;
 
@@ -17,8 +18,8 @@ public class TimerQueryManager implements Closeable {
 
     private record InFlightQuery(int startTime, int endTime) {
         long getTimeDelta() {
-            long startTime = GL33C.glGetQueryObjectui64(this.startTime, GL32C.GL_QUERY_RESULT);
-            long endTime = GL33C.glGetQueryObjectui64(this.endTime, GL32C.GL_QUERY_RESULT);
+            long startTime = LWJGL.glGetQueryObjectui64(this.startTime, GL32C.GL_QUERY_RESULT);
+            long endTime = LWJGL.glGetQueryObjectui64(this.endTime, GL32C.GL_QUERY_RESULT);
             return endTime - startTime;
         }
 
@@ -40,7 +41,7 @@ public class TimerQueryManager implements Closeable {
         if (!QUERY_POOL.isEmpty()) {
             return QUERY_POOL.dequeueInt();
         } else {
-            return GL32C.glGenQueries();
+            return LWJGL.glGenQueries();
         }
     }
 
@@ -53,7 +54,7 @@ public class TimerQueryManager implements Closeable {
             throw new IllegalStateException("Query already started but not ended");
         }
         int id = allocateQuery();
-        GL33C.glQueryCounter(id, GL33C.GL_TIMESTAMP);
+        LWJGL.glQueryCounter(id, GL33C.GL_TIMESTAMP);
         startQueryId = id;
     }
 
@@ -62,7 +63,7 @@ public class TimerQueryManager implements Closeable {
             throw new IllegalStateException("Trying to end query that hasn't started yet");
         }
         int id = allocateQuery();
-        GL33C.glQueryCounter(id, GL33C.GL_TIMESTAMP);
+        LWJGL.glQueryCounter(id, GL33C.GL_TIMESTAMP);
         inFlightQueries.enqueue(new InFlightQuery(startQueryId, id));
         startQueryId = -1;
     }
