@@ -1,7 +1,7 @@
 // This file is based on code from Sodium by JellySquid, licensed under the LGPLv3 license.
 
 package net.irisshaders.iris.gl.shader;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import org.apache.logging.log4j.LogManager;

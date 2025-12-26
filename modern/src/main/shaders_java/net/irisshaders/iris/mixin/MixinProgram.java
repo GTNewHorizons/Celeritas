@@ -1,5 +1,5 @@
 package net.irisshaders.iris.mixin;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.Program;

@@ -1,6 +1,6 @@
 package net.irisshaders.iris.mixin.gui;
 
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gui.screen.HudHideable;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;

@@ -1,7 +1,7 @@
 package net.irisshaders.iris.gl.program;
 
 import com.google.common.collect.ImmutableList;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.state.ValueUpdateNotifier;

@@ -1,5 +1,5 @@
 package net.irisshaders.iris.targets.backed;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.TextureUploadHelper;

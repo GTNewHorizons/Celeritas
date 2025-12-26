@@ -5,7 +5,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.embeddedt.embeddium.api.util.ColorARGB;

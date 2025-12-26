@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.uniform;
 
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;

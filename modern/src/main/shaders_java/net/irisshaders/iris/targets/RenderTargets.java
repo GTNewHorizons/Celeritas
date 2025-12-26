@@ -1,7 +1,7 @@
 package net.irisshaders.iris.targets;
 
 import com.google.common.collect.ImmutableSet;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;

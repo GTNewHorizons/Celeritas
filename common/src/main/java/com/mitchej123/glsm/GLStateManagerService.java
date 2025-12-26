@@ -1,38 +1,74 @@
 package com.mitchej123.glsm;
 
-import java.util.ServiceLoader;
-
+/**
+ * Abstraction for GlStateManager operations across different Minecraft versions.
+ */
 public interface GLStateManagerService {
-    GLStateManagerService GL_STATE_MANAGER = ServiceLoader.load(GLStateManagerService.class).findFirst().orElseThrow();
+
+    /** Higher priority services are preferred. */
+    default int getPriority() { return 0; }
+
+    // ===================== QUERY OPERATIONS =====================
+
     int glGetInteger(int pname);
     String glGetString(int pname);
 
-    void glBindFramebuffer(int target, int framebuffer);
-    int glCheckFramebufferStatus(int target);
-    void glDeleteFramebuffers(int framebuffer);
+    // ===================== FRAMEBUFFER OPERATIONS =====================
 
     int glGenFramebuffers();
+    void glDeleteFramebuffers(int framebuffer);
+    void glBindFramebuffer(int target, int framebuffer);
+    int glCheckFramebufferStatus(int target);
+    void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level);
 
-    int glGetProgrami(int program, int pname);
-    void glAttachShader(int program, int shader);
-    void glDeleteShader(int shader);
+    // ===================== SHADER OPERATIONS =====================
+
     int glCreateShader(int type);
     void glCompileShader(int shader);
     int glGetShaderi(int shader, int pname);
     String glGetShaderInfoLog(int shader, int maxLength);
-    void glUseProgram(int program);
+    void glDeleteShader(int shader);
+
     int glCreateProgram();
-    void glDeleteProgram(int program);
+    void glAttachShader(int program, int shader);
     void glLinkProgram(int program);
+    int glGetProgrami(int program, int pname);
+    void glUseProgram(int program);
+    void glDeleteProgram(int program);
+
+    // ===================== UNIFORM/ATTRIBUTE OPERATIONS =====================
+
     int glGetUniformLocation(int program, CharSequence name);
     void glUniform1i(int location, int value);
 
     int glGetAttribLocation(int program, CharSequence name);
     void glBindAttribLocation(int program, int index, CharSequence name);
 
+    // ===================== VAO OPERATIONS =====================
+
     int glGenVertexArrays();
     void glBindVertexArray(int array);
+    void glDeleteVertexArrays(int array);
+
+    // ===================== BUFFER OPERATIONS =====================
+
+    int glGenBuffers();
+    void glBindBuffer(int target, int buffer);
+    void glDeleteBuffers(int buffer);
+
+    // ===================== TEXTURE OPERATIONS =====================
+
+    int glGenTextures();
+    void glGenTextures(int[] textures);
+    void glDeleteTextures(int texture);
+    void glDeleteTextures(int[] textures);
+    void glActiveTexture(int texture);
+    int glGetTexLevelParameteri(int target, int level, int pname);
+    int glGetTexLevelParameter(int target, int level, int pname);
     void glCopyTexSubImage2D(int target, int level, int xoffset, int yoffset, int x, int y, int width, int height);
+    void glPixelStorei(int pname, int param);
+
+    // ===================== STATE OPERATIONS =====================
 
     void enableCullFace();
     void disableCullFace();
@@ -47,49 +83,29 @@ public interface GLStateManagerService {
     void glDepthMask(boolean flag);
 
     void glViewport(int x, int y, int width, int height);
-
     void glColorMask(boolean red, boolean green, boolean blue, boolean alpha);
-
     void glClearColor(float red, float green, float blue, float alpha);
+    void glClear(int mask);
 
-    int glGetTexLevelParameteri(int target, int level, int pname);
-    int glGetTexLevelParameter(int target, int level, int pname);
+    // ===================== MOJANG ADDITIONS =====================
 
-    void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level);
+    /** Non-standard clear with optional error checking. */
+    void clear(int mask, boolean checkError);
 
-    int glGenTextures();
-    void glGenTextures(int[] textures);
-    void glDeleteTextures(int texture);
-    void glDeleteTextures(int[] textures);
-    void glActiveTexture(int texture);
+    /** Non-standard texture bind (assumes GL_TEXTURE_2D). */
+    void bindTexture(int texture);
 
-    int glGenBuffers();
-    void glBindBuffer(int target, int buffer);
-    void glDeleteBuffers(int buffer);
+    int getActiveTexture();
+    int getActiveTextureAccessor();
+    int getBoundTexture(int internalUnit);
+    int getActiveBoundTexture();
 
-    void glDeleteVertexArrays(int array);
-
-    void glPixelStorei(int pname, int param);
-
-    // Mojang & Non-Standard
-    void clear(int mask, boolean checkError); // Non-standard signature
-    void glClear(int mask); // Standard OpenGL clear without checkError
-
-    void bindTexture(int texture); // Non-standard signature
-
-    int getActiveTexture(); // Mojang Addition
-    int getActiveTextureAccessor(); // Mojang Addition
-    int getBoundTexture(int internalUnit); // Mojang Addition
-    int getActiveBoundTexture(); // Mojang Addition
-
-    int getViewportWidth(); // Mojang Addition
-    int getViewportHeight(); // Mojang Addition
+    int getViewportWidth();
+    int getViewportHeight();
 
     boolean getDepthStateMask();
     boolean isBlendEnabled();
 
     void setBoundTexture(int unit, int texture);
-
-    int getTextureBinding(int unit); // Get texture bound to specific unit
-
+    int getTextureBinding(int unit);
 }

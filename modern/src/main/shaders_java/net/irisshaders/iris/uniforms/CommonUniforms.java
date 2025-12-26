@@ -1,8 +1,8 @@
 package net.irisshaders.iris.uniforms;
 
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 import com.mojang.blaze3d.platform.GlStateManager;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;

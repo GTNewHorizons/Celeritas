@@ -1,5 +1,5 @@
 package net.irisshaders.iris.gl.texture;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 
 import org.lwjgl.opengl.GL20C;
 

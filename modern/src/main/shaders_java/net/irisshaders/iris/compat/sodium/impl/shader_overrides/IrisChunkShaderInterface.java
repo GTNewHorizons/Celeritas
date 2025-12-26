@@ -1,8 +1,8 @@
 package net.irisshaders.iris.compat.sodium.impl.shader_overrides;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;

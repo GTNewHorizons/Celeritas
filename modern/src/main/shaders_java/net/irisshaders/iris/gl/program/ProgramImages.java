@@ -1,8 +1,8 @@
 package net.irisshaders.iris.gl.program;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 
 import com.google.common.collect.ImmutableList;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import net.irisshaders.iris.gl.image.ImageBinding;
 import net.irisshaders.iris.gl.image.ImageHolder;
 import net.irisshaders.iris.gl.image.ImageLimits;

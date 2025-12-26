@@ -1,5 +1,5 @@
 package net.irisshaders.iris.pathways.colorspace;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 
 import com.google.common.collect.ImmutableSet;
 import net.irisshaders.iris.gl.IrisRenderSystem;

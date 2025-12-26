@@ -3,19 +3,34 @@ package com.mitchej123.glsm;
 import org.joml.Matrix4f;
 
 import java.nio.FloatBuffer;
-import java.util.ServiceLoader;
 
+/**
+ * Abstraction for RenderSystem operations across different Minecraft versions.
+ */
 public interface RenderSystemService {
-    RenderSystemService RENDER_SYSTEM = ServiceLoader.load(RenderSystemService.class).findFirst().orElseThrow();
+
+    /** Higher priority services are preferred. */
+    default int getPriority() { return 0; }
+
+    // ===================== TEXTURE OPERATIONS =====================
 
     void glActiveTexture(int texture);
+
+    /** Non-standard texture bind (assumes GL_TEXTURE_2D). */
+    void bindTexture(int texture);
+
+    // ===================== STATE OPERATIONS =====================
 
     void enableCullFace();
     void disableCullFace();
 
     void enableBlend();
     void disableBlend();
-    void setUnknownBlendState(); // Mojang Addition
+    void defaultBlendFunc();
+    void blendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha);
+
+    /** Mojang-specific: resets blend state tracking to unknown. */
+    void setUnknownBlendState();
 
     void enableDepthTest();
     void disableDepthTest();
@@ -23,51 +38,52 @@ public interface RenderSystemService {
     void depthMask(boolean flag);
 
     void glViewport(int x, int y, int width, int height);
+    void glClearColor(float red, float green, float blue, float alpha);
 
-    void bindTexture(int texture); // Non-standard
+    /** Non-standard clear with optional error checking. */
+    void clear(int mask, boolean checkError);
+
+    // ===================== UNIFORM OPERATIONS =====================
 
     void glUniform1i(int location, int value);
     void glUniformMatrix3(int location, boolean transpose, FloatBuffer value);
     void glUniformMatrix4(int location, boolean transpose, FloatBuffer value);
 
-    void glClearColor(float red, float green, float blue, float alpha);
-
-    // Mojang Implementations
-    void clear(int mask, boolean checkError); // Non-standard
+    // ===================== THREAD ASSERTIONS =====================
 
     void assertOnRenderThread();
     void assertOnRenderThreadOrInit();
+
+    // ===================== SHADER STATE =====================
 
     void setShaderTexture(int shaderTexture, int textureId);
     int getShaderTexture(int shaderTexture);
 
     void setShaderColor(float red, float green, float blue, float alpha);
-
     float[] getShaderColor();
-
-    void setShaderFogColor(float red, float green, float blue, float alpha);
-    void setShaderFogStart(float start);
-    void setShaderFogEnd(float end);
-    void setFogShape(int shape);
-    
-    float[] getShaderFogColor();
-    float getShaderFogStart();
-    float getShaderFogEnd();
-    int getFogShape();
 
     void setShaderLineWidth(float lineWidth);
     float getShaderLineWidth();
 
+    // ===================== FOG STATE =====================
+
+    void setShaderFogColor(float red, float green, float blue, float alpha);
+    float[] getShaderFogColor();
+
+    void setShaderFogStart(float start);
+    float getShaderFogStart();
+
+    void setShaderFogEnd(float end);
+    float getShaderFogEnd();
+
+    void setFogShape(int shape);
+    int getFogShape();
+
+    // ===================== PROJECTION MATRIX =====================
+
     Matrix4f getProjectionMatrix();
-
-    default void setPositionShader() {};
-
     void setProjectionMatrixOrth(Matrix4f projectionMatrix);
-
     void setProjectionMatrixOrigin(Matrix4f projectionMatrix);
 
-    // Blending methods
-    void defaultBlendFunc();
-    
-    void blendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha);
+    default void setPositionShader() {}
 }

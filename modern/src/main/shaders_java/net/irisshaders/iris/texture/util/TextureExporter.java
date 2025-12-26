@@ -1,7 +1,7 @@
 package net.irisshaders.iris.texture.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.FilenameUtils;

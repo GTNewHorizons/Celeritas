@@ -43,7 +43,7 @@ import org.joml.Math;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
 
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 
 public class ModernMinecraftVersionShim implements MinecraftVersionShimService {
 

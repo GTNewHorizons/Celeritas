@@ -1,6 +1,6 @@
 package net.irisshaders.iris.compat.sodium.impl.shader_overrides;
 
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;

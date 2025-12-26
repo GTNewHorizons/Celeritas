@@ -1,5 +1,5 @@
 package net.irisshaders.iris.pipeline;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 
 import static net.irisshaders.iris.IrisLogging.IrisLogger;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;

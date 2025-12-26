@@ -1,6 +1,6 @@
 package net.irisshaders.iris.targets;
 
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.minecraft.client.Minecraft;
 import org.joml.Vector4f;

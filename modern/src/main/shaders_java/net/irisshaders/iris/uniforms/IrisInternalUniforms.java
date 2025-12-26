@@ -1,6 +1,6 @@
 package net.irisshaders.iris.uniforms;
 
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.uniform.DynamicUniformHolder;

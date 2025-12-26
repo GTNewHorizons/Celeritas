@@ -1,8 +1,8 @@
 package net.irisshaders.iris.gl;
 
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 import com.mojang.blaze3d.platform.GlStateManager;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import com.mitchej123.glsm.impl.PassThroughRenderSystem;
 import net.irisshaders.iris.IrisLogging;
 import static net.irisshaders.iris.IrisLogging.IrisLogger;

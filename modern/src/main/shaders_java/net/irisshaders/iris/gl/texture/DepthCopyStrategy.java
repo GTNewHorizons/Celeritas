@@ -1,7 +1,7 @@
 package net.irisshaders.iris.gl.texture;
 
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import org.lwjgl.opengl.GL;

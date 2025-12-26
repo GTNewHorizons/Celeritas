@@ -1,5 +1,5 @@
 package net.irisshaders.iris.compat.dh;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiFogDrawMode;

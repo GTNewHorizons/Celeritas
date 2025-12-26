@@ -2,7 +2,7 @@ package net.irisshaders.iris.compat.dh;
 
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static com.mitchej123.glsm.RenderSystemServiceProvider.RENDER_SYSTEM;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.objects.math.DhApiVec3f;
 import net.irisshaders.iris.gl.IrisRenderSystem;

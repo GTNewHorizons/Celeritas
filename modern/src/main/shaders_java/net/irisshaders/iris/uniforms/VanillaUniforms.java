@@ -1,6 +1,6 @@
 package net.irisshaders.iris.uniforms;
 
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.uniform.DynamicUniformHolder;
 import org.joml.Vector2f;

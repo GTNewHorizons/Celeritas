@@ -1,5 +1,5 @@
 package net.irisshaders.iris.pipeline;
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.GLStateManagerServiceProvider.GL_STATE_MANAGER;
 import static org.embeddedt.embeddium.api.compat.mc.MinecraftVersionShimService.MINECRAFT;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
