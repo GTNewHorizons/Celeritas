@@ -83,6 +83,9 @@ rootProject.name = "celeritas"
 includeBuild("plugins/celeritas-mdg-plugin")
 includeBuild("plugins/celeritas-unimined-plugin")
 include("common")
+if(file("lwjgl2-service").exists()) {
+    include("lwjgl2-service")
+}
 
 val includedVersionsProp = if(extra.has("target_versions")) extra["target_versions"].toString().split(",") else null
 val includedSubprojectsProp = if(extra.has("target_subprojects")) extra["target_subprojects"].toString().split(",") else null

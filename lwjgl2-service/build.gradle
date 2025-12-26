@@ -1,0 +1,126 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import xyz.wagyourtail.jvmdg.gradle.task.files.DowngradeFiles
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'xyz.wagyourtail.jvmdowngrader' version '1.3.3'
+    id 'com.gradleup.shadow'
+}
+
+group = "org.embeddedt.celeritas"
+version = rootProject.version
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    withSourcesJar()
+}
+
+repositories {
+    maven {
+        name = "mojang"
+        url = "https://libraries.minecraft.net/"
+        mavenContent {
+            includeGroup "org.lwjgl.lwjgl"
+        }
+    }
+    maven {
+        name = "GTNH Maven"
+        url = uri("https://nexus.gtnewhorizons.com/repository/public/")
+    }
+    mavenCentral()
+}
+
+// Downgrade common module classes to Java 8
+def downgradeCommon = tasks.register("downgradeCommon", DowngradeFiles) {
+    inputCollection = project(":common").sourceSets.main.output
+    classpath = project(":common").sourceSets.main.compileClasspath
+    downgradeTo = JavaVersion.VERSION_1_8
+}
+
+configurations {
+    // Dependencies to shadow into standalone jar
+    shadowImpl
+    implementation.extendsFrom(shadowImpl)
+}
+
+dependencies {
+    // Use downgraded common classes for compilation
+    compileOnly files({ downgradeCommon.get().outputCollection })
+
+    // Also add the jvmdowngrader API for stubs
+    compileOnly files({ jvmdg.getDowngradedApi(JavaVersion.VERSION_1_8) })
+
+    // GTNHLib for memory utilities - shadow into standalone
+    shadowImpl "com.github.GTNewHorizons:GTNHLib:0.8.34"
+
+    // Fastutil for Long2ObjectOpenHashMap - shadow into standalone
+    shadowImpl "it.unimi.dsi:fastutil:7.1.0"
+
+    // LWJGL2 from Mojang maven
+    implementation "org.lwjgl.lwjgl:lwjgl:2.9.4-nightly-20150209"
+    implementation "org.lwjgl.lwjgl:lwjgl_util:2.9.4-nightly-20150209"
+
+    // Logging
+    implementation "org.apache.logging.log4j:log4j-api:2.0-beta9"
+
+    compileOnly "org.jetbrains:annotations:24.1.0"
+}
+
+tasks.compileJava {
+    dependsOn downgradeCommon
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'celeritas-lwjgl2-service'
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = "taumcRepository"
+            url = uri("https://maven.taumc.org/releases")
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_SECRET")
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+}
+
+tasks.withType(Jar).configureEach {
+    from(rootProject.file("COPYING"))
+    from(rootProject.file("COPYING.LESSER"))
+}
+
+// Standalone jar with GTNHLib and fastutil shadowed/relocated/minimized
+tasks.named('shadowJar', ShadowJar) {
+    archiveClassifier.set('standalone')
+    configurations = [project.configurations.shadowImpl]
+
+    // Relocate to avoid conflicts
+    relocate 'com.gtnewhorizon.gtnhlib', 'org.embeddedt.celeritas.shadow.gtnhlib'
+    relocate 'it.unimi.dsi.fastutil', 'org.embeddedt.celeritas.shadow.fastutil'
+
+    // Minimize to only include classes actually used
+    minimize()
+}
+
+// RFG compatibility attributes
+def obfAttr = Attribute.of("com.gtnewhorizons.retrofuturagradle.obfuscation", String)
+def transformedAttr = Attribute.of("rfgDeobfuscatorTransformed", Boolean)
+
+configurations {
+    runtimeElements {
+        attributes {
+            attribute(obfAttr, "mcp")
+            attribute(transformedAttr, true)
+        }
+    }
+}
