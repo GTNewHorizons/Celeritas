@@ -22,17 +22,21 @@ public final class LWJGLServiceProvider {
         ServiceLoader<LWJGLService> loader = ServiceLoader.load(LWJGLService.class, LWJGLService.class.getClassLoader());
 
         LWJGLService best = null;
-        var providers = loader.stream().iterator();
-        while (providers.hasNext()) {
-            var provider = providers.next();
+        java.util.Iterator<LWJGLService> iterator = loader.iterator();
+
+        int attempts = 0;
+        while (attempts < 16) {
             try {
-                LWJGLService service = provider.get();
-                LOGGER.debug("Found LWJGLService: {} (priority {})", service.getClass().getName(), service.getPriority());
+                attempts++;
+                if (!iterator.hasNext()) break;
+
+                LWJGLService service = iterator.next();
+                LOGGER.info("Found LWJGLService: {} (priority {})", service.getClass().getName(), service.getPriority());
                 if (best == null || service.getPriority() > best.getPriority()) {
                     best = service;
                 }
             } catch (ServiceConfigurationError | LinkageError e) {
-                LOGGER.debug("Skipping unavailable service {}: {}", provider.type().getName(), e.getMessage());
+                LOGGER.debug("Skipping unavailable service: {}", e.getMessage());
             }
         }
 

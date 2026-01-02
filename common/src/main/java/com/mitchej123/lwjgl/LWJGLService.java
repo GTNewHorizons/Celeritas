@@ -210,4 +210,5 @@ public interface LWJGLService {
     float memGetFloat(long address);
     long memGetLong(long address);
     long memGetAddress(long address);
+    ByteBuffer memSlice(ByteBuffer buffer, int offset, int capacity);
 }

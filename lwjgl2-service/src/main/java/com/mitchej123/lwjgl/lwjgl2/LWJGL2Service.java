@@ -444,7 +444,7 @@ public class LWJGL2Service implements LWJGLService {
 
     @Override
     public void glUniform3fv(int location, float[] value) {
-        GL20.glUniform3(location, wrap(value));
+        GL20.glUniform3f(location, value[0], value[1], value[2]);
     }
 
     @Override
@@ -454,7 +454,7 @@ public class LWJGL2Service implements LWJGLService {
 
     @Override
     public void glUniform4fv(int location, float[] value) {
-        GL20.glUniform4(location, wrap(value));
+        GL20.glUniform4f(location, value[0], value[1], value[2], value[3]);
     }
 
     @Override
@@ -465,10 +465,6 @@ public class LWJGL2Service implements LWJGLService {
     @Override
     public void glUniformMatrix4fv(int location, boolean transpose, FloatBuffer value) {
         GL20.glUniformMatrix4(location, transpose, value);
-    }
-
-    private static FloatBuffer wrap(float[] array) {
-        return (FloatBuffer) FloatBuffer.wrap(array).flip();
     }
 
     // ===================== DRAW OPERATIONS =====================
@@ -956,20 +952,10 @@ public class LWJGL2Service implements LWJGLService {
 
     @Override
     public long memAddress(Buffer buffer, int position) {
-        long base = MemoryUtilities.memAddress(buffer);
-        int elementSize;
-        if (buffer instanceof java.nio.ByteBuffer) {
-            elementSize = 1;
-        } else if (buffer instanceof java.nio.ShortBuffer || buffer instanceof java.nio.CharBuffer) {
-            elementSize = 2;
-        } else if (buffer instanceof java.nio.IntBuffer || buffer instanceof java.nio.FloatBuffer) {
-            elementSize = 4;
-        } else if (buffer instanceof java.nio.LongBuffer || buffer instanceof java.nio.DoubleBuffer) {
-            elementSize = 8;
-        } else {
-            throw new IllegalArgumentException("Unsupported buffer type: " + buffer.getClass());
+        if (buffer == null) {
+            return position;
         }
-        return base + ((long) position * elementSize);
+        return MemoryUtilities.memAddress0(buffer) + position;
     }
 
     @Override
@@ -1040,5 +1026,11 @@ public class LWJGL2Service implements LWJGLService {
     @Override
     public long memGetAddress(long address) {
         return MemoryUtilities.memGetAddress(address);
+    }
+
+    @Override
+    public ByteBuffer memSlice(ByteBuffer buffer, int offset, int capacity) {
+        long address = MemoryUtilities.memAddress(buffer) + offset;
+        return MemoryUtilities.memByteBuffer(address, capacity);
     }
 }

@@ -1,10 +1,11 @@
 package org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl;
 
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeFormat;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
-import org.lwjgl.system.MemoryUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -52,19 +53,19 @@ public class CompactChunkVertex implements ChunkVertexType {
     @Override
     public ChunkVertexEncoder createEncoder() {
         return (ptr, material, vertex, sectionIndex) -> {
-            MemoryUtil.memPutShort(ptr + 0, encodePosition(vertex.x));
-            MemoryUtil.memPutShort(ptr + 2, encodePosition(vertex.y));
-            MemoryUtil.memPutShort(ptr + 4, encodePosition(vertex.z));
+            LWJGL.memPutShort(ptr + 0, encodePosition(vertex.x));
+            LWJGL.memPutShort(ptr + 2, encodePosition(vertex.y));
+            LWJGL.memPutShort(ptr + 4, encodePosition(vertex.z));
 
-            MemoryUtil.memPutByte(ptr + 6, (byte) (material.bits() & 0xFF));
-            MemoryUtil.memPutByte(ptr + 7, (byte) (sectionIndex & 0xFF));
+            LWJGL.memPutByte(ptr + 6, (byte) (material.bits() & 0xFF));
+            LWJGL.memPutByte(ptr + 7, (byte) (sectionIndex & 0xFF));
 
-            MemoryUtil.memPutInt(ptr + 8, vertex.color);
+            LWJGL.memPutInt(ptr + 8, vertex.color);
 
-            MemoryUtil.memPutShort(ptr + 12, encodeTexture(vertex.u));
-            MemoryUtil.memPutShort(ptr + 14, encodeTexture(vertex.v));
+            LWJGL.memPutShort(ptr + 12, encodeTexture(vertex.u));
+            LWJGL.memPutShort(ptr + 14, encodeTexture(vertex.v));
 
-            MemoryUtil.memPutInt(ptr + 16, vertex.light);
+            LWJGL.memPutInt(ptr + 16, vertex.light);
 
             return ptr + STRIDE;
         };

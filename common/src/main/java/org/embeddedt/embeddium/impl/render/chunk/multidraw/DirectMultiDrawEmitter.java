@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.multidraw;
 
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.DrawCommandList;
 import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
@@ -8,7 +10,6 @@ import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataUnsafe;
-import org.lwjgl.system.MemoryUtil;
 
 public record DirectMultiDrawEmitter(MultiDrawBatch batch) implements MultiDrawEmitter {
     public DirectMultiDrawEmitter() {
@@ -26,9 +27,9 @@ public record DirectMultiDrawEmitter(MultiDrawBatch batch) implements MultiDrawE
         int size = batch.size;
 
         for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
-            MemoryUtil.memPutInt(pBaseVertex + (size << 2), SectionRenderDataUnsafe.getVertexOffset(pMeshData, facing));
-            MemoryUtil.memPutInt(pElementCount + (size << 2), SectionRenderDataUnsafe.getElementCount(pMeshData, facing));
-            MemoryUtil.memPutAddress(pElementPointer + (size << 3), SectionRenderDataUnsafe.getIndexOffset(pMeshData, facing) & indexPointerMask);
+            LWJGL.memPutInt(pBaseVertex + (size << 2), SectionRenderDataUnsafe.getVertexOffset(pMeshData, facing));
+            LWJGL.memPutInt(pElementCount + (size << 2), SectionRenderDataUnsafe.getElementCount(pMeshData, facing));
+            LWJGL.memPutAddress(pElementPointer + (size << 3), SectionRenderDataUnsafe.getIndexOffset(pMeshData, facing) & indexPointerMask);
 
             size += (mask >> facing) & 1;
         }

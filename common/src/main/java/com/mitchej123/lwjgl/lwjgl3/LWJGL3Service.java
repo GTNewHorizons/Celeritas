@@ -842,4 +842,9 @@ public class LWJGL3Service implements LWJGLService {
     public long memGetAddress(long address) {
         return MemoryUtil.memGetAddress(address);
     }
+
+    @Override
+    public ByteBuffer memSlice(ByteBuffer buffer, int offset, int capacity) {
+        return MemoryUtil.memSlice(buffer, offset, capacity);
+    }
 }
