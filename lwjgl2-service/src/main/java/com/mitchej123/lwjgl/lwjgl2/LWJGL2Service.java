@@ -21,6 +21,7 @@ import org.lwjgl.opengl.ARBUniformBufferObject;
 import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.EXTFramebufferObject;
+import org.lwjgl.opengl.EXTGpuShader4;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL14;
@@ -282,8 +283,10 @@ public class LWJGL2Service implements LWJGLService {
         ContextCapabilities caps = GLContext.getCapabilities();
         if (caps.OpenGL30) {
             GL30.glVertexAttribIPointer(index, size, type, stride, pointer);
+        } else if (caps.GL_EXT_gpu_shader4) {
+            EXTGpuShader4.glVertexAttribIPointerEXT(index, size, type, stride, pointer);
         } else {
-            throw new UnsupportedOperationException("glVertexAttribIPointer not supported (requires OpenGL 3.0)");
+            throw new UnsupportedOperationException("glVertexAttribIPointer not supported");
         }
     }
 
