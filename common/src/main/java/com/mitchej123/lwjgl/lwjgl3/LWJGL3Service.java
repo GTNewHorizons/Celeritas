@@ -162,6 +162,11 @@ public class LWJGL3Service implements LWJGLService {
     private enum VAOMode { CORE, ARB, APPLE, NONE }
     private VAOMode vaoMode;
 
+    // Cached function addresses for APPLE VAO extensions
+    private static final long glGenVertexArraysAPPLE = GL.getFunctionProvider().getFunctionAddress("glGenVertexArraysAPPLE");
+    private static final long glDeleteVertexArraysAPPLE = GL.getFunctionProvider().getFunctionAddress("glDeleteVertexArraysAPPLE");
+    private static final long glBindVertexArrayAPPLE = GL.getFunctionProvider().getFunctionAddress("glBindVertexArrayAPPLE");
+
     private VAOMode getVAOMode() {
         if (vaoMode == null) {
             GLCapabilities caps = GL.getCapabilities();
@@ -169,7 +174,7 @@ public class LWJGL3Service implements LWJGLService {
                 vaoMode = VAOMode.CORE;
             } else if (caps.GL_ARB_vertex_array_object) {
                 vaoMode = VAOMode.ARB;
-            } else if (GL.getFunctionProvider().getFunctionAddress("glBindVertexArrayAPPLE") != 0) {
+            } else if (glBindVertexArrayAPPLE != 0) {
                 vaoMode = VAOMode.APPLE;
             } else {
                 vaoMode = VAOMode.NONE;
@@ -186,8 +191,7 @@ public class LWJGL3Service implements LWJGLService {
             case APPLE -> {
                 try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
                     java.nio.IntBuffer buf = stack.callocInt(1);
-                    org.lwjgl.system.JNI.callPV(1, MemoryUtil.memAddress(buf),
-                        GL.getFunctionProvider().getFunctionAddress("glGenVertexArraysAPPLE"));
+                    org.lwjgl.system.JNI.callPV(1, MemoryUtil.memAddress(buf), glGenVertexArraysAPPLE);
                     yield buf.get(0);
                 }
             }
@@ -203,8 +207,7 @@ public class LWJGL3Service implements LWJGLService {
             case APPLE -> {
                 try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
                     java.nio.IntBuffer buf = stack.ints(array);
-                    org.lwjgl.system.JNI.callPV(1, MemoryUtil.memAddress(buf),
-                        GL.getFunctionProvider().getFunctionAddress("glDeleteVertexArraysAPPLE"));
+                    org.lwjgl.system.JNI.callPV(1, MemoryUtil.memAddress(buf), glDeleteVertexArraysAPPLE);
                 }
             }
             case NONE -> throw new UnsupportedOperationException("VAO not supported");
@@ -216,8 +219,7 @@ public class LWJGL3Service implements LWJGLService {
         switch (getVAOMode()) {
             case CORE -> GL30C.glBindVertexArray(array);
             case ARB -> ARBVertexArrayObject.glBindVertexArray(array);
-            case APPLE -> org.lwjgl.system.JNI.callV(array,
-                GL.getFunctionProvider().getFunctionAddress("glBindVertexArrayAPPLE"));
+            case APPLE -> org.lwjgl.system.JNI.callV(array, glBindVertexArrayAPPLE);
             case NONE -> throw new UnsupportedOperationException("VAO not supported");
         }
     }
