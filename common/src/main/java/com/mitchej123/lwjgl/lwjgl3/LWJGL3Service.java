@@ -29,6 +29,7 @@ public class LWJGL3Service implements LWJGLService {
 
     // ===================== CAPABILITIES =====================
 
+
     @Override
     public boolean isOpenGLVersionSupported(int major, int minor) {
         GLCapabilities caps = GL.getCapabilities();
@@ -156,36 +157,61 @@ public class LWJGL3Service implements LWJGLService {
         GL30C.glBindBufferBase(target, index, buffer);
     }
 
-    // ===================== VAO OPERATIONS =====================
-    // Handles core/ARB/APPLE fallbacks
-
     private enum VAOMode { CORE, ARB, APPLE, NONE }
-    private VAOMode vaoMode;
+    private enum TimerQueryMode { CORE, ARB, NONE }
+    private enum DebugMode { KHR, NONE }
+    private enum VertexAttribIMode { CORE, EXT, NONE }
+
+    private final VAOMode vaoMode;
+    private final TimerQueryMode timerQueryMode;
+    private final DebugMode debugMode;
+    private final VertexAttribIMode vertexAttribIMode;
 
     // Cached function addresses for APPLE VAO extensions
     private static final long glGenVertexArraysAPPLE = GL.getFunctionProvider().getFunctionAddress("glGenVertexArraysAPPLE");
     private static final long glDeleteVertexArraysAPPLE = GL.getFunctionProvider().getFunctionAddress("glDeleteVertexArraysAPPLE");
     private static final long glBindVertexArrayAPPLE = GL.getFunctionProvider().getFunctionAddress("glBindVertexArrayAPPLE");
 
-    private VAOMode getVAOMode() {
-        if (vaoMode == null) {
-            GLCapabilities caps = GL.getCapabilities();
-            if (caps.OpenGL30) {
-                vaoMode = VAOMode.CORE;
-            } else if (caps.GL_ARB_vertex_array_object) {
-                vaoMode = VAOMode.ARB;
-            } else if (glBindVertexArrayAPPLE != 0) {
-                vaoMode = VAOMode.APPLE;
-            } else {
-                vaoMode = VAOMode.NONE;
-            }
+    public LWJGL3Service() {
+        GLCapabilities caps = GL.getCapabilities();
+
+        if (caps.OpenGL30) {
+            vaoMode = VAOMode.CORE;
+        } else if (caps.GL_ARB_vertex_array_object) {
+            vaoMode = VAOMode.ARB;
+        } else if (glBindVertexArrayAPPLE != 0) {
+            vaoMode = VAOMode.APPLE;
+        } else {
+            vaoMode = VAOMode.NONE;
         }
-        return vaoMode;
+
+        if (caps.OpenGL33) {
+            timerQueryMode = TimerQueryMode.CORE;
+        } else if (caps.GL_ARB_timer_query) {
+            timerQueryMode = TimerQueryMode.ARB;
+        } else {
+            timerQueryMode = TimerQueryMode.NONE;
+            LOGGER.warn("ARB_timer_query extension not available - GPU profiling will be disabled");
+        }
+
+        if (caps.GL_KHR_debug || caps.OpenGL43) {
+            debugMode = DebugMode.KHR;
+        } else {
+            debugMode = DebugMode.NONE;
+        }
+
+        if (caps.OpenGL30) {
+            vertexAttribIMode = VertexAttribIMode.CORE;
+        } else if (caps.GL_EXT_gpu_shader4) {
+            vertexAttribIMode = VertexAttribIMode.EXT;
+        } else {
+            vertexAttribIMode = VertexAttribIMode.NONE;
+        }
     }
 
     @Override
     public int glGenVertexArrays() {
-        return switch (getVAOMode()) {
+        return switch (vaoMode) {
             case CORE -> GL30C.glGenVertexArrays();
             case ARB -> ARBVertexArrayObject.glGenVertexArrays();
             case APPLE -> {
@@ -201,7 +227,7 @@ public class LWJGL3Service implements LWJGLService {
 
     @Override
     public void glDeleteVertexArrays(int array) {
-        switch (getVAOMode()) {
+        switch (vaoMode) {
             case CORE -> GL30C.glDeleteVertexArrays(array);
             case ARB -> ARBVertexArrayObject.glDeleteVertexArrays(array);
             case APPLE -> {
@@ -216,7 +242,7 @@ public class LWJGL3Service implements LWJGLService {
 
     @Override
     public void glBindVertexArray(int array) {
-        switch (getVAOMode()) {
+        switch (vaoMode) {
             case CORE -> GL30C.glBindVertexArray(array);
             case ARB -> ARBVertexArrayObject.glBindVertexArray(array);
             case APPLE -> org.lwjgl.system.JNI.callV(array, glBindVertexArrayAPPLE);
@@ -231,13 +257,10 @@ public class LWJGL3Service implements LWJGLService {
 
     @Override
     public void glVertexAttribIPointer(int index, int size, int type, int stride, long pointer) {
-        GLCapabilities caps = GL.getCapabilities();
-        if (caps.OpenGL30) {
-            GL30C.glVertexAttribIPointer(index, size, type, stride, pointer);
-        } else if (caps.GL_EXT_gpu_shader4) {
-            EXTGPUShader4.glVertexAttribIPointerEXT(index, size, type, stride, pointer);
-        } else {
-            throw new UnsupportedOperationException("glVertexAttribIPointer not supported");
+        switch (vertexAttribIMode) {
+            case CORE -> GL30C.glVertexAttribIPointer(index, size, type, stride, pointer);
+            case EXT -> EXTGPUShader4.glVertexAttribIPointerEXT(index, size, type, stride, pointer);
+            case NONE -> throw new UnsupportedOperationException("glVertexAttribIPointer not supported");
         }
     }
 
@@ -468,12 +491,20 @@ public class LWJGL3Service implements LWJGLService {
 
     @Override
     public void glQueryCounter(int id, int target) {
-        GL33C.glQueryCounter(id, target);
+        switch (timerQueryMode) {
+            case CORE -> GL33C.glQueryCounter(id, target);
+            case ARB -> ARBTimerQuery.glQueryCounter(id, target);
+            case NONE -> { /* no-op */ }
+        }
     }
 
     @Override
     public long glGetQueryObjectui64(int id, int pname) {
-        return GL33C.glGetQueryObjectui64(id, pname);
+        return switch (timerQueryMode) {
+            case CORE -> GL33C.glGetQueryObjectui64(id, pname);
+            case ARB -> ARBTimerQuery.glGetQueryObjectui64(id, pname);
+            case NONE -> 0L;
+        };
     }
 
     // ===================== DEBUG OPERATIONS =====================
@@ -493,24 +524,21 @@ public class LWJGL3Service implements LWJGLService {
 
     @Override
     public void glObjectLabel(int identifier, int name, CharSequence label) {
-        GLCapabilities caps = GL.getCapabilities();
-        if (caps.GL_KHR_debug || caps.OpenGL43) {
+        if (debugMode == DebugMode.KHR) {
             KHRDebug.glObjectLabel(identifier, name, label);
         }
     }
 
     @Override
     public void glPushDebugGroup(int source, int id, CharSequence message) {
-        GLCapabilities caps = GL.getCapabilities();
-        if (caps.GL_KHR_debug || caps.OpenGL43) {
+        if (debugMode == DebugMode.KHR) {
             KHRDebug.glPushDebugGroup(source, id, message);
         }
     }
 
     @Override
     public void glPopDebugGroup() {
-        GLCapabilities caps = GL.getCapabilities();
-        if (caps.GL_KHR_debug || caps.OpenGL43) {
+        if (debugMode == DebugMode.KHR) {
             KHRDebug.glPopDebugGroup();
         }
     }
