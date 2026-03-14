@@ -20,7 +20,7 @@ import java.nio.IntBuffer;
 /**
  * LWJGL3 implementation of {@link LWJGLService}.
  */
-public class LWJGL3Service implements LWJGLService {
+public final class LWJGL3Service extends LWJGLService {
     private static final Logger LOGGER = LogManager.getLogger("Celeritas/LWJGL3Service");
     private final LWJGL3DebugSupport debugSupport = new LWJGL3DebugSupport();
 

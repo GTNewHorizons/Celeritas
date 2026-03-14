@@ -45,7 +45,7 @@ import java.nio.IntBuffer;
 /**
  * LWJGL2 implementation of {@link LWJGLService}.
  */
-public class LWJGL2Service implements LWJGLService {
+public final class LWJGL2Service extends LWJGLService {
     private static final Logger LOGGER = LogManager.getLogger("Celeritas/LWJGL2Service");
     private final LWJGL2DebugSupport debugSupport = new LWJGL2DebugSupport();
 
