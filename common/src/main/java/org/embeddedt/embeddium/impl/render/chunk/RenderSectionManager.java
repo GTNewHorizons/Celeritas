@@ -81,6 +81,7 @@ public abstract class RenderSectionManager {
 
     private final Set<TerrainRenderPass> disabledRenderPasses;
 
+    @Getter
     private final int minSection, maxSection;
 
     protected final RenderListManager renderListManager;
@@ -921,18 +922,6 @@ public abstract class RenderSectionManager {
     public boolean isSectionBuilt(int x, int y, int z) {
         var section = this.getRenderSection(x, y, z);
         return section != null && section.isBuilt();
-    }
-
-    public void onChunkAdded(int x, int z) {
-        for (int y = this.minSection; y < this.maxSection; y++) {
-            this.onSectionAdded(x, y, z);
-        }
-    }
-
-    public void onChunkRemoved(int x, int z) {
-        for (int y = this.minSection; y < this.maxSection; y++) {
-            this.onSectionRemoved(x, y, z);
-        }
     }
 
     public void toggleRenderingForTerrainPass(TerrainRenderPass pass) {
