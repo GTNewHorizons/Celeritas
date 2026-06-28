@@ -1,6 +1,5 @@
 package org.taumc.celeritas.impl.render.terrain;
 
-import com.google.common.collect.Iterators;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -19,7 +18,6 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
-import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -27,7 +25,7 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
-import org.embeddedt.embeddium.impl.util.*;
+import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.taumc.celeritas.CeleritasArchaic;
@@ -237,8 +235,7 @@ public class CeleritasWorldRenderer {
     }
 
     private void processChunkEvents() {
-        var tracker = ChunkTrackerHolder.get(this.world);
-        tracker.forEachEvent(this.renderSectionManager::onChunkAdded, this.renderSectionManager::onChunkRemoved);
+        ChunkTrackerHolder.get(this.world).forEachEvent(this.renderSectionManager);
     }
 
     /**
@@ -288,8 +285,7 @@ public class CeleritasWorldRenderer {
 
         this.renderSectionManager = ArchaicRenderSectionManager.create(vertexType, this.world, this.renderDistance, commandList);
 
-        var tracker = ChunkTrackerHolder.get(this.world);
-        ChunkTracker.forEachChunk(tracker.getReadyChunks(), this.renderSectionManager::onChunkAdded);
+        ChunkTrackerHolder.get(this.world).forEachReady(this.renderSectionManager);
     }
 
     // We track whether a block entity uses custom block outline rendering, so that the outline postprocessing

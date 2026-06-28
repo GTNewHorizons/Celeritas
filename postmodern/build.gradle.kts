@@ -44,6 +44,10 @@ tasks.named<ProcessResources>("processResources") {
     from(rootProject.file("modern/src/main/resources/icon.png"))
 }
 
+tasks.shadowJar {
+    isZip64=true
+}
+
 dependencies {
     implementation(project(":common")) {
         isTransitive = false

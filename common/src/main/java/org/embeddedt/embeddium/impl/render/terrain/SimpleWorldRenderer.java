@@ -10,17 +10,19 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
-import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
-import org.embeddedt.embeddium.impl.util.*;
+import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.ArrayList;
 
 /**
  * Provides an extension to a game's regular world renderer.
@@ -154,8 +156,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
     }
 
     private void processChunkEvents() {
-        var tracker = ChunkTrackerHolder.get(this.world);
-        tracker.forEachEvent(this.renderSectionManager::onChunkAdded, this.renderSectionManager::onChunkRemoved);
+        ChunkTrackerHolder.get(this.world).forEachEvent(this.renderSectionManager);
     }
 
     protected abstract ChunkRenderMatrices createChunkRenderMatrices();
@@ -203,8 +204,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
         this.renderSectionManager = this.createRenderSectionManager(commandList);
 
-        var tracker = ChunkTrackerHolder.get(this.world);
-        ChunkTracker.forEachChunk(tracker.getReadyChunks(), this.renderSectionManager::onChunkAdded);
+        ChunkTrackerHolder.get(this.world).forEachReady(this.renderSectionManager);
     }
 
     /**

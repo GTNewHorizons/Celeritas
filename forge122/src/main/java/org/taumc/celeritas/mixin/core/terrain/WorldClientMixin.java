@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(WorldClient.class)
 public class WorldClientMixin implements ChunkTrackerHolder {
-    private final ChunkTracker celeritas$tracker = new ChunkTracker();
+    private final ChunkTracker celeritas$tracker = ChunkTracker.create();
 
     @Override
     public ChunkTracker sodium$getTracker() {
