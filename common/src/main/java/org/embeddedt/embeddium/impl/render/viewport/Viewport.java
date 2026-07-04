@@ -58,6 +58,10 @@ public final class Viewport {
         );
     }
 
+    public Frustum getFrustum() {
+        return this.frustum;
+    }
+
     public CameraTransform getTransform() {
         return this.transform;
     }

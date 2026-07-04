@@ -115,7 +115,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                 var tessellation = this.prepareTessellation(commandList, region);
 
                 setModelMatrixUniforms(shader, region, camera);
-                shader.setSectionAges(timestamp, region.getSectionLoadTimes());
+                shader.setSectionAges(timestamp, region.getSectionLoadTimes(), region.getNewestSectionLoadTime());
                 this.emitter.executeBatch(commandList, tessellation, primitiveType);
             }
 

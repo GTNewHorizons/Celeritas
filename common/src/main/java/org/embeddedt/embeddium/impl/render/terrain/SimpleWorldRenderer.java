@@ -6,6 +6,7 @@ import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
+import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
@@ -224,6 +225,11 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
     protected abstract void renderBlockEntityList(List<BLOCKENTITY> list, BLOCKENTITY_RENDER_CONTEXT context);
 
+    protected int renderSectionBlockEntities(RenderSection section, List<BLOCKENTITY> blockEntities, boolean culled, BLOCKENTITY_RENDER_CONTEXT renderContext) {
+        this.renderBlockEntityList(blockEntities, renderContext);
+        return blockEntities.size();
+    }
+
     private int renderCulledBlockEntities(BLOCKENTITY_RENDER_CONTEXT renderContext) {
         int count = 0;
         SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
@@ -259,9 +265,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
                     continue;
                 }
 
-                count += blockEntities.size();
-
-                this.renderBlockEntityList(blockEntities, renderContext);
+                count += this.renderSectionBlockEntities(renderSection, blockEntities, true, renderContext);
             }
         }
 
@@ -283,9 +287,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
                 continue;
             }
 
-            count += blockEntities.size();
-
-            this.renderBlockEntityList(blockEntities, renderContext);
+            count += this.renderSectionBlockEntities(renderSection, blockEntities, false, renderContext);
         }
 
         return count;

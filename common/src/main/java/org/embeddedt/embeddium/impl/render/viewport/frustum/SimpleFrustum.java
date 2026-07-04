@@ -9,6 +9,10 @@ public final class SimpleFrustum implements Frustum {
         this.frustum = frustumIntersection;
     }
 
+    public FrustumIntersection frustumIntersection() {
+        return this.frustum;
+    }
+
     @Override
     public boolean testAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
         return this.frustum.testAab(minX, minY, minZ, maxX, maxY, maxZ);

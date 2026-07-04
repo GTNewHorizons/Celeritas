@@ -16,4 +16,8 @@ public interface ChunkShaderInterface {
     default void setSectionAges(long timestamp, long[] loadTimes) {
 
     }
+
+    default void setSectionAges(long timestamp, long[] loadTimes, long newestLoadTime) {
+        setSectionAges(timestamp, loadTimes);
+    }
 }
