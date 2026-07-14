@@ -682,15 +682,7 @@ public abstract class RenderSectionManager {
     }
 
     public int getVisibleChunkCount() {
-        var sections = 0;
-        var iterator = this.getCurrentRenderListManager().getRenderLists().iterator();
-
-        while (iterator.hasNext()) {
-            var renderList = iterator.next();
-            sections += renderList.getSectionsWithGeometryCount();
-        }
-
-        return sections;
+        return this.getCurrentRenderListManager().getRenderLists().getTotalSectionsWithGeometry();
     }
 
     public final void scheduleAsyncTask(Runnable runnable) {
@@ -844,36 +836,63 @@ public abstract class RenderSectionManager {
 
     protected final Supplier<Object2LongMap<TerrainRenderPass>> renderPassTimingsDebounced = new ExpiringSupplier<>(this::computeRenderPassTimingsMap, 1, TimeUnit.SECONDS);
 
-    public Collection<String> getDebugStrings() {
-        List<String> list = new ArrayList<>();
+    public long getDeviceMemoryUsed() {
+        var stats = this.getDeviceMemoryStats();
+        return stats.deviceUsed + stats.indexUsed;
+    }
 
-        int count = 0, indexCount = 0;
+    public long getDeviceMemoryAllocated() {
+        var stats = this.getDeviceMemoryStats();
+        return stats.deviceAllocated + stats.indexAllocated;
+    }
 
-        long deviceUsed = 0;
-        long deviceAllocated = 0;
+    public static final class DeviceMemoryStats {
+        public long deviceUsed, deviceAllocated;
+        public long indexUsed, indexAllocated;
+        public int bufferCount;
+    }
 
-        long indexUsed = 0, indexAllocated = 0;
+    private final DeviceMemoryStats deviceMemoryStats = new DeviceMemoryStats();
+
+    /**
+     * Sums arena usage in one pass over all regions - returns a reused instance
+     */
+    public DeviceMemoryStats getDeviceMemoryStats() {
+        var stats = this.deviceMemoryStats;
+        stats.deviceUsed = 0;
+        stats.deviceAllocated = 0;
+        stats.indexUsed = 0;
+        stats.indexAllocated = 0;
+        stats.bufferCount = 0;
 
         for (var region : this.regions.getLoadedRegions()) {
-            for (var resources : region.getAllResources()) {
+            var resourcesList = region.getAllResources();
+            //noinspection ForLoopReplaceableByForEach
+            for (int i = 0; i < resourcesList.size(); i++) {
+                var resources = resourcesList.get(i);
                 var buffer = resources.getGeometryArena();
-
-                deviceUsed += buffer.getDeviceUsedMemoryL();
-                deviceAllocated += buffer.getDeviceAllocatedMemoryL();
+                stats.deviceUsed += buffer.getDeviceUsedMemoryL();
+                stats.deviceAllocated += buffer.getDeviceAllocatedMemoryL();
 
                 var indexBuffer = resources.getIndexArena();
-
                 if (indexBuffer != null) {
-                    indexUsed += indexBuffer.getDeviceUsedMemoryL();
-                    indexAllocated += indexBuffer.getDeviceAllocatedMemoryL();
-                    indexCount++;
+                    stats.indexUsed += indexBuffer.getDeviceUsedMemoryL();
+                    stats.indexAllocated += indexBuffer.getDeviceAllocatedMemoryL();
                 }
 
-                count++;
+                stats.bufferCount++;
             }
         }
 
-        list.add(String.format("G: %d/%d, I: %d/%d MiB (%d buffers)", MathUtil.toMib(deviceUsed), MathUtil.toMib(deviceAllocated), MathUtil.toMib(indexUsed), MathUtil.toMib(indexAllocated), count));
+        return stats;
+    }
+
+    public Collection<String> getDebugStrings() {
+        List<String> list = new ArrayList<>();
+
+        var memStats = this.getDeviceMemoryStats();
+
+        list.add(String.format("G: %d/%d, I: %d/%d MiB (%d buffers)", MathUtil.toMib(memStats.deviceUsed), MathUtil.toMib(memStats.deviceAllocated), MathUtil.toMib(memStats.indexUsed), MathUtil.toMib(memStats.indexAllocated), memStats.bufferCount));
         list.add(String.format("Transfer Queue: %s", this.regions.getStagingBuffer().toString()));
 
         var rebuildLists = this.getCurrentRenderListManager().getRebuildLists();

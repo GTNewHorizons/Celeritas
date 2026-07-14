@@ -12,20 +12,25 @@ public class SortedRenderLists implements ChunkRenderListIterable {
 
     private final ObjectArrayList<ChunkRenderList> lists;
     private final ReferenceOpenHashSet<TerrainRenderPass> passes;
+    private final int totalSectionsWithGeometry;
 
     SortedRenderLists(ObjectArrayList<ChunkRenderList> lists) {
         this.lists = lists;
-        this.passes = getAllPassesInLists(lists);
-    }
 
-    private static ReferenceOpenHashSet<TerrainRenderPass> getAllPassesInLists(ObjectArrayList<ChunkRenderList> lists) {
         ReferenceOpenHashSet<TerrainRenderPass> usedPasses = new ReferenceOpenHashSet<>();
+        int sections = 0;
 
         for (var list : lists) {
             usedPasses.addAll(list.getRegion().getPasses());
+            sections += list.getSectionsWithGeometryCount();
         }
 
-        return usedPasses;
+        this.passes = usedPasses;
+        this.totalSectionsWithGeometry = sections;
+    }
+
+    public int getTotalSectionsWithGeometry() {
+        return this.totalSectionsWithGeometry;
     }
 
     @Override

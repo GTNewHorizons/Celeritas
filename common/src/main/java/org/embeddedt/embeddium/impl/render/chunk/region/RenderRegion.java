@@ -238,7 +238,7 @@ public class RenderRegion {
         return this.sections[id];
     }
 
-    public Collection<DeviceResources> getAllResources() {
+    public List<DeviceResources> getAllResources() {
         return this.allDeviceResources;
     }
 
