@@ -229,10 +229,6 @@ public class RenderRegion {
         this.newestSectionLoadTime = timestamp;
     }
 
-    public long getNewestSectionLoadTime() {
-        return this.newestSectionLoadTime;
-    }
-
     @Nullable
     public RenderSection getSection(int id) {
         return this.sections[id];

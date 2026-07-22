@@ -81,8 +81,6 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             shader.setProjectionMatrix(matrices.projection());
             shader.setModelViewMatrix(matrices.modelView());
 
-            var primitiveType = shader.getPrimitiveType();
-
             Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
 
             this.currentRenderPass = renderPass;
@@ -93,30 +91,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             long timestamp = System.nanoTime();
 
             while (iterator.hasNext()) {
-                ChunkRenderList renderList = iterator.next();
-
-                var region = renderList.getRegion();
-                var storage = region.getStorage(renderPass);
-
-                if (storage == null) {
-                    continue;
-                }
-
-                fillCommandBuffer(this.emitter, region, storage, renderList, occlusionCamera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
-
-                if (this.emitter.isEmpty()) {
-                    continue;
-                }
-
-                if (!renderPass.isSorted()) {
-                   getSharedIndexBuffer(renderPassConfiguration.getPrimitiveTypeForPass(renderPass), commandList).ensureCapacity(commandList, this.emitter.getIndexBufferSize());
-                }
-
-                var tessellation = this.prepareTessellation(commandList, region);
-
-                setModelMatrixUniforms(shader, region, camera);
-                shader.setSectionAges(timestamp, region.getSectionLoadTimes(), region.getNewestSectionLoadTime());
-                this.emitter.executeBatch(commandList, tessellation, primitiveType);
+                this.renderRegion(shader, commandList, iterator.next(), renderPass, occlusionCamera, camera, timestamp, useBlockFaceCulling);
             }
 
             this.currentVertexFormat = null;
@@ -126,6 +101,35 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         }
 
         this.end(renderPass);
+    }
+
+    protected void renderRegion(ChunkShaderInterface shader, CommandList commandList, ChunkRenderList renderList, TerrainRenderPass renderPass, CameraTransform occlusionCamera, CameraTransform camera, long timestamp, boolean useBlockFaceCulling) {
+        var region = renderList.getRegion();
+        var storage = region.getStorage(renderPass);
+
+        if (storage == null) {
+            return;
+        }
+
+        fillCommandBuffer(this.emitter, region, storage, renderList, occlusionCamera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
+
+        if (this.emitter.isEmpty()) {
+            return;
+        }
+
+        if (!renderPass.isSorted()) {
+           getSharedIndexBuffer(renderPassConfiguration.getPrimitiveTypeForPass(renderPass), commandList).ensureCapacity(commandList, this.emitter.getIndexBufferSize());
+        }
+
+        var tessellation = this.prepareTessellation(commandList, region);
+
+        setModelMatrixUniforms(shader, region, camera);
+        shader.setSectionAges(timestamp, region.getSectionLoadTimes(), region.getNewestSectionLoadTime());
+        this.executeBatch(commandList, tessellation, shader.getPrimitiveType());
+    }
+
+    protected void executeBatch(CommandList commandList, GlTessellation tessellation, GlPrimitiveType primitiveType) {
+        this.emitter.executeBatch(commandList, tessellation, primitiveType);
     }
 
     private static void fillCommandBuffer(MultiDrawEmitter emitter,
