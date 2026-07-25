@@ -1,13 +1,12 @@
 package org.embeddedt.embeddium.impl.gl.sync;
 
-import com.mitchej123.lwjgl.MemoryStack;
-
 import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
 import org.lwjgl.opengl.GL32C;
 
-import java.nio.IntBuffer;
-
 public class GlFence {
+
+    private static final long WAIT_SLICE_NANOS = 10_000_000L;
+    private static final long WAIT_DEFAULT_NANOS = 5_000_000_000L;
 
     private final long id;
     private boolean disposed;
@@ -16,31 +15,36 @@ public class GlFence {
         this.id = id;
     }
 
+    private static boolean signaled(int status) {
+        return status == GL32C.GL_ALREADY_SIGNALED || status == GL32C.GL_CONDITION_SATISFIED;
+    }
+
     public boolean isCompleted() {
         this.checkDisposed();
+        return signaled(LWJGL.glClientWaitSync(this.id, 0, 0L));
+    }
 
-        int result;
+    public boolean sync() {
+        return this.sync(WAIT_DEFAULT_NANOS);
+    }
 
-        try (MemoryStack stack = LWJGL.stackPush()) {
-            IntBuffer count = stack.callocInt(1);
-            result = LWJGL.glGetSynci(this.id, GL32C.GL_SYNC_STATUS, count);
+    public boolean sync(long timeoutNanos) {
+        this.checkDisposed();
 
-            if (count.get(0) != 1) {
-                throw new RuntimeException("glGetSync returned more than one value");
-            }
+        if (timeoutNanos <= 0) {
+            return signaled(LWJGL.glClientWaitSync(this.id, GL32C.GL_SYNC_FLUSH_COMMANDS_BIT, 0L));
         }
 
-        return result == GL32C.GL_SIGNALED;
-    }
+        final long deadline = System.nanoTime() + timeoutNanos;
+        long remaining = timeoutNanos;
+        int status;
 
-    public void sync() {
-        this.checkDisposed();
-        this.sync(Long.MAX_VALUE);
-    }
+        do {
+            status = LWJGL.glClientWaitSync(this.id, GL32C.GL_SYNC_FLUSH_COMMANDS_BIT, Math.min(WAIT_SLICE_NANOS, remaining));
+            remaining = deadline - System.nanoTime();
+        } while (status == GL32C.GL_TIMEOUT_EXPIRED && remaining > 0);
 
-    public void sync(long timeout) {
-        this.checkDisposed();
-        LWJGL.glWaitSync(this.id, GL32C.GL_SYNC_FLUSH_COMMANDS_BIT, timeout);
+        return signaled(status);
     }
 
     public void delete() {
