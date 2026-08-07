@@ -157,9 +157,8 @@ public class ChunkBuilder {
             // (queued - floor). We close only a damped fraction (1/TARGET_DECAY_DAMPING, at least 1) of that gap per
             // frame, so a correction settles over a few frames instead of snapping in one, which smooths tracking
             // when worker consumption rate is fluctuating.
-            int gap = queued - floor;
-            int decayStep = Math.max(1, gap / TARGET_DECAY_DAMPING);
-            this.targetInFlight = this.targetInFlight - decayStep;
+            int overshoot = queued - floor;
+            this.targetInFlight -= Math.max(1, overshoot / TARGET_DECAY_DAMPING);
         }
 
         // Keep the target at or above the floor (the decay may have stepped it below).

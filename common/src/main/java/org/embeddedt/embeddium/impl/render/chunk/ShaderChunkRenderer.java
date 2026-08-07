@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.shader.*;
-import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
 import org.embeddedt.embeddium.impl.render.chunk.shader.*;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
@@ -16,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 public abstract class ShaderChunkRenderer implements ChunkRenderer {
     private static final Logger LOGGER = LogManager.getLogger(ShaderChunkRenderer.class);
@@ -29,15 +27,9 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
 
     protected GlProgram<ChunkShaderInterface> activeProgram;
 
-    protected final boolean enableLegacyGLPatches;
-
     public ShaderChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
         this.device = device;
         this.renderPassConfiguration = renderPassConfiguration;
-        this.enableLegacyGLPatches = !LWJGL.isOpenGLVersionSupported(3, 2);
-        if (this.enableLegacyGLPatches) {
-            LOGGER.warn("System does not support modern GLSL, will attempt to patch terrain shaders");
-        }
     }
 
     protected @Nullable GlProgram<ChunkShaderInterface> compileProgram(ChunkShaderOptions options) {
@@ -55,32 +47,8 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         return program;
     }
 
-    private static final Pattern VERSION_DIRECTIVE = Pattern.compile("^#version.*$", Pattern.MULTILINE);
-    private static final Pattern IN_PARAM = Pattern.compile("^in ", Pattern.MULTILINE);
-    private static final Pattern OUT_PARAM = Pattern.compile("^out ", Pattern.MULTILINE);
-    private static final String LEGACY_PREAMBLE = String.join("\n",
-            "#version 120",
-            "#extension GL_EXT_gpu_shader4 : require",
-            "#define LEGACY",
-            "#define uint unsigned int",
-            "#define texture texture2D"
-    ) + "\n";
-
     private GlShader loadShader(ShaderType type, String path, ShaderConstants constants) {
         String shaderSource = ShaderParser.parseShader(ShaderLoader.getShaderSource(path), ShaderLoader::getShaderSource, constants);
-        if (this.enableLegacyGLPatches) {
-            if (type != ShaderType.VERTEX && type != ShaderType.FRAGMENT) {
-                throw new IllegalStateException("Cannot load non-vertex/fragment shader on old GL");
-            }
-            // Downlevel to GLSL 1.20
-            shaderSource = VERSION_DIRECTIVE.matcher(shaderSource).replaceFirst(LEGACY_PREAMBLE);
-            if (type == ShaderType.VERTEX) {
-                shaderSource = IN_PARAM.matcher(shaderSource).replaceAll("attribute ");
-            } else {
-                shaderSource = IN_PARAM.matcher(shaderSource).replaceAll("varying ");
-            }
-            shaderSource = OUT_PARAM.matcher(shaderSource).replaceAll("varying ");
-        }
         return new GlShader(type, path, shaderSource);
     }
 
@@ -102,9 +70,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
             for (var attr : options.pass().vertexType().getVertexFormat().getAttributes()) {
                 builder.bindAttribute(attr.getName(), i++);
             }
-            if (!this.enableLegacyGLPatches) {
-                builder.bindFragmentData("fragColor", ChunkShaderBindingPoints.FRAG_COLOR);
-            }
+            builder.bindFragmentData("fragColor", ChunkShaderBindingPoints.FRAG_COLOR);
             return builder.link((shader) -> new DefaultChunkShaderInterface(shader, options));
         } finally {
             loadedShaders.forEach(GlShader::delete);

@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.gl.device;
 
 import org.embeddedt.embeddium.impl.gl.array.GlVertexArray;
 import org.embeddedt.embeddium.impl.gl.buffer.*;
-import org.embeddedt.embeddium.impl.gl.functions.DeviceFunctions;
 import org.embeddedt.embeddium.impl.gl.state.GlStateTracker;
 import org.embeddedt.embeddium.impl.gl.sync.GlFence;
 import org.embeddedt.embeddium.impl.gl.tessellation.*;
@@ -18,7 +17,6 @@ public class GLRenderDevice implements RenderDevice {
     private final CommandList commandList = new ImmediateCommandList(this.stateTracker);
     private final DrawCommandList drawCommandList = new ImmediateDrawCommandList();
 
-    private final DeviceFunctions functions = new DeviceFunctions();
 
     private boolean isActive;
     private GlTessellation activeTessellation;
@@ -62,11 +60,6 @@ public class GLRenderDevice implements RenderDevice {
         this.isActive = false;
     }
 
-    @Override
-    public DeviceFunctions getDeviceFunctions() {
-        return this.functions;
-    }
-
     private void checkDeviceActive() {
         if (!this.isActive) {
             throw new IllegalStateException("Tried to access device from unmanaged context");
@@ -97,15 +90,29 @@ public class GLRenderDevice implements RenderDevice {
 
         @Override
         public void uploadData(GlMutableBuffer glBuffer, long ptr, long bytes, GlBufferUsage usage) {
-            this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, glBuffer);
+            this.uploadData(glBuffer, ptr, bytes, usage, GlBufferTarget.ARRAY_BUFFER);
+        }
 
-            LWJGL.glBufferData(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), bytes, ptr, usage.getId());
+        @Override
+        public void uploadData(GlMutableBuffer glBuffer, long ptr, long bytes, GlBufferUsage usage, GlBufferTarget target) {
+            this.bindBuffer(target, glBuffer);
+
+            LWJGL.glBufferData(target.getTargetParameter(), bytes, ptr, usage.getId());
             glBuffer.setSize(bytes);
         }
 
         @Override
+        public void uploadSubData(GlMutableBuffer glBuffer, long offset, long ptr, long bytes, GlBufferTarget target) {
+            this.bindBuffer(target, glBuffer);
+
+            LWJGL.glBufferSubData(target.getTargetParameter(), offset, bytes, ptr);
+        }
+
+        @Override
         public void copyBufferSubData(GlBuffer src, GlBuffer dst, long readOffset, long writeOffset, long bytes) {
-            GLRenderDevice.this.functions.bufferCopyFunctions().copyBufferSubData(this, src, dst, readOffset, writeOffset, bytes);
+            this.bindBuffer(GlBufferTarget.COPY_READ_BUFFER, src);
+            this.bindBuffer(GlBufferTarget.COPY_WRITE_BUFFER, dst);
+            LWJGL.glCopyBufferSubData(GL31C.GL_COPY_READ_BUFFER, GL31C.GL_COPY_WRITE_BUFFER, readOffset, writeOffset, bytes);
         }
 
         @Override
@@ -195,8 +202,8 @@ public class GLRenderDevice implements RenderDevice {
 
             this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
 
-            ByteBuffer buf = GLRenderDevice.this.functions.bufferMapRangeFunctions()
-                    .mapBufferRange(buffer, offset, length, flags);
+            ByteBuffer buf = LWJGL.glMapBufferRange(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(),
+                    offset, length, flags.getBitField());
 
             if (buf == null) {
                 throw new RuntimeException("Failed to map buffer");
@@ -253,8 +260,7 @@ public class GLRenderDevice implements RenderDevice {
             GlImmutableBuffer buffer = new GlImmutableBuffer(flags);
 
             this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
-            GLRenderDevice.this.functions.bufferStorageFunctions()
-                    .createBufferStorage(GlBufferTarget.ARRAY_BUFFER, bufferSize, flags);
+            LWJGL.glBufferStorage(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), bufferSize, flags.getBitField());
 
             return buffer;
         }
@@ -267,7 +273,7 @@ public class GLRenderDevice implements RenderDevice {
 
         @Override
         public void multiDrawElementsBaseVertex(MultiDrawBatch batch, GlPrimitiveType primitiveType, GlIndexType indexType) {
-            GLRenderDevice.this.functions.multidrawFunctions().multiDrawElementsBaseVertex(primitiveType.getId(),
+            LWJGL.glMultiDrawElementsBaseVertex(primitiveType.getId(),
                     batch.pElementCount,
                     indexType.getFormatId(),
                     batch.pElementPointer,
@@ -276,8 +282,8 @@ public class GLRenderDevice implements RenderDevice {
         }
 
         @Override
-        public void multiDrawElementsIndirect(GlBuffer indirectBuffer, int count, GlPrimitiveType primitiveType, GlIndexType indexType) {
-            LWJGL.glMultiDrawElementsIndirect(primitiveType.getId(), indexType.getFormatId(), 0, count, 0);
+        public void multiDrawElementsIndirect(GlBuffer indirectBuffer, long indirectOffset, int count, GlPrimitiveType primitiveType, GlIndexType indexType) {
+            LWJGL.glMultiDrawElementsIndirect(primitiveType.getId(), indexType.getFormatId(), indirectOffset, count, 0);
         }
 
         @Override

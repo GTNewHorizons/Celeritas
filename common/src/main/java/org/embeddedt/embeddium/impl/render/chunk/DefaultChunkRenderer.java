@@ -9,19 +9,19 @@ import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.tessellation.*;
-import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
-import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
-import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataUnsafe;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderListIterable;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
+import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
+import org.embeddedt.embeddium.impl.render.chunk.multidraw.BatchAssembler;
+import org.embeddedt.embeddium.impl.render.chunk.multidraw.DrawCommandSink;
 import org.embeddedt.embeddium.impl.render.chunk.multidraw.DirectMultiDrawEmitter;
 import org.embeddedt.embeddium.impl.render.chunk.multidraw.MultiDrawEmitter;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
-import org.embeddedt.embeddium.impl.util.BitwiseMath;
+import java.util.Arrays;
 import java.util.Iterator;
 
 public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
@@ -31,6 +31,8 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
 
     private TerrainRenderPass currentRenderPass;
     private GlVertexFormat currentVertexFormat;
+
+    private int[] regionCommandCounts = new int[256];
 
     public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
         this(device, renderPassConfiguration, new DirectMultiDrawEmitter());
@@ -81,8 +83,6 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             shader.setProjectionMatrix(matrices.projection());
             shader.setModelViewMatrix(matrices.modelView());
 
-            Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
-
             this.currentRenderPass = renderPass;
             this.currentVertexFormat = this.renderPassConfiguration.getVertexTypeForPass(this.currentRenderPass).getVertexFormat();
 
@@ -90,8 +90,14 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
 
             long timestamp = System.nanoTime();
 
-            while (iterator.hasNext()) {
-                this.renderRegion(shader, commandList, iterator.next(), renderPass, occlusionCamera, camera, timestamp, useBlockFaceCulling);
+            if (this.emitter.batchesWholePass()) {
+                this.renderPassBatched(shader, commandList, renderLists, renderPass, occlusionCamera, camera, timestamp, useBlockFaceCulling);
+            } else {
+                Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
+
+                while (iterator.hasNext()) {
+                    this.renderRegion(shader, commandList, iterator.next(), renderPass, occlusionCamera, camera, timestamp, useBlockFaceCulling);
+                }
             }
 
             this.currentVertexFormat = null;
@@ -111,16 +117,82 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             return;
         }
 
-        fillCommandBuffer(this.emitter, region, storage, renderList, occlusionCamera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
+        var sink = this.emitter.getCommandSink();
 
-        if (this.emitter.isEmpty()) {
+        this.assembleRegion(sink, region, storage, renderList, occlusionCamera, renderPass,
+                useBlockFaceCulling && !renderPass.isSorted());
+
+        if (sink.isEmpty()) {
             return;
         }
 
         if (!renderPass.isSorted()) {
-           getSharedIndexBuffer(renderPassConfiguration.getPrimitiveTypeForPass(renderPass), commandList).ensureCapacity(commandList, this.emitter.getIndexBufferSize());
+           getSharedIndexBuffer(renderPassConfiguration.getPrimitiveTypeForPass(renderPass), commandList).ensureCapacity(commandList, sink.getIndexBufferSize());
         }
 
+        this.drawRegion(shader, commandList, region, camera, timestamp);
+    }
+
+    private void renderPassBatched(ChunkShaderInterface shader, CommandList commandList, ChunkRenderListIterable renderLists, TerrainRenderPass renderPass, CameraTransform occlusionCamera, CameraTransform camera, long timestamp, boolean useBlockFaceCulling) {
+        boolean reverse = renderPass.isReverseOrder();
+
+        this.emitter.beginPass(commandList, renderLists.getTotalSectionsWithGeometry());
+
+        var sink = this.emitter.getCommandSink();
+        int[] commandCounts = this.regionCommandCounts;
+        int regionCount = 0;
+        int indexBufferSize = 0;
+
+        for (Iterator<ChunkRenderList> iterator = renderLists.iterator(reverse); iterator.hasNext(); ) {
+            var renderList = iterator.next();
+            var region = renderList.getRegion();
+            var storage = region.getStorage(renderPass);
+
+            int commands = 0;
+
+            if (storage != null) {
+                this.assembleRegion(sink, region, storage, renderList, occlusionCamera, renderPass,
+                        useBlockFaceCulling && !renderPass.isSorted());
+
+                commands = sink.size();
+                indexBufferSize = Math.max(indexBufferSize, sink.getIndexBufferSize());
+            }
+
+            if (regionCount == commandCounts.length) {
+                commandCounts = this.regionCommandCounts = Arrays.copyOf(commandCounts, regionCount * 2);
+            }
+
+            commandCounts[regionCount++] = commands;
+        }
+
+        if (indexBufferSize > 0 && !renderPass.isSorted()) {
+            getSharedIndexBuffer(renderPassConfiguration.getPrimitiveTypeForPass(renderPass), commandList)
+                    .ensureCapacity(commandList, indexBufferSize);
+        }
+
+        this.emitter.finishAssembly(commandList);
+
+        int firstCommand = 0;
+        int regionIndex = 0;
+
+        for (Iterator<ChunkRenderList> iterator = renderLists.iterator(reverse); iterator.hasNext(); ) {
+            var renderList = iterator.next();
+            int commands = commandCounts[regionIndex++];
+
+            if (commands == 0) {
+                continue;
+            }
+
+            this.emitter.selectDrawRange(firstCommand, commands);
+            firstCommand += commands;
+
+            this.drawRegion(shader, commandList, renderList.getRegion(), camera, timestamp);
+        }
+
+        this.emitter.onPassFinished(commandList);
+    }
+
+    protected void drawRegion(ChunkShaderInterface shader, CommandList commandList, RenderRegion region, CameraTransform camera, long timestamp) {
         var tessellation = this.prepareTessellation(commandList, region);
 
         setModelMatrixUniforms(shader, region, camera);
@@ -128,122 +200,22 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         this.executeBatch(commandList, tessellation, shader.getPrimitiveType());
     }
 
+    /**
+     * Produces the region's draw commands. Overridable so that a renderer whose commands are built elsewhere (on the
+     * GPU, say) can substitute its own source without reimplementing the surrounding draw setup.
+     */
+    protected void assembleRegion(DrawCommandSink sink, RenderRegion region, SectionRenderDataStorage storage,
+                                  ChunkRenderList renderList, CameraTransform occlusionCamera,
+                                  TerrainRenderPass renderPass, boolean useBlockFaceCulling) {
+        BatchAssembler.fillRegion(sink, region, storage, renderList, occlusionCamera, renderPass, useBlockFaceCulling);
+    }
+
+    protected final MultiDrawEmitter getEmitter() {
+        return this.emitter;
+    }
+
     protected void executeBatch(CommandList commandList, GlTessellation tessellation, GlPrimitiveType primitiveType) {
         this.emitter.executeBatch(commandList, tessellation, primitiveType);
-    }
-
-    private static void fillCommandBuffer(MultiDrawEmitter emitter,
-                                          RenderRegion renderRegion,
-                                          SectionRenderDataStorage renderDataStorage,
-                                          ChunkRenderList renderList,
-                                          CameraTransform camera,
-                                          TerrainRenderPass pass,
-                                          boolean useBlockFaceCulling) {
-        emitter.clear();
-
-        var iterator = renderList.sectionsWithGeometryIterator(pass.isReverseOrder());
-
-        if (iterator == null) {
-            return;
-        }
-
-        int originX = renderRegion.getChunkX();
-        int originY = renderRegion.getChunkY();
-        int originZ = renderRegion.getChunkZ();
-
-        int indexPointerMask = pass.isSorted() ? 0xFFFFFFFF : 0;
-
-        while (iterator.hasNext()) {
-            int sectionIndex = iterator.nextByteAsInt();
-
-            int chunkX = originX + LocalSectionIndex.unpackX(sectionIndex);
-            int chunkY = originY + LocalSectionIndex.unpackY(sectionIndex);
-            int chunkZ = originZ + LocalSectionIndex.unpackZ(sectionIndex);
-
-            var pMeshData = renderDataStorage.getDataPointer(sectionIndex);
-
-            int slices;
-
-            if (useBlockFaceCulling) {
-                slices = getVisibleFaces(camera.intX, camera.intY, camera.intZ, chunkX, chunkY, chunkZ);
-            } else {
-                slices = ModelQuadFacing.ALL;
-            }
-
-            slices &= SectionRenderDataUnsafe.getSliceMask(pMeshData);
-
-            if (slices != 0) {
-                emitter.addDrawCommands(pMeshData, slices, indexPointerMask);
-            }
-        }
-    }
-
-    private static final int MODEL_UNASSIGNED = ModelQuadFacing.UNASSIGNED.ordinal();
-    private static final int MODEL_POS_X      = ModelQuadFacing.POS_X.ordinal();
-    private static final int MODEL_POS_Y      = ModelQuadFacing.POS_Y.ordinal();
-    private static final int MODEL_POS_Z      = ModelQuadFacing.POS_Z.ordinal();
-
-    private static final int MODEL_NEG_X      = ModelQuadFacing.NEG_X.ordinal();
-    private static final int MODEL_NEG_Y      = ModelQuadFacing.NEG_Y.ordinal();
-    private static final int MODEL_NEG_Z      = ModelQuadFacing.NEG_Z.ordinal();
-
-    /**
-     * When true, block face culling checks are inverted to debug if the feature works properly.
-     */
-    private static final boolean DEBUG_BLOCK_FACE_CULLING = false;
-
-    private static int getVisibleFaces(int originX, int originY, int originZ, int chunkX, int chunkY, int chunkZ) {
-        // This is carefully written so that we can keep everything branch-less.
-        //
-        // Normally, this would be a ridiculous way to handle the problem. But the Hotspot VM's
-        // heuristic for generating SETcc/CMOV instructions is broken, and it will always create a
-        // branch even when a trivial ternary is encountered.
-        //
-        // For example, the following will never be transformed into a SETcc:
-        //   (a > b) ? 1 : 0
-        //
-        // So we have to instead rely on sign-bit extension and masking (which generates a ton
-        // of unnecessary instructions) to get this to be branch-less.
-        //
-        // To do this, we can transform the previous expression into the following.
-        //   (b - a) >> 31
-        //
-        // This works because if (a > b) then (b - a) will always create a negative number. We then shift the sign bit
-        // into the least significant bit's position (which also discards any bits following the sign bit) to get the
-        // output we are looking for.
-        //
-        // If you look at the output which LLVM produces for a series of ternaries, you will instantly become distraught,
-        // because it manages to a) correctly evaluate the cost of instructions, and b) go so far
-        // as to actually produce vector code.  (https://godbolt.org/z/GaaEx39T9)
-
-        int boundsMinX = (chunkX << 4), boundsMaxX = boundsMinX + 16;
-        int boundsMinY = (chunkY << 4), boundsMaxY = boundsMinY + 16;
-        int boundsMinZ = (chunkZ << 4), boundsMaxZ = boundsMinZ + 16;
-
-        // the "unassigned" plane is always front-facing, since we can't check it
-        int planes = (1 << MODEL_UNASSIGNED);
-
-        if (DEBUG_BLOCK_FACE_CULLING) {
-            planes |= BitwiseMath.lessThan(originX, (boundsMaxX + 3)) << MODEL_POS_X;
-            planes |= BitwiseMath.lessThan(originY, (boundsMaxY + 3)) << MODEL_POS_Y;
-            planes |= BitwiseMath.lessThan(originZ, (boundsMaxZ + 3)) << MODEL_POS_Z;
-
-            planes |=    BitwiseMath.greaterThan(originX, (boundsMinX - 3)) << MODEL_NEG_X;
-            planes |=    BitwiseMath.greaterThan(originY, (boundsMinY - 3)) << MODEL_NEG_Y;
-            planes |=    BitwiseMath.greaterThan(originZ, (boundsMinZ - 3)) << MODEL_NEG_Z;
-        } else {
-            planes |= BitwiseMath.greaterThan(originX, (boundsMinX - 3)) << MODEL_POS_X;
-            planes |= BitwiseMath.greaterThan(originY, (boundsMinY - 3)) << MODEL_POS_Y;
-            planes |= BitwiseMath.greaterThan(originZ, (boundsMinZ - 3)) << MODEL_POS_Z;
-
-            planes |=    BitwiseMath.lessThan(originX, (boundsMaxX + 3)) << MODEL_NEG_X;
-            planes |=    BitwiseMath.lessThan(originY, (boundsMaxY + 3)) << MODEL_NEG_Y;
-            planes |=    BitwiseMath.lessThan(originZ, (boundsMaxZ + 3)) << MODEL_NEG_Z;
-        }
-
-
-
-        return planes;
     }
 
     private static void setModelMatrixUniforms(ChunkShaderInterface shader, RenderRegion region, CameraTransform camera) {
@@ -274,20 +246,9 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return tessellation;
     }
 
-    private GlVertexAttributeBinding[] generateVertexAttributeBindings() {
-        var attributes = this.currentVertexFormat.getAttributes();
-        var bindings = new GlVertexAttributeBinding[attributes.size()];
-        int i = 0;
-        for (var attr : attributes) {
-            bindings[i] = new GlVertexAttributeBinding(i, attr);
-            i++;
-        }
-        return bindings;
-    }
-
     protected TessellationBinding[] makeTessellationBindingArray(CommandList commandList, RenderRegion.DeviceResources resources) {
         return new TessellationBinding[] {
-                TessellationBinding.forVertexBuffer(resources.getVertexBuffer(), this.generateVertexAttributeBindings()),
+                TessellationBinding.forVertexBuffer(resources.getVertexBuffer(), this.currentVertexFormat),
                 TessellationBinding.forElementBuffer(this.currentRenderPass.isSorted() ? resources.getIndexBuffer() : this.getSharedIndexBuffer(this.renderPassConfiguration.getPrimitiveTypeForPass(this.currentRenderPass), commandList).getBufferObject())
         };
     }

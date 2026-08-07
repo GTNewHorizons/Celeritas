@@ -17,4 +17,14 @@ public interface ChunkRenderListIterable {
     default boolean hasPass(TerrainRenderPass pass) {
         return true;
     }
+
+    default int getTotalSectionsWithGeometry() {
+        int total = 0;
+
+        for (var iterator = this.iterator(); iterator.hasNext(); ) {
+            total += iterator.next().getSectionsWithGeometryCount();
+        }
+
+        return total;
+    }
 }

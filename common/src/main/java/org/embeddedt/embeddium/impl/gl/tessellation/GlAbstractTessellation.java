@@ -25,6 +25,10 @@ public abstract class GlAbstractTessellation implements GlTessellation {
                             attrib.getStride(), attrib.getPointer());
                 }
                 LWJGL.glEnableVertexAttribArray(attrib.getIndex());
+
+                if (attrib.getDivisor() != 0) {
+                    LWJGL.glVertexAttribDivisor(attrib.getIndex(), attrib.getDivisor());
+                }
             }
         }
     }

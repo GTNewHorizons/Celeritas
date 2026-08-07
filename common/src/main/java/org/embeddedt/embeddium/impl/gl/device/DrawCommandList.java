@@ -7,7 +7,7 @@ import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 public interface DrawCommandList extends AutoCloseable {
     void multiDrawElementsBaseVertex(MultiDrawBatch batch, GlPrimitiveType primitiveType, GlIndexType indexType);
 
-    void multiDrawElementsIndirect(GlBuffer indirectBuffer, int count, GlPrimitiveType primitiveType, GlIndexType indexType);
+    void multiDrawElementsIndirect(GlBuffer indirectBuffer, long indirectOffset, int count, GlPrimitiveType primitiveType, GlIndexType indexType);
 
     void endTessellating();
 

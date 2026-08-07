@@ -5,16 +5,16 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import org.embeddedt.embeddium.impl.gl.buffer.*;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.embeddedt.embeddium.impl.gl.functions.BufferCopyFunctions;
-import org.embeddedt.embeddium.impl.gl.functions.BufferMapRangeFunctions;
-import org.embeddedt.embeddium.impl.gl.functions.BufferStorageFunctions;
 import org.embeddedt.embeddium.impl.gl.sync.GlFence;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
+import com.mitchej123.lwjgl.GLExtension;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.mitchej123.lwjgl.LWJGLServiceProvider.LWJGL;
 
 public class MappedStagingBuffer implements StagingBuffer {
     private static final EnumBitField<GlBufferStorageFlags> STORAGE_FLAGS =
@@ -50,10 +50,7 @@ public class MappedStagingBuffer implements StagingBuffer {
     }
 
     public static boolean isSupported(RenderDevice instance) {
-        var functions = instance.getDeviceFunctions();
-        return functions.bufferStorageFunctions() != BufferStorageFunctions.NONE
-                && functions.bufferCopyFunctions() != BufferCopyFunctions.PIXEL_PACK
-                && functions.bufferMapRangeFunctions() == BufferMapRangeFunctions.CORE;
+        return LWJGL.isOpenGLVersionSupported(4, 4) || LWJGL.isExtensionSupported(GLExtension.ARB_buffer_storage);
     }
 
     @Override
@@ -103,28 +100,39 @@ public class MappedStagingBuffer implements StagingBuffer {
         }
 
         int bytes = 0;
+        int numMerged = this.consolidateCopies();
 
-        for (CopyCommand command : consolidateCopies(this.pendingCopies)) {
+        for (int i = 0; i < numMerged; i++) {
+            CopyCommand command = this.pendingCopies.get(i);
             bytes += command.bytes;
 
             commandList.copyBufferSubData(this.mappedBuffer.buffer, command.buffer, command.readOffset, command.writeOffset, command.bytes);
         }
 
+        this.pendingCopies.clear();
         this.fencedRegions.enqueue(new FencedMemoryRegion(commandList.createFence(), bytes));
 
         this.start = this.pos;
     }
 
-    private static List<CopyCommand> consolidateCopies(List<CopyCommand> queue) {
-        List<CopyCommand> merged = new ArrayList<>();
-        CopyCommand last = null;
-
+    /**
+     * Merges runs of contiguous copies in place, compacting them into the front of {@link #pendingCopies}.
+     * {@return the number of merged commands}
+     * <p>
+     * Merging mutates the run leader rather than copying it, which is safe because every entry is discarded once
+     * the caller has issued the copies.
+     */
+    private int consolidateCopies() {
+        List<CopyCommand> queue = this.pendingCopies;
         int numCommands = queue.size();
-        //noinspection ForLoopReplaceableByForEach
+        int numMerged = 0;
+
         for (int i = 0; i < numCommands; i++) {
             CopyCommand command = queue.get(i);
 
-            if (last != null) {
+            if (numMerged > 0) {
+                CopyCommand last = queue.get(numMerged - 1);
+
                 if (last.buffer == command.buffer &&
                         last.writeOffset + last.bytes == command.writeOffset &&
                         last.readOffset + last.bytes == command.readOffset) {
@@ -133,12 +141,10 @@ public class MappedStagingBuffer implements StagingBuffer {
                 }
             }
 
-            merged.add(last = new CopyCommand(command));
+            queue.set(numMerged++, command);
         }
 
-        queue.clear();
-
-        return merged;
+        return numMerged;
     }
 
     @Override
@@ -177,13 +183,6 @@ public class MappedStagingBuffer implements StagingBuffer {
             this.readOffset = readOffset;
             this.writeOffset = writeOffset;
             this.bytes = bytes;
-        }
-
-        public CopyCommand(CopyCommand command) {
-            this.buffer = command.buffer;
-            this.writeOffset = command.writeOffset;
-            this.readOffset = command.readOffset;
-            this.bytes = command.bytes;
         }
     }
 

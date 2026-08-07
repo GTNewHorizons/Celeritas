@@ -14,6 +14,17 @@ public class SharedQuadIndexBuffer {
 
     private int maxPrimitives;
 
+    private static int growths;
+
+    /**
+     * {@return the number of times any shared index buffer has grown since the last call}
+     */
+    public static int takeGrowths() {
+        int taken = growths;
+        growths = 0;
+        return taken;
+    }
+
     public SharedQuadIndexBuffer(CommandList commandList, ChunkPrimitiveType primitiveType) {
         this.buffer = commandList.createMutableBuffer();
         this.primitiveType = primitiveType;
@@ -32,6 +43,8 @@ public class SharedQuadIndexBuffer {
     }
 
     private void grow(CommandList commandList, int primitiveCount) {
+        growths++;
+
         var bufferSize = primitiveType.getIndexBufferSize(primitiveCount);
 
         commandList.allocateStorage(this.buffer, bufferSize, GlBufferUsage.STATIC_DRAW);

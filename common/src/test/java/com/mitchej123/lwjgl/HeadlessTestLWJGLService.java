@@ -1,15 +1,6 @@
-package com.mitchej123.lwjgl.lwjgl3;
+package com.mitchej123.lwjgl;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import com.mitchej123.lwjgl.DebugMessageHandler;
-import com.mitchej123.lwjgl.GLExtension;
-import com.mitchej123.lwjgl.LWJGLService;
-import com.mitchej123.lwjgl.MemoryStack;
-import org.lwjgl.opengl.*;
-import org.lwjgl.system.APIUtil;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.Pointer;
 
 import java.io.PrintStream;
 import java.nio.Buffer;
@@ -18,645 +9,543 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 /**
- * LWJGL3 implementation of {@link LWJGLService}.
+ * Headless {@link LWJGLService} for unit tests.
  */
-public final class LWJGL3Service extends LWJGLService {
-    private static final Logger LOGGER = LogManager.getLogger("Celeritas/LWJGL3Service");
-    private final LWJGL3DebugSupport debugSupport = new LWJGL3DebugSupport();
-
+public final class HeadlessTestLWJGLService extends LWJGLService {
     @Override
-    public int getPriority() { return 100; }
-
-    // ===================== CAPABILITIES =====================
-
+    public int getPriority() {
+        return 1000;
+    }
 
     @Override
     public boolean isOpenGLVersionSupported(int major, int minor) {
-        GLCapabilities caps = GL.getCapabilities();
-        return switch (major * 10 + minor) {
-            case 11 -> caps.OpenGL11;
-            case 12 -> caps.OpenGL12;
-            case 13 -> caps.OpenGL13;
-            case 14 -> caps.OpenGL14;
-            case 15 -> caps.OpenGL15;
-            case 20 -> caps.OpenGL20;
-            case 21 -> caps.OpenGL21;
-            case 30 -> caps.OpenGL30;
-            case 31 -> caps.OpenGL31;
-            case 32 -> caps.OpenGL32;
-            case 33 -> caps.OpenGL33;
-            case 40 -> caps.OpenGL40;
-            case 41 -> caps.OpenGL41;
-            case 42 -> caps.OpenGL42;
-            case 43 -> caps.OpenGL43;
-            case 44 -> caps.OpenGL44;
-            case 45 -> caps.OpenGL45;
-            case 46 -> caps.OpenGL46;
-            default -> false;
-        };
+        throw new UnsupportedOperationException("isOpenGLVersionSupported requires a GL context");
     }
 
     @Override
     public boolean isExtensionSupported(GLExtension extension) {
-        GLCapabilities caps = GL.getCapabilities();
-        return switch (extension) {
-            case ARB_buffer_storage -> caps.GL_ARB_buffer_storage;
-            case ARB_multi_draw_indirect -> caps.GL_ARB_multi_draw_indirect;
-            case ARB_draw_elements_base_vertex -> caps.GL_ARB_draw_elements_base_vertex;
-            case ARB_direct_state_access -> caps.GL_ARB_direct_state_access;
-            case ARB_shader_storage_buffer_object -> caps.GL_ARB_shader_storage_buffer_object;
-            case ARB_sync -> caps.GL_ARB_sync;
-            case ARB_timer_query -> caps.GL_ARB_timer_query;
-            case ARB_debug_output -> caps.GL_ARB_debug_output;
-            case KHR_debug -> caps.GL_KHR_debug;
-            case AMD_debug_output -> caps.GL_AMD_debug_output;
-            case ARB_uniform_buffer_object -> caps.GL_ARB_uniform_buffer_object;
-            case ARB_vertex_array_object -> caps.GL_ARB_vertex_array_object;
-            case ARB_map_buffer_range -> caps.GL_ARB_map_buffer_range;
-            case ARB_copy_buffer -> caps.GL_ARB_copy_buffer;
-            case ARB_texture_storage -> caps.GL_ARB_texture_storage;
-            case ARB_base_instance -> caps.GL_ARB_base_instance;
-            case ARB_instanced_arrays -> caps.GL_ARB_instanced_arrays;
-            case ARB_compatibility -> caps.GL_ARB_compatibility;
-        };
+        throw new UnsupportedOperationException("isExtensionSupported requires a GL context");
     }
 
     @Override
     public int getPointerSize() {
-        return Pointer.POINTER_SIZE;
+        return org.lwjgl.system.Pointer.POINTER_SIZE;
     }
-
-    // ===================== BUFFER OPERATIONS =====================
 
     @Override
     public int glGenBuffers() {
-        return GL15C.glGenBuffers();
+        throw new UnsupportedOperationException("glGenBuffers requires a GL context");
     }
 
     @Override
     public void glDeleteBuffers(int buffer) {
-        GL15C.glDeleteBuffers(buffer);
+        throw new UnsupportedOperationException("glDeleteBuffers requires a GL context");
     }
 
     @Override
     public void glBindBuffer(int target, int buffer) {
-        GL15C.glBindBuffer(target, buffer);
+        throw new UnsupportedOperationException("glBindBuffer requires a GL context");
     }
 
     @Override
     public void glBufferData(int target, long size, int usage) {
-        GL15C.glBufferData(target, size, usage);
+        throw new UnsupportedOperationException("glBufferData requires a GL context");
     }
 
     @Override
     public void glBufferData(int target, ByteBuffer data, int usage) {
-        GL15C.glBufferData(target, data, usage);
+        throw new UnsupportedOperationException("glBufferData requires a GL context");
     }
 
     @Override
     public void glBufferData(int target, long size, long data, int usage) {
-        GL15C.nglBufferData(target, size, data, usage);
+        throw new UnsupportedOperationException("glBufferData requires a GL context");
     }
 
     @Override
     public void glBufferSubData(int target, long offset, ByteBuffer data) {
-        GL15C.glBufferSubData(target, offset, data);
+        throw new UnsupportedOperationException("glBufferSubData requires a GL context");
     }
 
     @Override
     public void glBufferSubData(int target, long offset, long size, long data) {
-        GL15C.nglBufferSubData(target, offset, size, data);
+        throw new UnsupportedOperationException("glBufferSubData requires a GL context");
     }
 
     @Override
     public void glBufferStorage(int target, long size, int flags) {
-        GL44C.glBufferStorage(target, size, flags);
+        throw new UnsupportedOperationException("glBufferStorage requires a GL context");
     }
 
     @Override
     public ByteBuffer glMapBufferRange(int target, long offset, long length, int flags) {
-        return GL30C.glMapBufferRange(target, offset, length, flags);
+        throw new UnsupportedOperationException("glMapBufferRange requires a GL context");
     }
 
     @Override
     public long nglMapBuffer(int target, int access) {
-        return GL15C.nglMapBuffer(target, access);
+        throw new UnsupportedOperationException("nglMapBuffer requires a GL context");
     }
 
     @Override
     public ByteBuffer glMapBuffer(int target, int access) {
-        return GL15C.glMapBuffer(target, access, null);
+        throw new UnsupportedOperationException("glMapBuffer requires a GL context");
     }
 
     @Override
     public void glUnmapBuffer(int target) {
-        GL15C.glUnmapBuffer(target);
+        throw new UnsupportedOperationException("glUnmapBuffer requires a GL context");
     }
 
     @Override
     public void glFlushMappedBufferRange(int target, long offset, long length) {
-        GL30C.glFlushMappedBufferRange(target, offset, length);
+        throw new UnsupportedOperationException("glFlushMappedBufferRange requires a GL context");
     }
 
     @Override
     public void glCopyBufferSubData(int readTarget, int writeTarget, long readOffset, long writeOffset, long size) {
-        GL31C.glCopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size);
+        throw new UnsupportedOperationException("glCopyBufferSubData requires a GL context");
     }
 
     @Override
     public void glBindBufferBase(int target, int index, int buffer) {
-        GL30C.glBindBufferBase(target, index, buffer);
-    }
-
-    private enum DebugMode { KHR, NONE }
-
-    private final DebugMode debugMode;
-
-    public LWJGL3Service() {
-        GLCapabilities caps = GL.getCapabilities();
-        debugMode = (caps.GL_KHR_debug || caps.OpenGL43) ? DebugMode.KHR : DebugMode.NONE;
+        throw new UnsupportedOperationException("glBindBufferBase requires a GL context");
     }
 
     @Override
     public int glGenVertexArrays() {
-        return GL30C.glGenVertexArrays();
+        throw new UnsupportedOperationException("glGenVertexArrays requires a GL context");
     }
 
     @Override
     public void glDeleteVertexArrays(int array) {
-        GL30C.glDeleteVertexArrays(array);
+        throw new UnsupportedOperationException("glDeleteVertexArrays requires a GL context");
     }
 
     @Override
     public void glBindVertexArray(int array) {
-        GL30C.glBindVertexArray(array);
+        throw new UnsupportedOperationException("glBindVertexArray requires a GL context");
     }
 
     @Override
     public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long pointer) {
-        GL20C.glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+        throw new UnsupportedOperationException("glVertexAttribPointer requires a GL context");
     }
 
     @Override
     public void glVertexAttribIPointer(int index, int size, int type, int stride, long pointer) {
-        GL30C.glVertexAttribIPointer(index, size, type, stride, pointer);
+        throw new UnsupportedOperationException("glVertexAttribIPointer requires a GL context");
     }
 
     @Override
     public void glEnableVertexAttribArray(int index) {
-        GL20C.glEnableVertexAttribArray(index);
-    }
-
-    // ===================== SHADER OPERATIONS =====================
-
-    @Override
-    public int glCreateShader(int type) {
-        return GL20C.glCreateShader(type);
-    }
-
-    @Override
-    public void glShaderSource(int shader, CharSequence source) {
-        GL20C.glShaderSource(shader, source);
-    }
-
-    @Override
-    public void glShaderSourceSafe(int shader, CharSequence source) {
-        // AMD driver workaround: pass null for string length to force null-terminator reliance.
-        // Some AMD drivers don't receive or interpret the length correctly, resulting in an
-        // access violation when the driver tries to read past the string memory.
-        try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
-            java.nio.ByteBuffer sourceBuffer = MemoryUtil.memUTF8(source, true);
-            org.lwjgl.PointerBuffer pointers = stack.mallocPointer(1);
-            pointers.put(sourceBuffer);
-            GL20C.nglShaderSource(shader, 1, pointers.address0(), 0);
-            org.lwjgl.system.APIUtil.apiArrayFree(pointers.address0(), 1);
-        }
-    }
-
-    @Override
-    public void glCompileShader(int shader) {
-        GL20C.glCompileShader(shader);
-    }
-
-    @Override
-    public String glGetShaderInfoLog(int shader, int maxLength) {
-        // LWJGL3 doesn't need maxLength, but we accept it for API compatibility
-        return GL20C.glGetShaderInfoLog(shader);
-    }
-
-    @Override
-    public int glGetShaderi(int shader, int pname) {
-        return GL20C.glGetShaderi(shader, pname);
-    }
-
-    @Override
-    public void glDeleteShader(int shader) {
-        GL20C.glDeleteShader(shader);
-    }
-
-    @Override
-    public int glCreateProgram() {
-        return GL20C.glCreateProgram();
-    }
-
-    @Override
-    public void glAttachShader(int program, int shader) {
-        GL20C.glAttachShader(program, shader);
-    }
-
-    @Override
-    public void glLinkProgram(int program) {
-        GL20C.glLinkProgram(program);
-    }
-
-    @Override
-    public String glGetProgramInfoLog(int program, int maxLength) {
-        return GL20C.glGetProgramInfoLog(program);
-    }
-
-    @Override
-    public int glGetProgrami(int program, int pname) {
-        return GL20C.glGetProgrami(program, pname);
-    }
-
-    @Override
-    public void glUseProgram(int program) {
-        GL20C.glUseProgram(program);
-    }
-
-    @Override
-    public void glDeleteProgram(int program) {
-        GL20C.glDeleteProgram(program);
-    }
-
-    @Override
-    public void glBindAttribLocation(int program, int index, CharSequence name) {
-        GL20C.glBindAttribLocation(program, index, name);
-    }
-
-    @Override
-    public void glBindFragDataLocation(int program, int colorNumber, CharSequence name) {
-        GL30C.glBindFragDataLocation(program, colorNumber, name);
-    }
-
-    // ===================== UNIFORM OPERATIONS =====================
-
-    @Override
-    public int glGetUniformLocation(int program, CharSequence name) {
-        return GL20C.glGetUniformLocation(program, name);
-    }
-
-    @Override
-    public int glGetUniformBlockIndex(int program, CharSequence name) {
-        return GL31C.glGetUniformBlockIndex(program, name);
-    }
-
-    @Override
-    public void glUniformBlockBinding(int program, int blockIndex, int blockBinding) {
-        GL31C.glUniformBlockBinding(program, blockIndex, blockBinding);
-    }
-
-    @Override
-    public void glUniform1f(int location, float v0) {
-        GL20C.glUniform1f(location, v0);
-    }
-
-    @Override
-    public void glUniform1i(int location, int v0) {
-        GL20C.glUniform1i(location, v0);
-    }
-
-    @Override
-    public void glUniform1fv(int location, FloatBuffer value) {
-        GL20C.glUniform1fv(location, value);
-    }
-
-    @Override
-    public void glUniform2i(int location, int v0, int v1) {
-        GL20C.glUniform2i(location, v0, v1);
-    }
-
-    @Override
-    public void glUniform3f(int location, float v0, float v1, float v2) {
-        GL20C.glUniform3f(location, v0, v1, v2);
-    }
-
-    @Override
-    public void glUniform3fv(int location, FloatBuffer value) {
-        GL20C.glUniform3fv(location, value);
-    }
-
-    @Override
-    public void glUniform3fv(int location, float[] value) {
-        GL20C.glUniform3fv(location, value);
-    }
-
-    @Override
-    public void glUniform4fv(int location, FloatBuffer value) {
-        GL20C.glUniform4fv(location, value);
-    }
-
-    @Override
-    public void glUniform4fv(int location, float[] value) {
-        GL20C.glUniform4fv(location, value);
-    }
-
-    @Override
-    public void glUniformMatrix3fv(int location, boolean transpose, FloatBuffer value) {
-        GL20C.glUniformMatrix3fv(location, transpose, value);
-    }
-
-    @Override
-    public void glUniformMatrix4fv(int location, boolean transpose, FloatBuffer value) {
-        GL20C.glUniformMatrix4fv(location, transpose, value);
-    }
-
-    // ===================== DRAW OPERATIONS =====================
-
-    @Override
-    public void glDrawElementsBaseVertex(int mode, int count, int type, long indices, int basevertex) {
-        GL32C.glDrawElementsBaseVertex(mode, count, type, indices, basevertex);
+        throw new UnsupportedOperationException("glEnableVertexAttribArray requires a GL context");
     }
 
     @Override
     public void glVertexAttribDivisor(int index, int divisor) {
-        GL33C.glVertexAttribDivisor(index, divisor);
+        throw new UnsupportedOperationException("glVertexAttribDivisor requires a GL context");
+    }
+
+    @Override
+    public int glCreateShader(int type) {
+        throw new UnsupportedOperationException("glCreateShader requires a GL context");
+    }
+
+    @Override
+    public void glShaderSource(int shader, CharSequence source) {
+        throw new UnsupportedOperationException("glShaderSource requires a GL context");
+    }
+
+    @Override
+    public void glShaderSourceSafe(int shader, CharSequence source) {
+        throw new UnsupportedOperationException("glShaderSourceSafe requires a GL context");
+    }
+
+    @Override
+    public void glCompileShader(int shader) {
+        throw new UnsupportedOperationException("glCompileShader requires a GL context");
+    }
+
+    @Override
+    public String glGetShaderInfoLog(int shader, int maxLength) {
+        throw new UnsupportedOperationException("glGetShaderInfoLog requires a GL context");
+    }
+
+    @Override
+    public int glGetShaderi(int shader, int pname) {
+        throw new UnsupportedOperationException("glGetShaderi requires a GL context");
+    }
+
+    @Override
+    public void glDeleteShader(int shader) {
+        throw new UnsupportedOperationException("glDeleteShader requires a GL context");
+    }
+
+    @Override
+    public int glCreateProgram() {
+        throw new UnsupportedOperationException("glCreateProgram requires a GL context");
+    }
+
+    @Override
+    public void glAttachShader(int program, int shader) {
+        throw new UnsupportedOperationException("glAttachShader requires a GL context");
+    }
+
+    @Override
+    public void glLinkProgram(int program) {
+        throw new UnsupportedOperationException("glLinkProgram requires a GL context");
+    }
+
+    @Override
+    public String glGetProgramInfoLog(int program, int maxLength) {
+        throw new UnsupportedOperationException("glGetProgramInfoLog requires a GL context");
+    }
+
+    @Override
+    public int glGetProgrami(int program, int pname) {
+        throw new UnsupportedOperationException("glGetProgrami requires a GL context");
+    }
+
+    @Override
+    public void glUseProgram(int program) {
+        throw new UnsupportedOperationException("glUseProgram requires a GL context");
+    }
+
+    @Override
+    public void glDeleteProgram(int program) {
+        throw new UnsupportedOperationException("glDeleteProgram requires a GL context");
+    }
+
+    @Override
+    public void glBindAttribLocation(int program, int index, CharSequence name) {
+        throw new UnsupportedOperationException("glBindAttribLocation requires a GL context");
+    }
+
+    @Override
+    public void glBindFragDataLocation(int program, int colorNumber, CharSequence name) {
+        throw new UnsupportedOperationException("glBindFragDataLocation requires a GL context");
+    }
+
+    @Override
+    public int glGetUniformLocation(int program, CharSequence name) {
+        throw new UnsupportedOperationException("glGetUniformLocation requires a GL context");
+    }
+
+    @Override
+    public int glGetUniformBlockIndex(int program, CharSequence name) {
+        throw new UnsupportedOperationException("glGetUniformBlockIndex requires a GL context");
+    }
+
+    @Override
+    public void glUniformBlockBinding(int program, int blockIndex, int blockBinding) {
+        throw new UnsupportedOperationException("glUniformBlockBinding requires a GL context");
+    }
+
+    @Override
+    public void glUniform1f(int location, float v0) {
+        throw new UnsupportedOperationException("glUniform1f requires a GL context");
+    }
+
+    @Override
+    public void glUniform1i(int location, int v0) {
+        throw new UnsupportedOperationException("glUniform1i requires a GL context");
+    }
+
+    @Override
+    public void glUniform1fv(int location, FloatBuffer value) {
+        throw new UnsupportedOperationException("glUniform1fv requires a GL context");
+    }
+
+    @Override
+    public void glUniform2i(int location, int v0, int v1) {
+        throw new UnsupportedOperationException("glUniform2i requires a GL context");
+    }
+
+    @Override
+    public void glUniform3f(int location, float v0, float v1, float v2) {
+        throw new UnsupportedOperationException("glUniform3f requires a GL context");
+    }
+
+    @Override
+    public void glUniform3fv(int location, FloatBuffer value) {
+        throw new UnsupportedOperationException("glUniform3fv requires a GL context");
+    }
+
+    @Override
+    public void glUniform3fv(int location, float[] value) {
+        throw new UnsupportedOperationException("glUniform3fv requires a GL context");
+    }
+
+    @Override
+    public void glUniform4fv(int location, FloatBuffer value) {
+        throw new UnsupportedOperationException("glUniform4fv requires a GL context");
+    }
+
+    @Override
+    public void glUniform4fv(int location, float[] value) {
+        throw new UnsupportedOperationException("glUniform4fv requires a GL context");
+    }
+
+    @Override
+    public void glUniformMatrix3fv(int location, boolean transpose, FloatBuffer value) {
+        throw new UnsupportedOperationException("glUniformMatrix3fv requires a GL context");
+    }
+
+    @Override
+    public void glUniformMatrix4fv(int location, boolean transpose, FloatBuffer value) {
+        throw new UnsupportedOperationException("glUniformMatrix4fv requires a GL context");
+    }
+
+    @Override
+    public void glDrawElementsBaseVertex(int mode, int count, int type, long indices, int basevertex) {
+        throw new UnsupportedOperationException("glDrawElementsBaseVertex requires a GL context");
     }
 
     @Override
     public void glMultiDrawElementsBaseVertex(int mode, long pCount, int type, long pIndices, int drawcount, long pBaseVertex) {
-        GL32C.nglMultiDrawElementsBaseVertex(mode, pCount, type, pIndices, drawcount, pBaseVertex);
+        throw new UnsupportedOperationException("glMultiDrawElementsBaseVertex requires a GL context");
     }
 
     @Override
     public void glMultiDrawElementsIndirect(int mode, int type, long indirect, int drawcount, int stride) {
-        GL43C.glMultiDrawElementsIndirect(mode, type, indirect, drawcount, stride);
+        throw new UnsupportedOperationException("glMultiDrawElementsIndirect requires a GL context");
     }
-
-    // ===================== SYNC OPERATIONS =====================
 
     @Override
     public long glFenceSync(int condition, int flags) {
-        return GL32C.glFenceSync(condition, flags);
+        throw new UnsupportedOperationException("glFenceSync requires a GL context");
     }
 
     @Override
     public int glClientWaitSync(long sync, int flags, long timeout) {
-        return GL32C.glClientWaitSync(sync, flags, timeout);
+        throw new UnsupportedOperationException("glClientWaitSync requires a GL context");
     }
 
     @Override
     public int glGetSynci(long sync, int pname, IntBuffer length) {
-        return GL32C.glGetSynci(sync, pname, length);
+        throw new UnsupportedOperationException("glGetSynci requires a GL context");
     }
 
     @Override
     public void glWaitSync(long sync, int flags, long timeout) {
-        GL32C.glWaitSync(sync, flags, timeout);
+        throw new UnsupportedOperationException("glWaitSync requires a GL context");
     }
 
     @Override
     public void glDeleteSync(long sync) {
-        GL32C.glDeleteSync(sync);
+        throw new UnsupportedOperationException("glDeleteSync requires a GL context");
     }
-
-    // ===================== QUERY OPERATIONS =====================
 
     @Override
     public int glGenQueries() {
-        return GL15C.glGenQueries();
+        throw new UnsupportedOperationException("glGenQueries requires a GL context");
     }
 
     @Override
     public void glDeleteQueries(int query) {
-        GL15C.glDeleteQueries(query);
+        throw new UnsupportedOperationException("glDeleteQueries requires a GL context");
     }
 
     @Override
     public void glQueryCounter(int id, int target) {
-        GL33C.glQueryCounter(id, target);
+        throw new UnsupportedOperationException("glQueryCounter requires a GL context");
     }
 
     @Override
     public long glGetQueryObjectui64(int id, int pname) {
-        return GL33C.glGetQueryObjectui64(id, pname);
+        throw new UnsupportedOperationException("glGetQueryObjectui64 requires a GL context");
     }
-
-    // ===================== DEBUG OPERATIONS =====================
-
-    @Override
-    public PrintStream getDebugStream() { return APIUtil.DEBUG_STREAM; }
 
     @Override
     public int setupDebugCallback(DebugMessageHandler handler) {
-        return debugSupport.setupDebugCallback(handler);
+        throw new UnsupportedOperationException("setupDebugCallback requires a GL context");
     }
 
     @Override
     public void disableDebugCallback() {
-        debugSupport.disableDebugCallback();
+        throw new UnsupportedOperationException("disableDebugCallback requires a GL context");
     }
 
     @Override
     public void glObjectLabel(int identifier, int name, CharSequence label) {
-        if (debugMode == DebugMode.KHR) {
-            KHRDebug.glObjectLabel(identifier, name, label);
-        }
+        throw new UnsupportedOperationException("glObjectLabel requires a GL context");
     }
 
     @Override
     public void glPushDebugGroup(int source, int id, CharSequence message) {
-        if (debugMode == DebugMode.KHR) {
-            KHRDebug.glPushDebugGroup(source, id, message);
-        }
+        throw new UnsupportedOperationException("glPushDebugGroup requires a GL context");
     }
 
     @Override
     public void glPopDebugGroup() {
-        if (debugMode == DebugMode.KHR) {
-            KHRDebug.glPopDebugGroup();
-        }
+        throw new UnsupportedOperationException("glPopDebugGroup requires a GL context");
     }
-
-    // ===================== TEXTURE OPERATIONS =====================
 
     @Override
     public int glGenTextures() {
-        return GL11C.glGenTextures();
+        throw new UnsupportedOperationException("glGenTextures requires a GL context");
     }
 
     @Override
     public void glGenTextures(int[] textures) {
-        GL11C.glGenTextures(textures);
+        throw new UnsupportedOperationException("glGenTextures requires a GL context");
     }
 
     @Override
     public void glDeleteTextures(int texture) {
-        GL11C.glDeleteTextures(texture);
+        throw new UnsupportedOperationException("glDeleteTextures requires a GL context");
     }
 
     @Override
     public void glDeleteTextures(int[] textures) {
-        GL11C.glDeleteTextures(textures);
+        throw new UnsupportedOperationException("glDeleteTextures requires a GL context");
     }
 
     @Override
     public void glBindTexture(int target, int texture) {
-        GL11C.glBindTexture(target, texture);
+        throw new UnsupportedOperationException("glBindTexture requires a GL context");
     }
 
     @Override
     public void glActiveTexture(int texture) {
-        GL13C.glActiveTexture(texture);
+        throw new UnsupportedOperationException("glActiveTexture requires a GL context");
     }
 
     @Override
     public int glGetTexLevelParameteri(int target, int level, int pname) {
-        return GL11C.glGetTexLevelParameteri(target, level, pname);
+        throw new UnsupportedOperationException("glGetTexLevelParameteri requires a GL context");
     }
 
     @Override
-    public void glCopyTexSubImage2D(int target, int level, int xoffset, int yoffset,
-                                    int x, int y, int width, int height) {
-        GL11C.glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+    public void glCopyTexSubImage2D(int target, int level, int xoffset, int yoffset, int x, int y, int width, int height) {
+        throw new UnsupportedOperationException("glCopyTexSubImage2D requires a GL context");
     }
 
     @Override
     public void glPixelStorei(int pname, int param) {
-        GL11C.glPixelStorei(pname, param);
+        throw new UnsupportedOperationException("glPixelStorei requires a GL context");
     }
-
-    // ===================== FRAMEBUFFER OPERATIONS =====================
 
     @Override
     public int glGenFramebuffers() {
-        return GL30C.glGenFramebuffers();
+        throw new UnsupportedOperationException("glGenFramebuffers requires a GL context");
     }
 
     @Override
     public void glDeleteFramebuffers(int framebuffer) {
-        GL30C.glDeleteFramebuffers(framebuffer);
+        throw new UnsupportedOperationException("glDeleteFramebuffers requires a GL context");
     }
 
     @Override
     public void glBindFramebuffer(int target, int framebuffer) {
-        GL30C.glBindFramebuffer(target, framebuffer);
+        throw new UnsupportedOperationException("glBindFramebuffer requires a GL context");
     }
 
     @Override
     public int glCheckFramebufferStatus(int target) {
-        return GL30C.glCheckFramebufferStatus(target);
+        throw new UnsupportedOperationException("glCheckFramebufferStatus requires a GL context");
     }
 
     @Override
     public void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level) {
-        GL30C.glFramebufferTexture2D(target, attachment, textarget, texture, level);
+        throw new UnsupportedOperationException("glFramebufferTexture2D requires a GL context");
     }
-
-    // ===================== STATE OPERATIONS =====================
 
     @Override
     public void glEnable(int cap) {
-        GL11C.glEnable(cap);
+        throw new UnsupportedOperationException("glEnable requires a GL context");
     }
 
     @Override
     public void glDisable(int cap) {
-        GL11C.glDisable(cap);
+        throw new UnsupportedOperationException("glDisable requires a GL context");
     }
 
     @Override
     public void glBlendFunc(int sfactor, int dfactor) {
-        GL11C.glBlendFunc(sfactor, dfactor);
+        throw new UnsupportedOperationException("glBlendFunc requires a GL context");
     }
 
     @Override
     public void glBlendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha) {
-        GL14C.glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+        throw new UnsupportedOperationException("glBlendFuncSeparate requires a GL context");
     }
 
     @Override
     public void glDepthFunc(int func) {
-        GL11C.glDepthFunc(func);
+        throw new UnsupportedOperationException("glDepthFunc requires a GL context");
     }
 
     @Override
     public void glDepthMask(boolean flag) {
-        GL11C.glDepthMask(flag);
+        throw new UnsupportedOperationException("glDepthMask requires a GL context");
     }
 
     @Override
     public void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {
-        GL11C.glColorMask(red, green, blue, alpha);
+        throw new UnsupportedOperationException("glColorMask requires a GL context");
     }
 
     @Override
     public void glViewport(int x, int y, int width, int height) {
-        GL11C.glViewport(x, y, width, height);
+        throw new UnsupportedOperationException("glViewport requires a GL context");
     }
 
     @Override
     public void glClear(int mask) {
-        GL11C.glClear(mask);
+        throw new UnsupportedOperationException("glClear requires a GL context");
     }
 
     @Override
     public void glClearColor(float red, float green, float blue, float alpha) {
-        GL11C.glClearColor(red, green, blue, alpha);
+        throw new UnsupportedOperationException("glClearColor requires a GL context");
     }
 
     @Override
     public int glGetError() {
-        return GL11C.glGetError();
+        throw new UnsupportedOperationException("glGetError requires a GL context");
     }
-
-    // ===================== COMPATIBILITY PROFILE (GL1.x) =====================
 
     @Override
     public void glMatrixMode(int mode) {
-        GL11.glMatrixMode(mode);
+        throw new UnsupportedOperationException("glMatrixMode requires a GL context");
     }
 
     @Override
     public void glLoadMatrixf(FloatBuffer m) {
-        GL11.glLoadMatrixf(m);
+        throw new UnsupportedOperationException("glLoadMatrixf requires a GL context");
     }
-
-    // ===================== MISC GL =====================
 
     @Override
     public int glGetInteger(int pname) {
-        return GL11C.glGetInteger(pname);
+        throw new UnsupportedOperationException("glGetInteger requires a GL context");
     }
 
     @Override
     public void glGetIntegerv(int pname, int[] params) {
-        GL11C.glGetIntegerv(pname, params);
+        throw new UnsupportedOperationException("glGetIntegerv requires a GL context");
     }
 
     @Override
     public boolean glGetBoolean(int pname) {
-        return GL11C.glGetBoolean(pname);
+        throw new UnsupportedOperationException("glGetBoolean requires a GL context");
     }
 
     @Override
     public String glGetString(int pname) {
-        return GL11C.glGetString(pname);
+        throw new UnsupportedOperationException("glGetString requires a GL context");
     }
 
     @Override
     public int glGetAttribLocation(int program, CharSequence name) {
-        return GL20C.glGetAttribLocation(program, name);
+        throw new UnsupportedOperationException("glGetAttribLocation requires a GL context");
     }
-
-    // ===================== MEMORY STACK OPERATIONS =====================
 
     @Override
     public MemoryStack stackPush() {
-        return new LWJGL3MemoryStack(org.lwjgl.system.MemoryStack.stackPush());
+        throw new UnsupportedOperationException("stackPush requires a GL context");
     }
-
-    // ===================== NATIVE MEMORY OPERATIONS =====================
 
     @Override
     public long nmemAlloc(long size) {
@@ -720,22 +609,7 @@ public final class LWJGL3Service extends LWJGLService {
 
     @Override
     public long memAddress(Buffer buffer, int position) {
-        // Generic Buffer doesn't have a positioned memAddress in LWJGL3, compute manually
-        // Get base address and add position offset based on element size
-        long base = MemoryUtil.memAddress(buffer);
-        int elementSize;
-        if (buffer instanceof java.nio.ByteBuffer) {
-            elementSize = 1;
-        } else if (buffer instanceof java.nio.ShortBuffer || buffer instanceof java.nio.CharBuffer) {
-            elementSize = 2;
-        } else if (buffer instanceof java.nio.IntBuffer || buffer instanceof java.nio.FloatBuffer) {
-            elementSize = 4;
-        } else if (buffer instanceof java.nio.LongBuffer || buffer instanceof java.nio.DoubleBuffer) {
-            elementSize = 8;
-        } else {
-            throw new IllegalArgumentException("Unsupported buffer type: " + buffer.getClass());
-        }
-        return base + ((long) position * elementSize);
+        throw new UnsupportedOperationException("memAddress(Buffer, int) has no generic MemoryUtil overload");
     }
 
     @Override

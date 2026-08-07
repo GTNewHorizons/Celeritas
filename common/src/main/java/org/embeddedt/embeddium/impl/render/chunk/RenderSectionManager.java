@@ -216,7 +216,7 @@ public abstract class RenderSectionManager {
             if (!region.hasSectionsInPass(translucentPass)) {
                 continue;
             }
-            ByteIterator sectionIterator = entry.sectionsWithGeometryIterator(false);
+            ByteIterator sectionIterator = entry.sectionsWithGeometryIterator();
             if (sectionIterator == null) {
                 continue;
             }
@@ -276,6 +276,8 @@ public abstract class RenderSectionManager {
         final int targetQueueSize;
 
         if (this.shouldRespectUpdateTaskQueueSizeLimit()) {
+            // Headroom over the dispatch target: the list is built one frame ahead and drained across several, so
+            // capping it at the target would starve dispatch as soon as the controller grows.
             targetQueueSize = (int)Math.min(Integer.MAX_VALUE, (long)this.builder.getTargetQueueSize() * 10);
         } else {
             targetQueueSize = Integer.MAX_VALUE;
@@ -840,7 +842,7 @@ public abstract class RenderSectionManager {
         for (Iterator<ChunkRenderList> it = this.getCurrentRenderListManager().getRenderLists().iterator(); it.hasNext(); ) {
             var renderList = it.next();
             var region = renderList.getRegion();
-            var listIter = renderList.sectionsWithGeometryIterator(false);
+            var listIter = renderList.sectionsWithGeometryIterator();
             if(listIter != null) {
                 while(listIter.hasNext()) {
                     RenderSection section = region.getSection(listIter.nextByteAsInt());

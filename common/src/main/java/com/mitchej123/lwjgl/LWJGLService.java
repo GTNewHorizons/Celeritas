@@ -29,6 +29,8 @@ public abstract class LWJGLService {
     public abstract void glBufferData(int target, long size, int usage);
     public abstract void glBufferData(int target, ByteBuffer data, int usage);
     public abstract void glBufferData(int target, long size, long data, int usage);
+    public abstract void glBufferSubData(int target, long offset, ByteBuffer data);
+    public abstract void glBufferSubData(int target, long offset, long size, long data);
     public abstract void glBufferStorage(int target, long size, int flags);
     public abstract ByteBuffer glMapBufferRange(int target, long offset, long length, int flags);
     public abstract long nglMapBuffer(int target, int access);
@@ -46,6 +48,7 @@ public abstract class LWJGLService {
     public abstract void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long pointer);
     public abstract void glVertexAttribIPointer(int index, int size, int type, int stride, long pointer);
     public abstract void glEnableVertexAttribArray(int index);
+    public abstract void glVertexAttribDivisor(int index, int divisor);
 
     // ===================== SHADER OPERATIONS =====================
 

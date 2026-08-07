@@ -29,6 +29,7 @@ public class SortedRenderLists implements ChunkRenderListIterable {
         this.totalSectionsWithGeometry = sections;
     }
 
+    @Override
     public int getTotalSectionsWithGeometry() {
         return this.totalSectionsWithGeometry;
     }

@@ -13,6 +13,7 @@ import org.lwjgl.opengl.APPLEVertexArrayObject;
 import org.lwjgl.opengl.ARBBufferStorage;
 import org.lwjgl.opengl.ARBCopyBuffer;
 import org.lwjgl.opengl.ARBDrawElementsBaseVertex;
+import org.lwjgl.opengl.ARBInstancedArrays;
 import org.lwjgl.opengl.ARBMapBufferRange;
 import org.lwjgl.opengl.ARBMultiDrawIndirect;
 import org.lwjgl.opengl.ARBSync;
@@ -149,6 +150,7 @@ public final class LWJGL2Service extends LWJGLService {
             case ARB_copy_buffer: return caps.GL_ARB_copy_buffer;
             case ARB_texture_storage: return caps.GL_ARB_texture_storage;
             case ARB_base_instance: return caps.GL_ARB_base_instance;
+            case ARB_instanced_arrays: return caps.GL_ARB_instanced_arrays;
             case ARB_compatibility: return caps.GL_ARB_compatibility;
             default: return false;
         }
@@ -195,6 +197,16 @@ public final class LWJGL2Service extends LWJGLService {
             ByteBuffer buf = MemoryUtilities.memByteBuffer(data, (int) size);
             GL15.glBufferData(target, buf, usage);
         }
+    }
+
+    @Override
+    public void glBufferSubData(int target, long offset, ByteBuffer data) {
+        GL15.glBufferSubData(target, offset, data);
+    }
+
+    @Override
+    public void glBufferSubData(int target, long offset, long size, long data) {
+        GL15.glBufferSubData(target, offset, MemoryUtilities.memByteBuffer(data, (int) size));
     }
 
     @Override
@@ -342,6 +354,18 @@ public final class LWJGL2Service extends LWJGLService {
     @Override
     public void glEnableVertexAttribArray(int index) {
         GL20.glEnableVertexAttribArray(index);
+    }
+
+    @Override
+    public void glVertexAttribDivisor(int index, int divisor) {
+        ContextCapabilities caps = GLContext.getCapabilities();
+        if (caps.OpenGL33) {
+            GL33.glVertexAttribDivisor(index, divisor);
+        } else if (caps.GL_ARB_instanced_arrays) {
+            ARBInstancedArrays.glVertexAttribDivisorARB(index, divisor);
+        } else {
+            throw new UnsupportedOperationException("glVertexAttribDivisor not available");
+        }
     }
 
     // ===================== SHADER OPERATIONS =====================
@@ -496,7 +520,20 @@ public final class LWJGL2Service extends LWJGLService {
 
     @Override
     public void glUniform3fv(int location, float[] value) {
-        GL20.glUniform3f(location, value[0], value[1], value[2]);
+        if (value.length == 3) {
+            GL20.glUniform3f(location, value[0], value[1], value[2]);
+            return;
+        }
+
+        if (value.length % 3 != 0) {
+            throw new IllegalArgumentException("Array length must be a multiple of 3");
+        }
+
+        try (MemoryStack stack = this.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(value.length);
+            buffer.put(value).flip();
+            GL20.glUniform3(location, buffer);
+        }
     }
 
     @Override
@@ -506,7 +543,20 @@ public final class LWJGL2Service extends LWJGLService {
 
     @Override
     public void glUniform4fv(int location, float[] value) {
-        GL20.glUniform4f(location, value[0], value[1], value[2], value[3]);
+        if (value.length == 4) {
+            GL20.glUniform4f(location, value[0], value[1], value[2], value[3]);
+            return;
+        }
+
+        if (value.length % 4 != 0) {
+            throw new IllegalArgumentException("Array length must be a multiple of 4");
+        }
+
+        try (MemoryStack stack = this.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(value.length);
+            buffer.put(value).flip();
+            GL20.glUniform4(location, buffer);
+        }
     }
 
     @Override
