@@ -12,7 +12,13 @@ import java.nio.IntBuffer;
  */
 public abstract class LWJGLService {
 
-    /** Higher priority services are preferred. LWJGL3 = 100, LWJGL2 = 0. */
+    /** Returned from {@link #getPriority()} to declare a provider unusable; such providers are never selected. */
+    public static final int PRIORITY_UNAVAILABLE = Integer.MIN_VALUE;
+
+    /**
+     * Higher priority services are preferred. LWJGL3 = 100, LWJGL2 = 0.
+     * Return {@link #PRIORITY_UNAVAILABLE} to be skipped entirely.
+     */
     public int getPriority() { return 0; }
 
     // ===================== CAPABILITIES =====================
@@ -117,8 +123,13 @@ public abstract class LWJGLService {
 
     public abstract int glGenQueries();
     public abstract void glDeleteQueries(int query);
-    public abstract void glQueryCounter(int id, int target);
+    public void glBeginQuery(int target, int id) {}
+    public void glEndQuery(int target) {}
     public abstract long glGetQueryObjectui64(int id, int pname);
+
+    /** @deprecated Timer queries use {@link #glBeginQuery}/{@link #glEndQuery}; retained so implementors that still override it link. */
+    @Deprecated
+    public void glQueryCounter(int id, int target) {}
 
     // ===================== DEBUG OPERATIONS =====================
 

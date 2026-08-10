@@ -168,12 +168,26 @@ public final class LWJGL3Service extends LWJGLService {
         GL30C.glBindBufferBase(target, index, buffer);
     }
 
+    private enum TimerQueryMode { CORE, ARB, EXT, NONE }
     private enum DebugMode { KHR, NONE }
 
+    private final TimerQueryMode timerQueryMode;
     private final DebugMode debugMode;
 
     public LWJGL3Service() {
         GLCapabilities caps = GL.getCapabilities();
+
+        if (caps.OpenGL33) {
+            timerQueryMode = TimerQueryMode.CORE;
+        } else if (caps.GL_ARB_timer_query) {
+            timerQueryMode = TimerQueryMode.ARB;
+        } else if (caps.GL_EXT_timer_query) {
+            timerQueryMode = TimerQueryMode.EXT;
+        } else {
+            timerQueryMode = TimerQueryMode.NONE;
+            LOGGER.warn("Timer query support not available - GPU profiling will be disabled");
+        }
+
         debugMode = (caps.GL_KHR_debug || caps.OpenGL43) ? DebugMode.KHR : DebugMode.NONE;
     }
 
@@ -433,13 +447,27 @@ public final class LWJGL3Service extends LWJGLService {
     }
 
     @Override
-    public void glQueryCounter(int id, int target) {
-        GL33C.glQueryCounter(id, target);
+    public void glBeginQuery(int target, int id) {
+        if (timerQueryMode != TimerQueryMode.NONE) {
+            GL15C.glBeginQuery(target, id);
+        }
+    }
+
+    @Override
+    public void glEndQuery(int target) {
+        if (timerQueryMode != TimerQueryMode.NONE) {
+            GL15C.glEndQuery(target);
+        }
     }
 
     @Override
     public long glGetQueryObjectui64(int id, int pname) {
-        return GL33C.glGetQueryObjectui64(id, pname);
+        return switch (timerQueryMode) {
+            case CORE -> GL33C.glGetQueryObjectui64(id, pname);
+            case ARB -> ARBTimerQuery.glGetQueryObjectui64(id, pname);
+            case EXT -> EXTTimerQuery.glGetQueryObjectui64EXT(id, pname);
+            case NONE -> 0L;
+        };
     }
 
     // ===================== DEBUG OPERATIONS =====================

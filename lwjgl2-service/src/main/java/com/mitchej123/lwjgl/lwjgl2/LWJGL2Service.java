@@ -23,6 +23,7 @@ import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.EXTGpuShader4;
+import org.lwjgl.opengl.EXTTimerQuery;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL14;
@@ -54,7 +55,7 @@ public final class LWJGL2Service extends LWJGLService {
     private final Long2ObjectOpenHashMap<GLSync> syncObjects = new Long2ObjectOpenHashMap<>();
 
     private enum VAOMode { CORE, ARB, APPLE, NONE }
-    private enum TimerQueryMode { CORE, ARB, NONE }
+    private enum TimerQueryMode { CORE, ARB, EXT, NONE }
     private enum DebugMode { KHR, NONE }
     private enum VertexAttribIMode { CORE, EXT, NONE }
 
@@ -80,9 +81,11 @@ public final class LWJGL2Service extends LWJGLService {
             timerQueryMode = TimerQueryMode.CORE;
         } else if (caps.GL_ARB_timer_query) {
             timerQueryMode = TimerQueryMode.ARB;
+        } else if (caps.GL_EXT_timer_query) {
+            timerQueryMode = TimerQueryMode.EXT;
         } else {
             timerQueryMode = TimerQueryMode.NONE;
-            LOGGER.warn("ARB_timer_query extension not available - GPU profiling will be disabled");
+            LOGGER.warn("Timer query support not available - GPU profiling will be disabled");
         }
 
         if (caps.GL_KHR_debug || caps.OpenGL43) {
@@ -700,18 +703,16 @@ public final class LWJGL2Service extends LWJGLService {
     }
 
     @Override
-    public void glQueryCounter(int id, int target) {
-        switch (timerQueryMode) {
-            case CORE:
-                GL33.glQueryCounter(id, target);
-                break;
-            case ARB:
-                ARBTimerQuery.glQueryCounter(id, target);
-                break;
-            case NONE:
-            default:
-                // no-op
-                break;
+    public void glBeginQuery(int target, int id) {
+        if (timerQueryMode != TimerQueryMode.NONE) {
+            GL15.glBeginQuery(target, id);
+        }
+    }
+
+    @Override
+    public void glEndQuery(int target) {
+        if (timerQueryMode != TimerQueryMode.NONE) {
+            GL15.glEndQuery(target);
         }
     }
 
@@ -722,6 +723,8 @@ public final class LWJGL2Service extends LWJGLService {
                 return GL33.glGetQueryObjectui64(id, pname);
             case ARB:
                 return ARBTimerQuery.glGetQueryObjectui64(id, pname);
+            case EXT:
+                return EXTTimerQuery.glGetQueryObjectuEXT(id, pname);
             case NONE:
             default:
                 return 0L;

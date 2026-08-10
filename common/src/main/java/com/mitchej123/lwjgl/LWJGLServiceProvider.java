@@ -3,6 +3,7 @@ package com.mitchej123.lwjgl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
@@ -11,6 +12,7 @@ import java.util.ServiceLoader;
  */
 public final class LWJGLServiceProvider {
     private static final Logger LOGGER = LogManager.getLogger("Celeritas/LWJGLService");
+    private static final int MAX_ATTEMPTS = 16;
 
     public static final LWJGLService LWJGL = loadService();
     public static final int POINTER_SIZE = LWJGL.getPointerSize();
@@ -20,19 +22,24 @@ public final class LWJGLServiceProvider {
 
     private static LWJGLService loadService() {
         ServiceLoader<LWJGLService> loader = ServiceLoader.load(LWJGLService.class, LWJGLService.class.getClassLoader());
+        Iterator<LWJGLService> iterator = loader.iterator();
 
         LWJGLService best = null;
-        java.util.Iterator<LWJGLService> iterator = loader.iterator();
 
         int attempts = 0;
-        while (attempts < 16) {
+        while (attempts < MAX_ATTEMPTS) {
             try {
                 attempts++;
                 if (!iterator.hasNext()) break;
 
                 LWJGLService service = iterator.next();
-                LOGGER.info("Found LWJGLService: {} (priority {})", service.getClass().getName(), service.getPriority());
-                if (best == null || service.getPriority() > best.getPriority()) {
+                int priority = service.getPriority();
+                if (priority == LWJGLService.PRIORITY_UNAVAILABLE) {
+                    LOGGER.info("Skipping unavailable LWJGLService: {}", service.getClass().getName());
+                    continue;
+                }
+                LOGGER.info("Found LWJGLService: {} (priority {})", service.getClass().getName(), priority);
+                if (best == null || priority > best.getPriority()) {
                     best = service;
                 }
             } catch (ServiceConfigurationError | LinkageError e) {

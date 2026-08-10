@@ -16,16 +16,13 @@ public class TimerQueryManager implements Closeable {
      */
     private static final int QUERY_FRAME_LAG_COUNT = 3;
 
-    private record InFlightQuery(int startTime, int endTime) {
+    private record InFlightQuery(int id) {
         long getTimeDelta() {
-            long startTime = LWJGL.glGetQueryObjectui64(this.startTime, GL32C.GL_QUERY_RESULT);
-            long endTime = LWJGL.glGetQueryObjectui64(this.endTime, GL32C.GL_QUERY_RESULT);
-            return endTime - startTime;
+            return LWJGL.glGetQueryObjectui64(this.id, GL32C.GL_QUERY_RESULT);
         }
 
         void delete() {
-            releaseQuery(startTime);
-            releaseQuery(endTime);
+            releaseQuery(id);
         }
     }
 
@@ -54,7 +51,7 @@ public class TimerQueryManager implements Closeable {
             throw new IllegalStateException("Query already started but not ended");
         }
         int id = allocateQuery();
-        LWJGL.glQueryCounter(id, GL33C.GL_TIMESTAMP);
+        LWJGL.glBeginQuery(GL33C.GL_TIME_ELAPSED, id);
         startQueryId = id;
     }
 
@@ -62,10 +59,9 @@ public class TimerQueryManager implements Closeable {
         if (startQueryId == INVALID_ID) {
             throw new IllegalStateException("Trying to end query that hasn't started yet");
         }
-        int id = allocateQuery();
-        LWJGL.glQueryCounter(id, GL33C.GL_TIMESTAMP);
-        inFlightQueries.enqueue(new InFlightQuery(startQueryId, id));
-        startQueryId = -1;
+        LWJGL.glEndQuery(GL33C.GL_TIME_ELAPSED);
+        inFlightQueries.enqueue(new InFlightQuery(startQueryId));
+        startQueryId = INVALID_ID;
     }
 
     public void updateTime() {
@@ -82,9 +78,10 @@ public class TimerQueryManager implements Closeable {
         while (!inFlightQueries.isEmpty()) {
             inFlightQueries.dequeue().delete();
         }
-        if (startQueryId != -1) {
+        if (startQueryId != INVALID_ID) {
+            LWJGL.glEndQuery(GL33C.GL_TIME_ELAPSED);
             releaseQuery(startQueryId);
-            startQueryId = -1;
+            startQueryId = INVALID_ID;
         }
     }
 }

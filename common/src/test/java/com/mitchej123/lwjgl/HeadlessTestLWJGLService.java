@@ -348,8 +348,13 @@ public final class HeadlessTestLWJGLService extends LWJGLService {
     }
 
     @Override
-    public void glQueryCounter(int id, int target) {
-        throw new UnsupportedOperationException("glQueryCounter requires a GL context");
+    public void glBeginQuery(int target, int id) {
+        throw new UnsupportedOperationException("glBeginQuery requires a GL context");
+    }
+
+    @Override
+    public void glEndQuery(int target) {
+        throw new UnsupportedOperationException("glEndQuery requires a GL context");
     }
 
     @Override
