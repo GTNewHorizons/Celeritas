@@ -299,8 +299,9 @@ public class ChunkBuilder {
             return;
         }
 
-        while (!this.queue.isEmpty()) {
-            var job = Objects.requireNonNull(this.queue.pollJob());
+        ChunkJob job;
+        while ((job = this.queue.pollJob) != null) {
+            // var job = Objects.requireNonNull(this.queue.pollJob());
             executeJobWithLocalContext(job);
         }
     }
