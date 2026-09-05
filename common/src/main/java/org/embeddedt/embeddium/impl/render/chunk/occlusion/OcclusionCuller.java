@@ -122,6 +122,9 @@ public class OcclusionCuller {
     private boolean isCameraInUnloadedSection;
     private boolean isMultiRootSearch;
 
+    // Lattice index of the camera section when it is the search root, else -1. It is visited inline, never tested.
+    private int cameraSectionIndex;
+
     public OcclusionCuller(SectionLattice lattice, int minSectionY, int maxSectionY, boolean rasterOcclusion) {
         this.lattice = lattice;
         this.minSectionY = minSectionY;
@@ -180,6 +183,7 @@ public class OcclusionCuller {
 
         this.isCameraInUnloadedSection = false;
         this.isMultiRootSearch = false;
+        this.cameraSectionIndex = -1;
         this.init(visitor, viewport, searchDistance, useOcclusionCulling, frame);
         if (this.isCameraInUnloadedSection) {
             useOcclusionCulling = false;
@@ -192,6 +196,7 @@ public class OcclusionCuller {
 
         if (this.rasterActive) {
             this.rasterOccluder.prepareScene(frame, viewport, searchDistance);
+            this.occludeCameraSection(viewport);
         }
 
         this.process(visitor, viewport, searchDistance, useOcclusionCulling, allowFrustumClamping, frame);
@@ -357,6 +362,25 @@ public class OcclusionCuller {
 
         this.tail = tail;
         this.visibleCount = visibleCount;
+    }
+
+    private void occludeCameraSection(Viewport viewport) {
+        int idx = this.cameraSectionIndex;
+
+        if (idx < 0) {
+            return;
+        }
+
+        long sm = this.lattice.sectionMeta[idx];
+
+        if (!PackedSectionMetadata.hasOccluderData(sm)
+                || (PackedSectionMetadata.getVisualsFlags(sm) & (1 << RenderVisualsService.HAS_BLOCK_GEOMETRY)) == 0) {
+            return;
+        }
+
+        var origin = viewport.getChunkCoord();
+        this.rasterOccluder.occludeSectionAt(origin.x() << 4, origin.y() << 4, origin.z() << 4,
+                this.lattice.occluderData[idx]);
     }
 
     private RasterOccluder.SectionVisibility rasterTest(int[] occluderBounds, int[][] occluderData,
@@ -572,6 +596,8 @@ public class OcclusionCuller {
 
         var origin = viewport.getChunkCoord();
         int idx = this.lattice.indexOf(origin.x(), origin.y(), origin.z());
+
+        this.cameraSectionIndex = idx;
 
         // The camera section is loaded and, after ensureWindowCovers, installed
         // in the lattice interior.

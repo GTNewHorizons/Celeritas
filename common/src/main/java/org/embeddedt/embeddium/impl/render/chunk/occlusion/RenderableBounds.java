@@ -24,7 +24,10 @@ final class RenderableBounds {
             return PackedBox.FULL_BOX;
         }
 
-        return PackedBox.pack(this.minX, this.minY, this.minZ,
-                this.maxX + 1, this.maxY + 1, this.maxZ + 1, PackedBox.RANGE_EXTREME);
+        return PackedBox.pack(
+                Math.max(0, this.minX - 1), Math.max(0, this.minY - 1), Math.max(0, this.minZ - 1),
+                Math.min(16, this.maxX + 2), Math.min(16, this.maxY + 2), Math.min(16, this.maxZ + 2),
+                PackedBox.RANGE_EXTREME
+        );
     }
 }

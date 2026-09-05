@@ -57,6 +57,11 @@ public class BoxFinder {
         clearSectionBits();
 
         voxelCount = voxelCount(source, 0);
+
+        if (voxelCount == 0) {
+            return;
+        }
+
         markBoxSlices();
         markBoxNeighborSlices();
         buildSortedBoxes();

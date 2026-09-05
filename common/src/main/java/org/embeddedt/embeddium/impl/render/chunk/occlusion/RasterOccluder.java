@@ -176,6 +176,12 @@ public final class RasterOccluder extends BoxOccluder {
         }
     }
 
+    /** Draws a section's occluder boxes without a preceding {@link #testSection}, for a section the search never tests. */
+    public void occludeSectionAt(int originX, int originY, int originZ, int[] data) {
+        prepareRegion(originX, originY, originZ, PackedBox.rangeFromSquareChunkDist(0), 0);
+        occludeSection(data);
+    }
+
     /** Draws the section's occluder boxes for the region prepared by the last {@link #testSection}. */
     public void occludeSection(int[] data) {
         if (!AbstractRasterizer.STATS) {
@@ -202,7 +208,7 @@ public final class RasterOccluder extends BoxOccluder {
             return SectionVisibility.VISIBLE;
         }
 
-        // tests are dilated by a pixel inside the rasterizer, so no world-space fuzz is needed
+        // no world-space fuzz: RenderableBounds already carries the model extent
         if (isBoxVisible(bounds, 0)) {
             return SectionVisibility.VISIBLE;
         }

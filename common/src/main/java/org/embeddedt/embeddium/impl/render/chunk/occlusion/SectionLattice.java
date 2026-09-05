@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.occlusion;
 
+import grondag.bitraster.PackedBox;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
@@ -285,7 +286,7 @@ public final class SectionLattice {
             // new boxes even when the packed metadata is otherwise unchanged.
             occluderChanged = this.occluderData[idx] != data;
             this.occluderData[idx] = data;
-            this.occluderBounds[idx] = boundsOf(data);
+            this.occluderBounds[idx] = boundsOf(packedMetadata, data);
         }
 
         return occluderChanged || ((previous ^ packedMetadata) & PackedSectionMetadata.GRAPH_INPUT_MASK) != 0;
@@ -839,8 +840,18 @@ public final class SectionLattice {
         return built != null ? built.occluderBoxes : null;
     }
 
-    private static int boundsOf(int @Nullable [] occluderData) {
-        return occluderData != null ? SectionVisibilityBuilder.bounds(occluderData) : 0;
+    // A section awaiting a remesh may draw outside the bounds of the mesh it last built, so it takes the whole
+    // section until the new one lands. Sorts are excluded, as they do not change geometry.
+    private static int boundsOf(long packedMetadata, int @Nullable [] occluderData) {
+        if (occluderData == null) {
+            return 0;
+        }
+
+        var pendingUpdate = PackedSectionMetadata.getPendingUpdate(packedMetadata);
+
+        return pendingUpdate != null && !pendingUpdate.isSort()
+                ? PackedBox.FULL_BOX
+                : SectionVisibilityBuilder.bounds(occluderData);
     }
 
     private void install(RenderSection section) {
@@ -866,7 +877,7 @@ public final class SectionLattice {
         if (this.rasterOcclusion) {
             int[] data = PackedSectionMetadata.hasOccluderData(packedMetadata) ? occluderDataOf(section) : null;
             this.occluderData[idx] = data;
-            this.occluderBounds[idx] = boundsOf(data);
+            this.occluderBounds[idx] = boundsOf(packedMetadata, data);
         }
 
         this.installedCount++;

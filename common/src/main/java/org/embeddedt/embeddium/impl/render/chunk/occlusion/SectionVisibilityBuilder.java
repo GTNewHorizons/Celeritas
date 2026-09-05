@@ -71,6 +71,11 @@ public class SectionVisibilityBuilder {
         this.renderableBounds.mark(x & 15, y & 15, z & 15);
     }
 
+    public void markSectionRenderable() {
+        this.renderableBounds.mark(0, 0, 0);
+        this.renderableBounds.mark(SECTION_AXIS_MASK, SECTION_AXIS_MASK, SECTION_AXIS_MASK);
+    }
+
     public int @Nullable [] computeOccluderBoxes() {
         return dataFrom(this.blocks, this.renderableBounds);
     }

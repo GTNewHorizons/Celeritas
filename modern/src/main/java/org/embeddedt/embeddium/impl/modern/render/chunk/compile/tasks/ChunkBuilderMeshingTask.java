@@ -233,7 +233,13 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                 }
             }
 
-            MeshAppenderRenderer.renderMeshAppenders(renderContext.getMeshAppenders(), context.localSlice(), renderContext.getOrigin(), buffers);
+            var meshAppenders = renderContext.getMeshAppenders();
+
+            if (this.rasterOcclusion && !meshAppenders.isEmpty()) {
+                occluder.markSectionRenderable();
+            }
+
+            MeshAppenderRenderer.renderMeshAppenders(meshAppenders, context.localSlice(), renderContext.getOrigin(), buffers);
         } catch (ReportedException ex) {
             // Propagate existing crashes (add context)
             throw fillCrashInfo(ex.getReport(), slice, blockPos);
