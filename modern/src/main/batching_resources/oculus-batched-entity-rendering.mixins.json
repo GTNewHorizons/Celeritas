@@ -12,7 +12,6 @@
     "MixinBufferSource",
     "MixinCompositeRenderType",
     "MixinDebugScreenOverlay",
-    "MixinFishingHookRenderer",
     "MixinLevelRenderer",
     "MixinRenderBuffers",
     "MixinRenderType",
