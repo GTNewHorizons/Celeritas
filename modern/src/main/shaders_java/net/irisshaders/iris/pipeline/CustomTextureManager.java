@@ -135,7 +135,16 @@ public class CustomTextureManager {
 			} else {
 				withoutExtension = location;
 			}
-			PBRType pbrType = PBRType.fromFileLocation(withoutExtension);
+			PBRType detectedPbrType = PBRType.fromFileLocation(withoutExtension);
+			if (detectedPbrType != null) {
+				ResourceLocation candidateLocation = ResourceLocationUtil.make(namespace, location);
+				if (PBRType.hasDirectionalSiblings(candidateLocation, Minecraft.getInstance().getResourceManager())) {
+					// Looks like a cardinal-direction texture set (e.g. "_n"/"_s"/"_e"/"_w" for block faces),
+					// not an actual PBR map. Don't treat it as one.
+					detectedPbrType = null;
+				}
+			}
+			PBRType pbrType = detectedPbrType;
 
 			TextureManager textureManager = Minecraft.getInstance().getTextureManager();
 

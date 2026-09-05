@@ -90,6 +90,11 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		if (optionalResource.isEmpty()) {
 			return null;
 		}
+		if (PBRType.hasDirectionalSiblings(pbrImageLocation, resourceManager)) {
+			// Looks like a cardinal-direction texture set (e.g. "_n"/"_s"/"_e"/"_w" for block faces),
+			// not an actual PBR map. Don't treat it as one.
+			return null;
+		}
 		Resource resource = optionalResource.get();
 
 		ResourceMetadata animationMetadata;

@@ -1,36 +1,36 @@
 package net.irisshaders.iris.mixin.texture.pbr;
 
-import com.llamalad7.mixinextras.sugar.Local;
+import com.google.common.collect.Maps;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.irisshaders.iris.texture.pbr.PBRType;
-import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.sources.DirectoryLister;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-import java.util.function.BiConsumer;
+import java.util.Map;
+import java.util.function.Predicate;
 
 @Mixin(DirectoryLister.class)
 public class MixinDirectoryLister {
-
-    @ModifyArg(method = "run", at = @At(value = "INVOKE", target = "Ljava/util/Map;forEach(Ljava/util/function/BiConsumer;)V"))
-    private BiConsumer<? super ResourceLocation, ? super Resource> alsoReadPbr(BiConsumer<? super ResourceLocation, ? super Resource> action, @Local(ordinal = 0, argsOnly = true) ResourceManager manager) {
-        return (location, resource) -> {
+    @ModifyExpressionValue(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/FileToIdConverter;listMatchingResources(Lnet/minecraft/server/packs/resources/ResourceManager;)Ljava/util/Map;"))
+    private Map<ResourceLocation, Resource> iris$hidePbrOverrides(Map<ResourceLocation, Resource> matches) {
+        Predicate<ResourceLocation> siblingExistencePredicate = matches.keySet()::contains;
+        return Maps.filterKeys(matches, location -> {
             String basePath = PBRType.removeSuffix(location.getPath());
-            if (basePath != null) {
-                ResourceLocation baseLocation = location.withPath(basePath);
-                if (manager.getResource(baseLocation).isPresent()) {
-                    return;
-                }
+            if (basePath == null) {
+                // Doesn't end in a recognized PBR suffix at all.
+                return true;
             }
-            action.accept(location, resource);
-        };
+            if (PBRType.hasDirectionalSiblings(location, siblingExistencePredicate)) {
+                // Looks like a cardinal-direction texture set (e.g. "_n"/"_s"/"_e"/"_w" for block
+                // faces) rather than an actual PBR map. Keep it as its own sprite.
+                return true;
+            }
+            // Only treat it as a PBR override (and hide it as its own sprite) if the base texture it
+            // would be overriding actually exists.
+            return !siblingExistencePredicate.test(location.withPath(basePath));
+        });
     }
 }
