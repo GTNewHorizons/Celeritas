@@ -553,6 +553,11 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 				public void process(int target) {
 
 				}
+
+				@Override
+				public void destroy() {
+
+				}
 			};
 		} else {
 			// TODO: Fix grid appearing on some devices with compute converter
@@ -1279,6 +1284,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			shadowCompositeRenderer.destroy();
 		}
 
+		beginRenderer.destroy();
 		prepareRenderer.destroy();
 		compositeRenderer.destroy();
 		deferredRenderer.destroy();
@@ -1286,6 +1292,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		centerDepthSampler.destroy();
 		customTextureManager.destroy();
 		whitePixel.close();
+		colorSpaceConverter.destroy();
 
 		horizonRenderer.destroy();
 
@@ -1302,6 +1309,8 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		if (shadowRenderer != null) {
 			shadowRenderer.destroy();
+		} else if (shadowRenderTargets != null) {
+			shadowRenderTargets.destroy();
 		}
 
 		if (shaderStorageBufferHolder != null) {

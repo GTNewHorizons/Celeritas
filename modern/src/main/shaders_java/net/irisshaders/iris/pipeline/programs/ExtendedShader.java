@@ -232,6 +232,20 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 	}
 
 	@Override
+	public void close() {
+		super.close();
+		if (this.geometry != null) {
+			this.geometry.close();
+		}
+		if (this.tessControl != null) {
+			this.tessControl.close();
+		}
+		if (this.tessEval != null) {
+			this.tessEval.close();
+		}
+	}
+
+	@Override
 	public void iris$createExtraShaders(ResourceProvider factory, ResourceLocation name) {
 		factory.getResource(ResourceLocationUtil.make(name.getNamespace(), name.getPath() + "_geometry.gsh")).ifPresent(geometry -> {
 			try {

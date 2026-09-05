@@ -274,6 +274,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 
 	public void free() {
 		GL43C.glDeleteProgram(id);
+		GlStateManager._glDeleteVertexArrays(va);
 	}
 
 	public void fillIndirectUniformData(DhApiRenderParam dhApiRenderParam, DhApiRenderableBoxGroupShading dhApiRenderableBoxGroupShading, IDhApiRenderableBoxGroup boxGroup, DhApiVec3d camPos) {

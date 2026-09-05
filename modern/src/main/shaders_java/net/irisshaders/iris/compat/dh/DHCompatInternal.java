@@ -207,6 +207,13 @@ public class DHCompatInternal {
 			shadowProgram.free();
 			shadowProgram = null;
 		}
+		if (genericShader != null) {
+			genericShader.free();
+		}
+		if (depthTexNoTranslucent != null) {
+			depthTexNoTranslucent.destroy();
+			depthTexNoTranslucent = null;
+		}
 		shouldOverrideShadow = false;
 		shouldOverride = false;
 		dhTerrainFramebuffer = null;
@@ -220,6 +227,7 @@ public class DHCompatInternal {
 		OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, dhShadowFramebufferWrapper);
 		dhTerrainFramebufferWrapper = null;
 		dhShadowFramebufferWrapper = null;
+		genericShader = null;
 	}
 
 	public void setModelPos(DhApiVec3f modelPos) {

@@ -29,10 +29,7 @@ public class ColorSpaceComputeConverter implements ColorSpaceConverter {
 	}
 
 	public void rebuildProgram(int width, int height, ColorSpace colorSpace) {
-		if (program != null) {
-			program.destroy();
-			program = null;
-		}
+		destroy();
 
 		this.width = width;
 		this.height = height;
@@ -67,5 +64,13 @@ public class ColorSpaceComputeConverter implements ColorSpaceConverter {
 		IrisRenderSystem.dispatchCompute(width / 8, height / 8, 1);
 		IrisRenderSystem.memoryBarrier(GL43C.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL43C.GL_TEXTURE_FETCH_BARRIER_BIT);
 		ComputeProgram.unbind();
+	}
+
+	@Override
+	public void destroy() {
+		if (program != null) {
+			program.destroy();
+			program = null;
+		}
 	}
 }

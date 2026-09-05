@@ -36,15 +36,7 @@ public class ColorSpaceFragmentConverter implements ColorSpaceConverter {
 	}
 
 	public void rebuildProgram(int width, int height, ColorSpace colorSpace) {
-        // Note: The raw GL calls in here _should_ be safe enough not to conflict with the Mojang state manager.
-		if (program != null) {
-			program.destroy();
-			program = null;
-			framebuffer.destroy();
-			framebuffer = null;
-            LWJGL.glDeleteTextures(swapTexture);
-			swapTexture = 0;
-		}
+		destroy();
 
 		this.width = width;
 		this.height = height;
@@ -90,5 +82,18 @@ public class ColorSpaceFragmentConverter implements ColorSpaceConverter {
 		Program.unbind();
 		framebuffer.bindAsReadBuffer();
 		IrisRenderSystem.copyTexSubImage2D(targetImage, GL30.GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
+	}
+
+	@Override
+	public void destroy() {
+		// Note: The raw GL calls in here _should_ be safe enough not to conflict with the Mojang state manager.
+		if (program != null) {
+			program.destroy();
+			program = null;
+			framebuffer.destroy();
+			framebuffer = null;
+			LWJGL.glDeleteTextures(swapTexture);
+			swapTexture = 0;
+		}
 	}
 }

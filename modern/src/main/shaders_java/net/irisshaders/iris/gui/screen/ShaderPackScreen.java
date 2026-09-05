@@ -177,6 +177,14 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 		this.removeWidget(this.shaderPackList);
 		this.removeWidget(this.shaderOptionList);
 
+		if (this.shaderPackList != null) {
+			try {
+				this.shaderPackList.close();
+			} catch (IOException e) {
+				CeleritasShaders.logger().error("Failed to safely close shaderpack selection!", e);
+			}
+		}
+
         int bottomOfList = this.height - 58 /*? if >=1.20.6 {*/ /*- 32 *//*?}*/;
 
 		this.shaderPackList = new ShaderPackSelectionList(this, this.minecraft, this.width, this.height, 32, bottomOfList, 0, this.width);
