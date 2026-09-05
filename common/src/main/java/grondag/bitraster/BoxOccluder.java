@@ -1022,42 +1022,6 @@ public abstract class BoxOccluder {
 	}
 
 	/**
-	 * Screen tile bounds of a world-space box for the current scene, as {@link AbstractRasterizer#boxTileBounds}
-	 * packs them. Does not disturb the region prepared by {@link #prepareRegion}.
-	 */
-	public final long boxTileBounds(int originX, int originY, int originZ, int sizeX, int sizeY, int sizeZ) {
-		final float scale = 1f / CAMERA_PRECISION_UNITY;
-		final float fx = (int) (((long) originX << CAMERA_PRECISION_BITS) - viewX) * scale;
-		final float fy = (int) (((long) originY << CAMERA_PRECISION_BITS) - viewY) * scale;
-		final float fz = (int) (((long) originZ << CAMERA_PRECISION_BITS) - viewZ) * scale;
-		return raster.boxTileBounds(fx, fy, fz, sizeX, sizeY, sizeZ);
-	}
-
-	/** Writes the clip-space x, y and w of a world-space point for the current scene; see {@link AbstractRasterizer#clipPoint}. */
-	public final void clipPoint(int x, int y, int z, float[] out, int offset) {
-		final float scale = 1f / CAMERA_PRECISION_UNITY;
-		final float fx = (int) (((long) x << CAMERA_PRECISION_BITS) - viewX) * scale;
-		final float fy = (int) (((long) y << CAMERA_PRECISION_BITS) - viewY) * scale;
-		final float fz = (int) (((long) z << CAMERA_PRECISION_BITS) - viewZ) * scale;
-		raster.clipPoint(fx, fy, fz, out, offset);
-	}
-
-	/** See {@link AbstractRasterizer#isSectionCenterOnScreen}. */
-	public final boolean isSectionCenterOnScreen(float[] base, int offset, int i, int j, int k) {
-		return raster.isSectionCenterOnScreen(base, offset, i, j, k);
-	}
-
-	/** See {@link AbstractRasterizer#touchedVersion}. */
-	public final int touchedVersion() {
-		return raster.touchedVersion();
-	}
-
-	/** See {@link AbstractRasterizer#isTileBoxUntouched}. */
-	public final boolean isTileBoxUntouched(int packedTileBounds) {
-		return raster.isTileBoxUntouched(packedTileBounds);
-	}
-
-	/**
 	 * Check if needs redrawn and prep for redraw if so.
 	 * When false, regions should be drawn only if their occluder version is not current.
 	 */

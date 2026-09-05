@@ -71,8 +71,8 @@ public final class RasterStatsReport {
         int n = YAW_STEPS;
         System.out.printf("world=%s visible/frame=%d total=%.3fms test=%.3fms occlude=%.3fms%n", worldType, visible / n,
                 total / 1e6 / n, RasterOccluder.STAT_TEST_NANOS / 1e6 / n, RasterOccluder.STAT_OCCLUDE_NANOS / 1e6 / n);
-        System.out.printf("sections tested=%d occluded=%d regionSkip=%d vertexHit=%d%n", RasterOccluder.STAT_SECTIONS / n,
-                RasterOccluder.STAT_OCCLUDED_SECTIONS / n, RasterOccluder.STAT_REGION_SKIP / n, AbstractRasterizer.STAT_T_VERTEX / n);
+        System.out.printf("sections tested=%d occluded=%d emptySkip=%d vertexHit=%d%n", RasterOccluder.STAT_SECTIONS / n,
+                RasterOccluder.STAT_OCCLUDED_SECTIONS / n, RasterOccluder.STAT_EMPTY_SKIP / n, AbstractRasterizer.STAT_T_VERTEX / n);
         System.out.printf("draw calls=%d polygons=%d tiles=%d | test calls=%d polygons=%d tiles=%d | eventRows=%d%n",
                 AbstractRasterizer.STAT_DRAW_CALLS / n, AbstractRasterizer.STAT_DRAW_QUADS / n,
                 (AbstractRasterizer.STAT_D_INNER + AbstractRasterizer.STAT_D_COVER) / n,
@@ -92,7 +92,7 @@ public final class RasterStatsReport {
 
     private static void reset() {
         AbstractRasterizer.STAT_D_NOOP = AbstractRasterizer.STAT_D_RANGE0 = AbstractRasterizer.STAT_D_RANGE1 = AbstractRasterizer.STAT_D_RANGE2 = AbstractRasterizer.STAT_D_RANGE3 = 0;
-        RasterOccluder.STAT_CENTER_HIT = RasterOccluder.STAT_NEAR = RasterOccluder.STAT_AIR_TESTS = RasterOccluder.STAT_AIR_VISIBLE = RasterOccluder.STAT_REGION_SKIP = AbstractRasterizer.STAT_T_VERTEX = 0;
+        RasterOccluder.STAT_CENTER_HIT = RasterOccluder.STAT_NEAR = RasterOccluder.STAT_AIR_TESTS = RasterOccluder.STAT_AIR_VISIBLE = RasterOccluder.STAT_EMPTY_SKIP = AbstractRasterizer.STAT_T_VERTEX = 0;
         AbstractRasterizer.STAT_T_EMPTY = AbstractRasterizer.STAT_T_INNER = AbstractRasterizer.STAT_T_COVER = AbstractRasterizer.STAT_T_HIDDEN = AbstractRasterizer.STAT_T_BOX_HIDDEN = 0;
         AbstractRasterizer.STAT_D_INNER = AbstractRasterizer.STAT_D_COVER = 0;
         RasterOccluder.STAT_TEST_NANOS = RasterOccluder.STAT_OCCLUDE_NANOS = RasterOccluder.STAT_SECTIONS = RasterOccluder.STAT_OCCLUDED_SECTIONS = 0;

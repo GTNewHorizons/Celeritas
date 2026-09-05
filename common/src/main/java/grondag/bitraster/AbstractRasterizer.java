@@ -165,13 +165,6 @@ public abstract class AbstractRasterizer {
 	/** One bit per tile, set once the tile is fully covered, so scans can skip covered runs 64 tiles at a time. */
 	long[] fullBits;
 
-	/**
-	 * One bit per cell of 8x8 tiles in each cell row, set once anything is drawn in the cell. A box whose
-	 * tiles lie in untouched cells alone cannot be occluded, and {@link #touchedVersion} changes whenever a
-	 * cell is first touched, so a caller can cache that verdict and revalidate it with one compare.
-	 */
-	int[] touchedCellRows;
-	int touchedVersion;
 	final EventFiller[] EVENT_FILLERS = new EventFiller[0x1000];
 
 	/** Bounds of current triangle - pixel coordinates. */
@@ -714,125 +707,12 @@ public abstract class AbstractRasterizer {
 		eventData = new int[pixelHeight * 2];
 		tiles = new long[tileCount];
 		fullBits = new long[(tileCount + 63) >> 6];
-		touchedCellRows = new int[(tileHeight + CELL_TILE_MASK) >> CELL_TILE_SHIFT];
 	}
 
 	/** Marks every pixel clear. */
 	final void clear() {
 		Arrays.fill(tiles, 0L);
 		Arrays.fill(fullBits, 0L);
-		Arrays.fill(touchedCellRows, 0);
-		touchedVersion++;
-	}
-
-	/** Cells of the touched map are this many tiles square; 256 tiles across fit one int of cell bits. */
-	static final int CELL_TILE_SHIFT = 3;
-	static final int CELL_TILE_MASK = (1 << CELL_TILE_SHIFT) - 1;
-
-	/** Bits of the cells spanning tile columns {@code first..last} inclusive. */
-	private static int cellMask(int first, int last) {
-		return (-1 >>> (31 - (last >> CELL_TILE_SHIFT))) & (-1 << (first >> CELL_TILE_SHIFT));
-	}
-
-	/** Records that the tiles {@code first..last} of tile row {@code tileY} may have been drawn into. */
-	private void markTouched(int tileY, int first, int last) {
-		final int[] rows = touchedCellRows;
-		final int cellY = tileY >> CELL_TILE_SHIFT;
-		final int mask = cellMask(first, last);
-		final int row = rows[cellY];
-
-		if ((row & mask) != mask) {
-			rows[cellY] = row | mask;
-			touchedVersion++;
-		}
-	}
-
-	/** Changes whenever a cell of the touched map is first drawn into; see {@link #isTileBoxUntouched}. */
-	public final int touchedVersion() {
-		return touchedVersion;
-	}
-
-	/** True if nothing has been drawn in any cell overlapping the given inclusive tile bounds. */
-	public final boolean isTileBoxUntouched(int packedTileBounds) {
-		final int[] rows = touchedCellRows;
-		final int mask = cellMask(packedTileBounds & 0xFF, (packedTileBounds >>> 16) & 0xFF);
-		final int lastCellY = ((packedTileBounds >>> 24) & 0xFF) >> CELL_TILE_SHIFT;
-
-		for (int cellY = ((packedTileBounds >>> 8) & 0xFF) >> CELL_TILE_SHIFT; cellY <= lastCellY; cellY++) {
-			if ((rows[cellY] & mask) != 0) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/** Result of {@link #boxTileBounds} for a box that reaches the near plane or lies wholly off screen. */
-	public static final long NO_TILE_BOUNDS = -1L;
-
-	/** Set in a {@link #boxTileBounds} result when every point of the box projects on screen. */
-	public static final long TILE_BOUNDS_ON_SCREEN = 1L << 32;
-
-	/**
-	 * Inclusive tile bounds of the screen rectangle around a camera-relative box, packed as x0, y0, x1, y1 in
-	 * successive bytes of the low word, grown by a pixel and clamped to the screen. This rectangle contains the
-	 * projection of every point in the box, so every polygon a box inside it is tested with. The result carries
-	 * {@link #TILE_BOUNDS_ON_SCREEN} when no clamping was needed, so that a box inside it is on screen too.
-	 * {@link #NO_TILE_BOUNDS} if any corner is behind the near plane or the whole box is off screen.
-	 */
-	final long boxTileBounds(float fx, float fy, float fz, float ex, float ey, float ez) {
-		final float bx = m00 * fx + m01 * fy + m02 * fz + m03;
-		final float by = m10 * fx + m11 * fy + m12 * fz + m13;
-		final float bz = m20 * fx + m21 * fy + m22 * fz + m23;
-		final float bw = m30 * fx + m31 * fy + m32 * fz + m33;
-
-		final float dxx = m00 * ex, dxy = m10 * ex, dxz = m20 * ex, dxw = m30 * ex;
-		final float dyx = m01 * ey, dyy = m11 * ey, dyz = m21 * ey, dyw = m31 * ey;
-		final float dzx = m02 * ez, dzy = m12 * ez, dzz = m22 * ez, dzw = m32 * ez;
-
-		float minX = Float.POSITIVE_INFINITY, maxX = Float.NEGATIVE_INFINITY;
-		float minY = Float.POSITIVE_INFINITY, maxY = Float.NEGATIVE_INFINITY;
-
-		for (int corner = 0; corner < 8; corner++) {
-			float x = bx, y = by, z = bz, w = bw;
-
-			if ((corner & 4) != 0) { x += dxx; y += dxy; z += dxz; w += dxw; }
-			if ((corner & 2) != 0) { x += dyx; y += dyy; z += dyz; w += dyw; }
-			if ((corner & 1) != 0) { x += dzx; y += dzy; z += dzz; w += dzw; }
-
-			// same acceptance as needsNearClip
-			if (!(w > 0 && z > 0 && z <= w)) {
-				return NO_TILE_BOUNDS;
-			}
-
-			final float iw = 1f / w;
-			final float sx = x * iw;
-			final float sy = y * iw;
-			if (sx < minX) minX = sx;
-			if (sx > maxX) maxX = sx;
-			if (sy < minY) minY = sy;
-			if (sy > maxY) maxY = sy;
-		}
-
-		// same acceptance as isProjectedPointClear, so that every point of the box passes it
-		final long onScreen = (minX >= -1f && maxX < 1f && minY >= -1f && maxY < 1f) ? TILE_BOUNDS_ON_SCREEN : 0L;
-
-		// to pixels, with a pixel of margin over the rounding of the polygon path and the test dilation
-		final float px0 = (minX + 1f) * halfPixelWidth - 1f;
-		final float px1 = (maxX + 1f) * halfPixelWidth + 1f;
-		final float py0 = (minY + 1f) * halfPixelHeight - 1f;
-		final float py1 = (maxY + 1f) * halfPixelHeight + 1f;
-
-		if (!(px1 >= 0f && py1 >= 0f && px0 <= lastPixelX && py0 <= lastPixelY)) {
-			return NO_TILE_BOUNDS;
-		}
-
-		final int tx0 = Math.max(0, (int) px0) >> TILE_AXIS_SHIFT;
-		final int ty0 = Math.max(0, (int) py0) >> TILE_AXIS_SHIFT;
-		final int tx1 = Math.min(lastPixelX, (int) px1) >> TILE_AXIS_SHIFT;
-		final int ty1 = Math.min(lastPixelY, (int) py1) >> TILE_AXIS_SHIFT;
-
-		return onScreen | (tx0 | (ty0 << 8) | (tx1 << 16) | (ty1 << 24));
 	}
 
 	final int tileIndexFromPixelXY(int x, int y) {
@@ -846,37 +726,6 @@ public abstract class AbstractRasterizer {
 		m10 = m.a10f(); m11 = m.a11f(); m12 = m.a12f(); m13 = m.a13f();
 		m20 = m.a20f(); m21 = m.a21f(); m22 = m.a22f(); m23 = m.a23f();
 		m30 = m.a30f(); m31 = m.a31f(); m32 = m.a32f(); m33 = m.a33f();
-
-		final float[] step = sectionStep;
-		step[0] = 16f * m00; step[1] = 16f * m10; step[2] = 16f * m30;
-		step[3] = 16f * m01; step[4] = 16f * m11; step[5] = 16f * m31;
-		step[6] = 16f * m02; step[7] = 16f * m12; step[8] = 16f * m32;
-	}
-
-	/**
-	 * Clip-space change in x, y and w per section along each world axis, as three triples. Clip space is
-	 * affine in world space, so a section centre is a base point plus whole steps, and whether it lies on
-	 * screen is a comparison of x and y against w with no divide.
-	 */
-	final float[] sectionStep = new float[9];
-
-	/** Writes the clip-space x, y and w of a camera-relative point. */
-	final void clipPoint(float fx, float fy, float fz, float[] out, int offset) {
-		out[offset] = m00 * fx + m01 * fy + m02 * fz + m03;
-		out[offset + 1] = m10 * fx + m11 * fy + m12 * fz + m13;
-		out[offset + 2] = m30 * fx + m31 * fy + m32 * fz + m33;
-	}
-
-	/**
-	 * True if the section centre {@code i, j, k} sections from the given clip-space base point is on screen
-	 * by the same acceptance as {@link #isProjectedPointClear}. The base must be in front of the near plane.
-	 */
-	final boolean isSectionCenterOnScreen(float[] base, int offset, int i, int j, int k) {
-		final float[] step = sectionStep;
-		final float x = base[offset] + i * step[0] + j * step[3] + k * step[6];
-		final float y = base[offset + 1] + i * step[1] + j * step[4] + k * step[7];
-		final float w = base[offset + 2] + i * step[2] + j * step[5] + k * step[8];
-		return w > 0 && x >= -w && x < w && y >= -w && y < w;
 	}
 
 	/** @param x region origin relative to the camera, in {@link Constants#CAMERA_PRECISION_BITS} fixed point */
@@ -1099,13 +948,6 @@ public abstract class AbstractRasterizer {
 					innerLast = Math.min(last, rowBase + bandInnerLast);
 					outerFirst = rowBase + bandOuterFirst;
 					outerLast = Math.min(last, rowBase + bandOuterLast);
-
-					final int firstDrawn = Math.max(tileIndex, outerFirst) - rowBase;
-					final int lastDrawn = outerLast - rowBase;
-
-					if (firstDrawn <= lastDrawn) {
-						markTouched(tileY, firstDrawn, lastDrawn);
-					}
 				}
 
 				// outside the band's widest row the polygon covers nothing

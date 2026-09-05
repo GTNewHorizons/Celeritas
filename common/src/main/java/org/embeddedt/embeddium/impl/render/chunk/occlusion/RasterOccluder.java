@@ -6,11 +6,8 @@ import grondag.bitraster.Constants;
 import grondag.bitraster.Matrix4L;
 import grondag.bitraster.PackedBox;
 import grondag.bitraster.PerspectiveRasterizer;
-import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.joml.Matrix4fc;
-
-import java.util.Arrays;
 
 public final class RasterOccluder extends BoxOccluder {
     /** Sections this close are drawn but never tested, since they're almost always visible and most costly to test */
@@ -18,36 +15,8 @@ public final class RasterOccluder extends BoxOccluder {
 
     private int backtrackCount;
 
-    /**
-     * Per-region screen bounds for the current scene, so that sections of a region whose screen area has
-     * had nothing drawn in it yet are visible without a test of their own. Most of the sections a surface
-     * camera reaches are sky, and nothing ever gets drawn above the horizon, so this resolves most of them.
-     *
-     * <p>{@code regionScene} stamps the scene the bounds were computed for. {@code regionVersion} holds the
-     * touched-map version at which the bounds were last found untouched, or {@link #REGION_TOUCHED} once they
-     * were not: drawing only ever adds coverage, so that verdict is final for the scene. A region that is not
-     * wholly on screen keeps the clip-space position of its first section centre in {@code regionClip}, from
-     * which any section centre's on-screen test is a few multiplies.
-     */
-    private int[] regionScene = new int[0];
-    private int[] regionTiles = new int[0];
-    private int[] regionVersion = new int[0];
-    private byte[] regionState = new byte[0];
-    private float[] regionClip = new float[0];
-    private int scene;
-
-    /** {@code regionVersion} values that never match a touched-map version. */
-    private static final int REGION_TOUCHED = -1, REGION_UNVERIFIED = -2;
-
-    /** The region reaches the near plane or lies wholly off screen; its sections are all tested. */
-    private static final byte REGION_NO_BOUNDS = 0;
-    /** The region straddles a screen edge; each section centre is checked against the screen. */
-    private static final byte REGION_PARTLY_ON_SCREEN = 1;
-    /** Every point of the region is on screen. */
-    private static final byte REGION_ON_SCREEN = 2;
-
     /** Work counters for benchmarks; only maintained when {@link AbstractRasterizer#STATS} is set. */
-    public static long STAT_CENTER_HIT, STAT_AIR_TESTS, STAT_AIR_VISIBLE, STAT_NEAR, STAT_REGION_SKIP;
+    public static long STAT_CENTER_HIT, STAT_AIR_TESTS, STAT_AIR_VISIBLE, STAT_NEAR, STAT_EMPTY_SKIP;
     public static long STAT_TEST_NANOS, STAT_OCCLUDE_NANOS, STAT_SECTIONS, STAT_OCCLUDED_SECTIONS;
 
     public enum SectionVisibility {
@@ -79,7 +48,7 @@ public final class RasterOccluder extends BoxOccluder {
      * camera translation, so it is supplied as the projection with an identity model matrix;
      * {@link #prepareRegion} applies the camera-relative offset per section.
      */
-    public void prepareScene(int viewVersion, Viewport viewport, float searchDistance, int numRegions) {
+    public void prepareScene(int viewVersion, Viewport viewport, float searchDistance) {
         Matrix4fc vpMatrix = viewport.getVpMatrix();
 
         if (vpMatrix == null) {
@@ -89,16 +58,6 @@ public final class RasterOccluder extends BoxOccluder {
         var transform = viewport.getTransform();
 
         this.backtrackCount = 0;
-        this.scene++;
-
-        if (this.regionScene.length < numRegions) {
-            int capacity = Math.max(numRegions, this.regionScene.length * 2);
-            this.regionScene = Arrays.copyOf(this.regionScene, capacity);
-            this.regionTiles = Arrays.copyOf(this.regionTiles, capacity);
-            this.regionVersion = Arrays.copyOf(this.regionVersion, capacity);
-            this.regionState = Arrays.copyOf(this.regionState, capacity);
-            this.regionClip = Arrays.copyOf(this.regionClip, capacity * 3);
-        }
 
         chooseBufferSize(vpMatrix, searchDistance);
         invalidate();
@@ -187,60 +146,6 @@ public final class RasterOccluder extends BoxOccluder {
      * from closing under pixel-centre sampling.
      */
     private static final float PIXELS_PER_BLOCK = 1.0f;
-
-    /**
-     * True if nothing has been drawn where the region projects and the given section's centre is on screen,
-     * in which case the section is visible: its centre pixel lies inside the region's screen rectangle, and
-     * an untouched pixel on screen is exactly what the centre test looks for. Costs one compare per section
-     * once the region's bounds are known, plus a few multiplies when the region is not wholly on screen, and
-     * a re-check of a handful of cell rows whenever something new has been drawn since.
-     */
-    public boolean isSectionUntouched(int regionId, int originX, int originY, int originZ, int chunkX, int chunkY, int chunkZ) {
-        final int[] regionVersion = this.regionVersion;
-
-        if (this.regionScene[regionId] != this.scene) {
-            this.regionScene[regionId] = this.scene;
-            long bounds = boxTileBounds(originX, originY, originZ,
-                    RenderRegion.REGION_BLOCK_WIDTH, RenderRegion.REGION_BLOCK_HEIGHT, RenderRegion.REGION_BLOCK_LENGTH);
-            this.regionTiles[regionId] = (int) bounds;
-            regionVersion[regionId] = REGION_UNVERIFIED;
-
-            if (bounds == AbstractRasterizer.NO_TILE_BOUNDS) {
-                this.regionState[regionId] = REGION_NO_BOUNDS;
-            } else if ((bounds & AbstractRasterizer.TILE_BOUNDS_ON_SCREEN) != 0) {
-                this.regionState[regionId] = REGION_ON_SCREEN;
-            } else {
-                this.regionState[regionId] = REGION_PARTLY_ON_SCREEN;
-                clipPoint(originX + 8, originY + 8, originZ + 8, this.regionClip, regionId * 3);
-            }
-        }
-
-        final byte state = this.regionState[regionId];
-
-        if (state == REGION_NO_BOUNDS) {
-            return false;
-        }
-
-        final int version = regionVersion[regionId];
-        final int current = touchedVersion();
-
-        if (version != current) {
-            if (version == REGION_TOUCHED) {
-                return false;
-            }
-
-            if (!isTileBoxUntouched(this.regionTiles[regionId])) {
-                regionVersion[regionId] = REGION_TOUCHED;
-                return false;
-            }
-
-            regionVersion[regionId] = current;
-        }
-
-        return state == REGION_ON_SCREEN
-                || isSectionCenterOnScreen(this.regionClip, regionId * 3,
-                        chunkX - (originX >> 4), chunkY - (originY >> 4), chunkZ - (originZ >> 4));
-    }
 
     /**
      * tests the tight bounds of what the section draws first. a section whose geometry is hidden
