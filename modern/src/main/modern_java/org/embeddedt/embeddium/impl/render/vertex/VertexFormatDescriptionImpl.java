@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 //? if <1.21
 import org.embeddedt.embeddium.impl.mixin.core.render.VertexFormatAccessor;
+import org.embeddedt.embeddium.api.vertex.attributes.CommonVertexAttribute;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
@@ -23,6 +24,8 @@ public class VertexFormatDescriptionImpl implements VertexFormatDescription {
 
     private final Reference2IntMap<VertexFormatElement> offsets;
 
+    private final int offsetPosition, offsetColor, offsetTexture, offsetOverlay, offsetLight, offsetNormal;
+
     private final boolean isSimple;
 
     public VertexFormatDescriptionImpl(VertexFormat format, int id) {
@@ -31,7 +34,33 @@ public class VertexFormatDescriptionImpl implements VertexFormatDescription {
         this.stride = format.getVertexSize();
 
         this.offsets = getOffsets(format);
+
+        this.offsetPosition = this.offsets.getInt(CommonVertexAttribute.POSITION);
+        this.offsetColor = this.offsets.getInt(CommonVertexAttribute.COLOR);
+        this.offsetTexture = this.offsets.getInt(CommonVertexAttribute.TEXTURE);
+        this.offsetOverlay = this.offsets.getInt(CommonVertexAttribute.OVERLAY);
+        this.offsetLight = this.offsets.getInt(CommonVertexAttribute.LIGHT);
+        this.offsetNormal = this.offsets.getInt(CommonVertexAttribute.NORMAL);
+
         this.isSimple = checkSimple(format);
+    }
+
+    private int getCommonElementOffset(VertexFormatElement element) {
+        if (element == CommonVertexAttribute.TEXTURE) {
+            return this.offsetTexture;
+        } else if (element == CommonVertexAttribute.POSITION) {
+            return this.offsetPosition;
+        } else if (element == CommonVertexAttribute.COLOR) {
+            return this.offsetColor;
+        } else if (element == CommonVertexAttribute.LIGHT) {
+            return this.offsetLight;
+        } else if (element == CommonVertexAttribute.OVERLAY) {
+            return this.offsetOverlay;
+        } else if (element == CommonVertexAttribute.NORMAL) {
+            return this.offsetNormal;
+        } else {
+            return Integer.MIN_VALUE;
+        }
     }
 
     private static boolean isImportantElement(VertexFormatElement element) {
@@ -86,12 +115,22 @@ public class VertexFormatDescriptionImpl implements VertexFormatDescription {
 
     @Override
     public boolean containsElement(VertexFormatElement element) {
+        int offset = getCommonElementOffset(element);
+
+        if (offset != Integer.MIN_VALUE) {
+            return offset != -1;
+        }
+
         return this.offsets.containsKey(element);
     }
 
     @Override
     public int getElementOffset(VertexFormatElement element) {
-        int offset = this.offsets.getInt(element);
+        int offset = getCommonElementOffset(element);
+
+        if (offset == Integer.MIN_VALUE) {
+            offset = this.offsets.getInt(element);
+        }
 
         if (offset == -1) {
             throw new NoSuchElementException("Vertex format does not contain element: " + element);
