@@ -32,6 +32,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -487,6 +488,29 @@ public abstract class BufferBuilderMixin /*? if >=1.15 <1.21 {*/ extends Default
     }
 
 //?}
+
+    //? if <1.21 {
+    /**
+     * Grows the vertex buffer geometrically instead of by a fixed step.
+     */
+    @ModifyArg(
+        method = "ensureCapacity",
+        at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/MemoryTracker;resize(Ljava/nio/ByteBuffer;I)Ljava/nio/ByteBuffer;"),
+        index = 1
+    )
+    private int embeddium$growGeometrically(int vanillaSize) {
+        int current = this.buffer.capacity();
+        int geometric = current + (current >> 1);
+
+        // A buffer this close to Integer.MAX_VALUE can't grow geometrically without overflowing; let vanilla's
+        // fixed step take it the rest of the way.
+        if (geometric <= current) {
+            return vanillaSize;
+        }
+
+        return Math.max(vanillaSize, geometric);
+    }
+    //?}
 
     @Override
     public boolean canUseIntrinsics() {
