@@ -29,11 +29,21 @@ public class ChunkJobMetricsTracker {
     public static class MetricsData {
         private static final int MAX_OBSERVATIONS = 10000;
 
+        /**
+         * Smoothing factor for the exponential moving average of execution time. Small enough to smooth over the
+         * large per-section variance (empty vs. dense sections), large enough to track a change in terrain within a
+         * few dozen completed tasks.
+         */
+        private static final double EMA_ALPHA = 0.05;
+
         private final LongArrayList observations = new LongArrayList(MAX_OBSERVATIONS);
         private int nextInsertPoint = 0;
 
         private int observationsInLastTimeInterval;
         private int observationsInCurrentTimeInterval;
+
+        private double emaNanos;
+        private boolean hasEma;
 
         public void collect(long observation) {
             if (observations.size() < MAX_OBSERVATIONS) {
@@ -45,10 +55,25 @@ public class ChunkJobMetricsTracker {
                 }
             }
             observationsInCurrentTimeInterval++;
+
+            if (this.hasEma) {
+                this.emaNanos += EMA_ALPHA * (observation - this.emaNanos);
+            } else {
+                this.emaNanos = observation;
+                this.hasEma = true;
+            }
         }
 
         public int getObservationsInLastTimeInterval() {
             return this.observationsInLastTimeInterval;
+        }
+
+        /**
+         * {@return the exponential moving average of the observed execution time in nanoseconds, or {@code fallback}
+         * if nothing has been observed yet}
+         */
+        public double getAverageNanos(double fallback) {
+            return this.hasEma ? this.emaNanos : fallback;
         }
 
         public MetricStats getStats() {
@@ -91,6 +116,15 @@ public class ChunkJobMetricsTracker {
         }
         var data = metricsByTask.computeIfAbsent(successfulResult.output().getClass(), $ -> new MetricsData());
         data.collect(successfulResult.executionTimeNanos());
+    }
+
+    /**
+     * {@return the recent average execution time in nanoseconds of tasks producing the given output type, or
+     * {@code fallback} if none have completed yet}
+     */
+    public double getAverageExecutionNanos(Class<? extends ChunkTaskOutput> outputType, double fallback) {
+        var data = metricsByTask.get(outputType);
+        return data != null ? data.getAverageNanos(fallback) : fallback;
     }
 
     public Reference2ReferenceMap<Class<? extends ChunkTaskOutput>, MetricsData> getMetrics() {

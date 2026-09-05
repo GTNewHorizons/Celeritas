@@ -61,6 +61,13 @@ public abstract class RenderSectionManager {
      */
     protected static final boolean CONTINUOUSLY_REMESH_WORLD = false;
 
+    /**
+     * How many frames' worth of dispatch the BFS may collect into the initial-build list. The list only needs to
+     * outlast the interval between graph updates, and an overflow re-marks the graph dirty as soon as results are
+     * uploaded, so a small multiple of the in-flight target is sufficient.
+     */
+    private static final int REBUILD_LIST_FRAMES = 2;
+
     private final ChunkBuilder builder;
 
     private final Thread renderThread = Thread.currentThread();
@@ -339,7 +346,7 @@ public abstract class RenderSectionManager {
 
     private int getTargetQueueSize() {
         if (this.shouldRespectUpdateTaskQueueSizeLimit()) {
-            return (int) Math.min(Integer.MAX_VALUE, (long) this.builder.getTargetQueueSize() * 10);
+            return (int) Math.min(Integer.MAX_VALUE, (long) this.builder.getTargetQueueSize() * REBUILD_LIST_FRAMES);
         } else {
             return Integer.MAX_VALUE;
         }
@@ -494,22 +501,17 @@ public abstract class RenderSectionManager {
         this.regions.update();
         this.jobMetricsTracker.tick();
 
-        // Advance the adaptive scheduling controller once per frame, before any dispatch reads the budget. This
-        // runs only on the main terrain pass so that an additional shadow pass in the same frame does not
-        // double-tick the controller; both passes share the same worker queue and in-flight target.
-        boolean mainPass = !this.isInShadowPass();
-
-        if (mainPass) {
-            this.builder.tickSchedulingBudget();
+        // Advance the scheduling controller once per frame, before any dispatch reads the budget. This runs only
+        // on the main terrain pass so that an additional shadow pass in the same frame does not double-tick the
+        // controller (which would halve its measured frame time); both passes share the same worker queue and
+        // in-flight target.
+        if (!this.isInShadowPass()) {
+            this.builder.tickSchedulingBudget(this.jobMetricsTracker);
         }
 
         this.promoteInterimRebuildList();
 
         if (!rebuildListHasUpdates()) {
-            // Nothing was dispatched, so the workers cannot have been starved for lack of budget.
-            if (mainPass) {
-                this.builder.setDispatchBudgetLimited(false);
-            }
             if (CONTINUOUSLY_REMESH_WORLD && !this.getCurrentRenderListManager().getRebuildLists().hasAdditionalUpdates()) {
                 this.scheduleRebuildAll();
             }
@@ -522,21 +524,11 @@ public abstract class RenderSectionManager {
         this.submitRebuildTasks(blockingRebuilds, ChunkUpdateType.IMPORTANT_REBUILD);
         this.submitRebuildTasks(blockingRebuilds, ChunkUpdateType.IMPORTANT_SORT);
 
-        // Track whether the deferred dispatch was throttled by the budget while work still
-        // remained. Combined with worker starvation, this is what tells the controller to grow the in-flight
-        // target next frame.
-        boolean budgetLimited = false;
-        budgetLimited |= this.submitRebuildTasks(updateImmediately ? blockingRebuilds : deferredRebuilds, ChunkUpdateType.REBUILD);
-        budgetLimited |= this.submitRebuildTasks(updateImmediately ? blockingRebuilds : deferredRebuilds, ChunkUpdateType.INITIAL_BUILD);
-        // The BFS itself may have discarded candidates that did not fit in the rebuild lists; that is also work
-        // we were unable to dispatch this frame.
-        budgetLimited |= this.getCurrentRenderListManager().getRebuildLists().hasAdditionalUpdates();
-        if (mainPass) {
-            this.builder.setDispatchBudgetLimited(budgetLimited);
-        }
+        this.submitRebuildTasks(updateImmediately ? blockingRebuilds : deferredRebuilds, ChunkUpdateType.REBUILD);
+        this.submitRebuildTasks(updateImmediately ? blockingRebuilds : deferredRebuilds, ChunkUpdateType.INITIAL_BUILD);
 
-        // Count sort tasks as requiring a quarter of the resources of a mesh task
-        var deferredSorts = new ChunkJobCollector(Math.max(4, this.builder.getSchedulingBudget() * 4), this.buildResults::add);
+        // Sorts fill whatever worker time the mesh dispatch left over, scaled by their measured relative cost
+        var deferredSorts = new ChunkJobCollector(this.builder.getSortSchedulingBudget(), this.buildResults::add);
         this.submitRebuildTasks(updateImmediately ? blockingRebuilds : deferredSorts, ChunkUpdateType.SORT);
 
         blockingRebuilds.awaitCompletion(this.builder);
@@ -677,11 +669,7 @@ public abstract class RenderSectionManager {
         return results;
     }
 
-    /**
-     * {@return true if dispatch stopped because the collector's budget was exhausted while sections still
-     * remained in the queue, i.e. dispatch was budget-limited rather than work-limited for this update type}
-     */
-    private boolean submitRebuildTasks(ChunkJobCollector collector, ChunkUpdateType type) {
+    private void submitRebuildTasks(ChunkJobCollector collector, ChunkUpdateType type) {
         var queue = this.getCurrentRenderListManager().getRebuildLists().byUpdateType().get(type);
 
         int frame = this.getCurrentRenderListManager().getLastUpdatedFrame();
@@ -732,9 +720,6 @@ public abstract class RenderSectionManager {
             section.setLastSubmittedFrame(frame);
             section.setPendingUpdate(null);
         }
-
-        // The loop only exits early on !canOffer(), so leftover sections mean we ran out of budget, not work.
-        return !queue.isEmpty();
     }
 
     protected abstract @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int frame);
