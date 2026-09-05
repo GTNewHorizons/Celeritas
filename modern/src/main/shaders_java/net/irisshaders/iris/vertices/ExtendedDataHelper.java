@@ -1,5 +1,10 @@
 package net.irisshaders.iris.vertices;
 
+import com.mojang.blaze3d.vertex.VertexFormatElement;
+import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
+import org.joml.Vector3f;
+import org.lwjgl.system.MemoryUtil;
+
 public final class ExtendedDataHelper {
 	// TODO: Resolve render types for normal blocks?
 	public static final short BLOCK_RENDER_TYPE = -1;
@@ -18,5 +23,49 @@ public final class ExtendedDataHelper {
 			localPosY + 0.5f - y,
 			localPosZ + 0.5f - z
 		);
+	}
+
+	/**
+	 * The element offsets are passed in rather than resolved from a {@link VertexFormatDescription}: they are
+	 * fixed for the lifetime of the format, and resolving them here would cost three map lookups per primitive.
+	 */
+	public static void fillExtendedData(BufferBuilderPolygonView polygon, Vector3f normal, long[] vertexPointers,
+			int vertexAmount, int midTextureOffset, int normalOffset, int tangentOffset, boolean replaceNormal) {
+		polygon.setup(0L, vertexPointers);
+
+		float midU = 0.0f;
+		float midV = 0.0f;
+		for (int i = 0; i < vertexAmount; i++) {
+			midU += polygon.u(i);
+			midV += polygon.v(i);
+		}
+		midU /= vertexAmount;
+		midV /= vertexAmount;
+
+		if (vertexAmount == 3) {
+			for (int i = 0; i < vertexAmount; i++) {
+				long pointer = vertexPointers[i];
+				int packedNormal = MemoryUtil.memGetInt(pointer + normalOffset);
+				int tangent = NormalHelper.computeTangentSmooth(
+						NormI8.unpackX(packedNormal), NormI8.unpackY(packedNormal), NormI8.unpackZ(packedNormal), polygon);
+				MemoryUtil.memPutFloat(pointer + midTextureOffset, midU);
+				MemoryUtil.memPutFloat(pointer + midTextureOffset + 4L, midV);
+				MemoryUtil.memPutInt(pointer + tangentOffset, tangent);
+			}
+		} else {
+			NormalHelper.computeFaceNormal(normal, polygon);
+			int packedNormal = replaceNormal ? NormI8.pack(normal.x, normal.y, normal.z, 0.0f) : 0;
+			int tangent = NormalHelper.computeTangent(normal.x, normal.y, normal.z, polygon);
+
+			for (int i = 0; i < vertexAmount; i++) {
+				long pointer = vertexPointers[i];
+				MemoryUtil.memPutFloat(pointer + midTextureOffset, midU);
+				MemoryUtil.memPutFloat(pointer + midTextureOffset + 4L, midV);
+				if (replaceNormal) {
+					MemoryUtil.memPutInt(pointer + normalOffset, packedNormal);
+				}
+				MemoryUtil.memPutInt(pointer + tangentOffset, tangent);
+			}
+		}
 	}
 }

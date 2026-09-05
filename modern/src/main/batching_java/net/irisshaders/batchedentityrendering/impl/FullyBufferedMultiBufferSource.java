@@ -126,15 +126,6 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 			buffer = builder.getBuffer(renderType);
 		}
 
-        //? if <1.21 {
-        if (buffer instanceof org.embeddedt.embeddium.impl.render.vertex.buffer.ExtendedBufferBuilder bufferBuilderExt) {
-            var replacement = bufferBuilderExt.sodium$getDelegate();
-            if (replacement != null) {
-                return replacement;
-            }
-        }
-        //?}
-
         return buffer;
 	}
 
