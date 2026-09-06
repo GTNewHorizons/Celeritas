@@ -145,9 +145,10 @@ public class ShadowOcclusionCullerBench {
 
         /** One shadow search through the real {@code VisibleChunkCollector}. */
         public VisibleChunkCollector collectShadow(Viewport shadowViewport, Vector3f light) {
-            var collector = new VisibleChunkCollector(this.lattice, this.frame, this.numRegions, TARGET_QUEUE_SIZE);
+            var collector = new VisibleChunkCollector(this.lattice, this.frame, this.numRegions, TARGET_QUEUE_SIZE, shadowViewport.getBlockCoord());
             this.lattice.findShadowVisible(collector, shadowViewport, this.shadowSearchDistance, this.numRegions,
                     light, this.nextFrame());
+            collector.finishRebuildLists();
 
             return collector;
         }

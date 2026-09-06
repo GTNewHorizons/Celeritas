@@ -108,7 +108,7 @@ public class RenderListManager {
 
         this.lattice.ensureWindowCovers(viewport.getChunkCoord(), searchDistance);
 
-        this.submitSearch(frame, regionIdsLength, targetQueueSize, visitor ->
+        this.submitSearch(frame, regionIdsLength, targetQueueSize, viewport, visitor ->
                 this.lattice.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, true, frame));
     }
 
@@ -125,20 +125,23 @@ public class RenderListManager {
 
         this.lattice.ensureWindowCovers(shadowViewport.getChunkCoord(), searchDistance);
 
-        this.submitSearch(frame, regionIdsLength, targetQueueSize, visitor ->
+        this.submitSearch(frame, regionIdsLength, targetQueueSize, shadowViewport, visitor ->
                 this.lattice.findShadowVisible(visitor, shadowViewport, searchDistance, regionIdsLength, lightVector, frame));
     }
 
-    private void submitSearch(int frame, int regionIdsLength, int targetQueueSize,
+    private void submitSearch(int frame, int regionIdsLength, int targetQueueSize, Viewport viewport,
                               Function<VisibleChunkCollector, SectionLattice.VisibilitySnapshot> search) {
         if (this.currentOcclusionFuture != null) {
             throw new IllegalStateException("Occlusion work in progress while trying to submit next task");
         }
 
-        var visitor = new VisibleChunkCollector(this.lattice, frame, regionIdsLength, targetQueueSize);
+        var visitor = new VisibleChunkCollector(this.lattice, frame, regionIdsLength, targetQueueSize, viewport.getBlockCoord());
 
         Supplier<VisibleChunkCollector> occlusionTask = () -> {
             this.pendingVisibilitySnapshot = search.apply(visitor);
+
+            // Sort the rebuild lists here rather than on the render thread when the result is joined
+            visitor.finishRebuildLists();
 
             // WARNING: when async, this runs on the search thread.
             // SectionTicker.onRenderListUpdated() must be safe to call off the render thread.

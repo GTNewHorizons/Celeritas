@@ -186,7 +186,7 @@ public class MultiDrawBench {
             int frame = ++this.frameCounter;
 
             int regionIds = BenchPlatform.regionManager().getRegionIdsLength();
-            var collector = new VisibleChunkCollector(this.lattice, frame, regionIds, TARGET_QUEUE_SIZE);
+            var collector = new VisibleChunkCollector(this.lattice, frame, regionIds, TARGET_QUEUE_SIZE, viewport.getBlockCoord());
 
             this.lattice.ensureWindowCovers(viewport.getChunkCoord(), this.syntheticWorld.getSearchDistance());
             this.lattice.findVisible(collector, viewport, this.syntheticWorld.getSearchDistance(),

@@ -48,6 +48,10 @@ public class OcclusionCullerBench {
         @Param({ "false" })
         public boolean rasterOcclusion;
 
+        /** ALL_GEOMETRY models the first search after a renderer reload, where every built section is pending. */
+        @Param({ "HASHED" })
+        public SyntheticWorld.PendingMode pending;
+
         public SyntheticWorld syntheticWorld;
         public SectionLattice lattice;
 
@@ -66,7 +70,7 @@ public class OcclusionCullerBench {
             BenchPlatform.ensureInitialized();
 
             this.syntheticWorld = new SyntheticWorld(this.world, this.renderDistance, this.scatteredAlloc,
-                    this.rasterOcclusion);
+                    this.rasterOcclusion, this.pending);
             this.searchDistance = this.syntheticWorld.getSearchDistance();
 
             this.numRegions = BenchPlatform.regionManager().getRegionIdsLength();
@@ -102,8 +106,9 @@ public class OcclusionCullerBench {
 
         /** One frame through the real {@code VisibleChunkCollector}. */
         public VisibleChunkCollector collect(Viewport viewport) {
-            var collector = new VisibleChunkCollector(this.lattice, this.frame, this.numRegions, TARGET_QUEUE_SIZE);
+            var collector = new VisibleChunkCollector(this.lattice, this.frame, this.numRegions, TARGET_QUEUE_SIZE, viewport.getBlockCoord());
             this.search(collector, viewport);
+            collector.finishRebuildLists();
 
             return collector;
         }

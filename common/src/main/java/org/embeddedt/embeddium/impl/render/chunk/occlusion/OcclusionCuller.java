@@ -315,7 +315,7 @@ public class OcclusionCuller {
             }
 
             int sectionIndex = LocalSectionIndex.pack(chunkX, chunkY, chunkZ);
-            visitor.visit(idx, regionId, sectionIndex, compactMeta, visible);
+            visitor.visit(idx, regionId, sectionIndex, chunkX, chunkY, chunkZ, compactMeta, visible);
 
             if (!traverse) {
                 continue;
@@ -610,7 +610,8 @@ public class OcclusionCuller {
         // enqueued so the BFS starts with its neighbours.
         int sectionIndex = LocalSectionIndex.pack(origin.x(), origin.y(), origin.z());
         long sm = this.lattice.sectionMeta[idx];
-        visitor.visit(idx, this.lattice.regionOfCell[idx], sectionIndex, PackedSectionMetadata.toCompactMeta(sm), true);
+        visitor.visit(idx, this.lattice.regionOfCell[idx], sectionIndex, origin.x(), origin.y(), origin.z(),
+                PackedSectionMetadata.toCompactMeta(sm), true);
 
         int xyz = this.lattice.packXyz(origin.x(), origin.y(), origin.z());
 
@@ -724,9 +725,12 @@ public class OcclusionCuller {
          * @param latticeIndex installed {@link SectionLattice} slot for the section
          * @param regionId owning render-region identifier
          * @param sectionIndex section's compact local index within its region
+         * @param chunkX section x coordinate (in sections)
+         * @param chunkY section y coordinate (in sections)
+         * @param chunkZ section z coordinate (in sections)
          * @param meta compact collector metadata
          * @param visible whether the section passed the visibility tests
          */
-        void visit(int latticeIndex, int regionId, int sectionIndex, int meta, boolean visible);
+        void visit(int latticeIndex, int regionId, int sectionIndex, int chunkX, int chunkY, int chunkZ, int meta, boolean visible);
     }
 }

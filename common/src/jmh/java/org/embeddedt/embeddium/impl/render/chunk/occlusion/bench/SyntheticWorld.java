@@ -29,6 +29,17 @@ public final class SyntheticWorld {
     public static final double PENDING_UPDATE_FRACTION = 0.05D;
     public static final double BUILD_IN_FLIGHT_FRACTION = 0.5D;
 
+    /** How pending updates are distributed over the generated sections. */
+    public enum PendingMode {
+        /** A position-hashed {@link #PENDING_UPDATE_FRACTION} of sections, half of them with a build in flight. */
+        HASHED,
+        /**
+         * Every section with block geometry is awaiting an initial build and none are in flight. Models the first
+         * search after a renderer reload, and is the worst case for the collector's rebuild list handling.
+         */
+        ALL_GEOMETRY,
+    }
+
     private final WorldType type;
     private final int renderDistance;
     private final long seed;
@@ -55,15 +66,28 @@ public final class SyntheticWorld {
                 occluderBoxes);
     }
 
+    public SyntheticWorld(WorldType type, int renderDistance, boolean scatteredAlloc, boolean occluderBoxes,
+                          PendingMode pendingMode) {
+        this(type, renderDistance, DEFAULT_SEED, VoxelWorld.DEFAULT_CAVE_WIDTH, scatteredAlloc, 0.0D, false,
+                occluderBoxes, pendingMode);
+    }
+
+    public SyntheticWorld(WorldType type, int renderDistance, long seed, double caveWidth, boolean scatteredAlloc,
+                          double unloadedProbability, boolean allFlagged, boolean occluderBoxes) {
+        this(type, renderDistance, seed, caveWidth, scatteredAlloc, unloadedProbability, allFlagged, occluderBoxes,
+                PendingMode.HASHED);
+    }
+
     /**
      * @param scatteredAlloc      shuffled allocation order (models a long-lived session)
      * @param unloadedProbability fraction of sections absent from the box
      * @param allFlagged          full visuals mask on every section (sensitivity knob, not realistic)
      * @param occluderBoxes       generate occluder boxes; far dearer per section than the visibility fill,
      *                            and dead weight unless a report is measuring the rasterizer
+     * @param pendingMode         which sections start out with a pending update
      */
     public SyntheticWorld(WorldType type, int renderDistance, long seed, double caveWidth, boolean scatteredAlloc,
-                          double unloadedProbability, boolean allFlagged, boolean occluderBoxes) {
+                          double unloadedProbability, boolean allFlagged, boolean occluderBoxes, PendingMode pendingMode) {
         this.type = type;
         this.renderDistance = renderDistance;
         this.seed = seed;
@@ -133,7 +157,15 @@ public final class SyntheticWorld {
             }
 
             section.setInfo(info);
-            applyPendingUpdate(section, x, y, z);
+
+            switch (pendingMode) {
+                case HASHED -> applyPendingUpdate(section, x, y, z);
+                case ALL_GEOMETRY -> {
+                    if (info.hasBlockGeometry) {
+                        section.setPendingUpdate(ChunkUpdateType.INITIAL_BUILD);
+                    }
+                }
+            }
 
             this.sections.put(packed, section);
             this.constructionOrder[n] = section;

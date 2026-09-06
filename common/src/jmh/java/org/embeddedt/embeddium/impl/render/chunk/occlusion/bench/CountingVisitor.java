@@ -12,14 +12,14 @@ public final class CountingVisitor implements OcclusionCuller.Visitor {
     public long checksum;
 
     @Override
-    public void visit(int latticeIndex, int regionId, int sectionIndex, int meta, boolean visible) {
+    public void visit(int latticeIndex, int regionId, int sectionIndex, int chunkX, int chunkY, int chunkZ, int meta, boolean visible) {
         this.visited++;
 
         if (visible) {
             this.visible++;
         }
 
-        this.checksum = (this.checksum * 31) + latticeIndex + regionId + sectionIndex + meta;
+        this.checksum = (this.checksum * 31) + latticeIndex + regionId + sectionIndex + chunkX + chunkY + chunkZ + meta;
     }
 
     public long fold() {

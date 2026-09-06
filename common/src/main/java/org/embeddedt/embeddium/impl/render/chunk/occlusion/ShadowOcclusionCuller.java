@@ -255,7 +255,7 @@ final class ShadowOcclusionCuller {
                 visitState[idx] = state | REPORTED_BIT;
 
                 int sectionIndex = LocalSectionIndex.pack(chunkX, chunkY, chunkZ);
-                visitor.visit(idx, regionId, sectionIndex, PackedSectionMetadata.toCompactMeta(sm), visible);
+                visitor.visit(idx, regionId, sectionIndex, chunkX, chunkY, chunkZ, PackedSectionMetadata.toCompactMeta(sm), visible);
             }
 
             if (!visible) {
