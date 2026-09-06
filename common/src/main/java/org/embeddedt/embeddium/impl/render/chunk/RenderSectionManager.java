@@ -674,6 +674,10 @@ public abstract class RenderSectionManager {
 
         int frame = this.getCurrentRenderListManager().getLastUpdatedFrame();
 
+        int cameraX = (int) Math.floor(this.cameraPosition.x);
+        int cameraY = (int) Math.floor(this.cameraPosition.y);
+        int cameraZ = (int) Math.floor(this.cameraPosition.z);
+
         while (!queue.isEmpty() && collector.canOffer()) {
             RenderSection section = queue.remove();
 
@@ -701,7 +705,10 @@ public abstract class RenderSectionManager {
             }
 
             if (task != null) {
-                var job = this.builder.scheduleTask(task, type.isImportant(), collector::onJobFinished);
+                // Prioritize by distance so sections that only became reachable (and thus schedulable) after their
+                // neighbors were built still run ahead of farther sections that were queued in earlier frames.
+                long priority = (long) section.getSquaredDistanceFromBlockCenter(cameraX, cameraY, cameraZ);
+                var job = this.builder.scheduleTask(task, type.isImportant(), priority, collector::onJobFinished);
                 collector.addSubmittedJob(job);
 
                 section.setBuildCancellationToken(job);

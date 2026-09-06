@@ -15,6 +15,10 @@ public class ChunkJobTyped<TASK extends ChunkBuilderTask<OUTPUT>, OUTPUT>
     private volatile boolean cancelled;
     private volatile boolean started;
 
+    // Ordering keys assigned by ChunkJobQueue when the job is enqueued. Only accessed under the queue's lock.
+    long priority;
+    long sequence;
+
     ChunkJobTyped(TASK task, Consumer<@Nullable ChunkJobResult<OUTPUT>> consumer) {
         this.task = task;
         this.consumer = consumer;
