@@ -28,8 +28,20 @@ public class ClonedChunkSectionCache {
 
     public synchronized void cleanup() {
         this.time = getMonotonicTimeSource();
-        this.positionToEntry.values()
-                .removeIf(entry -> this.time > (entry.getLastUsedTimestamp() + MAX_CACHE_DURATION));
+
+        if (this.positionToEntry.isEmpty()) {
+            return;
+        }
+
+        var iterator = this.positionToEntry.values().iterator();
+
+        while (iterator.hasNext()) {
+            if (this.time <= iterator.next().getLastUsedTimestamp() + MAX_CACHE_DURATION) {
+                break;
+            }
+
+            iterator.remove();
+        }
     }
 
     @Nullable
