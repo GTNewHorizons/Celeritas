@@ -69,6 +69,14 @@ public class RenderRegion {
     @Getter
     private int passSetUpdateCount = 0;
 
+    /**
+     * Incremented each time the built data of any section in this region changes, or a section is added to or
+     * removed from the region. Consumers that derive per-region state from section data can compare this against a
+     * cached value to skip recomputation.
+     */
+    @Getter
+    private int dataRevision = 0;
+
     RenderRegion(int x, int y, int z, int id, StagingBuffer stagingBuffer) {
         this.x = x;
         this.y = y;
@@ -134,6 +142,10 @@ public class RenderRegion {
 
     public boolean isEmpty() {
         return this.sectionCount == 0;
+    }
+
+    public void onSectionDataChanged() {
+        this.dataRevision++;
     }
 
     public SectionRenderDataStorage getStorage(TerrainRenderPass pass) {
@@ -206,6 +218,7 @@ public class RenderRegion {
         this.sections[sectionIndex] = section;
         this.sectionLoadTimes[sectionIndex] = 0;
         this.sectionCount++;
+        this.dataRevision++;
     }
 
     public void removeSection(RenderSection section) {
@@ -225,6 +238,7 @@ public class RenderRegion {
         this.sections[sectionIndex] = null;
         this.sectionLoadTimes[sectionIndex] = 0;
         this.sectionCount--;
+        this.dataRevision++;
     }
 
     public void updateSectionLoadTime(RenderSection section) {

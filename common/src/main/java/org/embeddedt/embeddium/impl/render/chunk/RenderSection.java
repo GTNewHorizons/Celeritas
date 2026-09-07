@@ -115,9 +115,11 @@ public class RenderSection extends AbstractSection {
     public boolean setInfo(@Nullable BuiltRenderSectionData info) {
         boolean changed = !Objects.equals(info, this.contextData);
         if (changed) {
+            var region = this.getRegion();
             if (this.contextData == null) {
-                this.getRegion().updateSectionLoadTime(this);
+                region.updateSectionLoadTime(this);
             }
+            region.onSectionDataChanged();
             this.contextData = info;
             this.updateCachedContextDataFlags();
         }
