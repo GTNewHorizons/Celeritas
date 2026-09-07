@@ -1,17 +1,36 @@
 package org.embeddedt.embeddium.impl.render.chunk.sprite;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
+import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 public class GenericSectionSpriteTicker<T> implements SectionTicker {
+    private static final Object[] NO_SPRITES = new Object[0];
+
+    private static final int PRUNE_INTERVAL = 1024;
+
     private volatile ReferenceOpenHashSet<T> sprites = new ReferenceOpenHashSet<>();
 
     private final Consumer<T> markActive;
+
+    private final Reference2ObjectOpenHashMap<RenderRegion, CachedRegionSprites> regionCache = new Reference2ObjectOpenHashMap<>();
+
+    // Scratch set for deduplicating a region's sprites while recomputing its cache entry
+    private final ReferenceOpenHashSet<Object> scratch = new ReferenceOpenHashSet<>();
+
+    private int searchIndex;
+
+    private static final class CachedRegionSprites {
+        int revision;
+        Object[] sprites;
+        int lastSeenSearch;
+    }
 
     public GenericSectionSpriteTicker(Consumer<T> markActive) {
         this.markActive = markActive;
@@ -30,40 +49,69 @@ public class GenericSectionSpriteTicker<T> implements SectionTicker {
     @Override
     public void onRenderListUpdated(List<ChunkRenderList> renderLists) {
         var spriteSet = new ReferenceOpenHashSet<T>(this.sprites.size());
+        int search = ++this.searchIndex;
 
-        for (ChunkRenderList renderList : renderLists) {
-            var region = renderList.getRegion();
-            var iterator = renderList.sectionsWithSpritesIterator();
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < renderLists.size(); i++) {
+            ChunkRenderList renderList = renderLists.get(i);
 
-            if (iterator == null) {
+            if (renderList.getSectionsWithSpritesCount() == 0) {
                 continue;
             }
 
-            while (iterator.hasNext()) {
-                var section = region.getSection(iterator.nextByteAsInt());
+            var region = renderList.getRegion();
+            var cached = this.regionCache.get(region);
 
-                if (section == null) {
-                    continue;
-                }
+            if (cached == null) {
+                cached = new CachedRegionSprites();
+                cached.revision = region.getDataRevision() - 1;
+                this.regionCache.put(region, cached);
+            }
 
-                var context = section.getBuiltContext();
+            if (cached.revision != region.getDataRevision()) {
+                this.recompute(region, cached);
+            }
 
-                if (!(context instanceof MinecraftBuiltRenderSectionData<?, ?> mcData)) {
-                    continue;
-                }
+            cached.lastSeenSearch = search;
 
+            var regionSprites = cached.sprites;
+            //noinspection ForLoopReplaceableByForEach
+            for (int j = 0; j < regionSprites.length; j++) {
                 //noinspection unchecked
-                var sprites = (List<T>) mcData.animatedSprites;
-
-                // The iterator allocation is very expensive here for large render distances.
-                //noinspection ForLoopReplaceableByForEach
-                for (int i = 0; i < sprites.size(); i++) {
-                    //noinspection UseBulkOperation
-                    spriteSet.add(sprites.get(i));
-                }
+                spriteSet.add((T) regionSprites[j]);
             }
         }
 
+        if ((search % PRUNE_INTERVAL) == 0) {
+            this.regionCache.values().removeIf(entry -> search - entry.lastSeenSearch > PRUNE_INTERVAL);
+        }
+
         this.sprites = spriteSet;
+    }
+
+    private void recompute(RenderRegion region, CachedRegionSprites cached) {
+        var scratch = this.scratch;
+
+        for (int sectionIndex = 0; sectionIndex < RenderRegion.REGION_SIZE; sectionIndex++) {
+            var section = region.getSection(sectionIndex);
+
+            if (section == null) {
+                continue;
+            }
+
+            if (!(section.getBuiltContext() instanceof MinecraftBuiltRenderSectionData<?, ?> mcData)) {
+                continue;
+            }
+
+            var sprites = mcData.animatedSprites;
+
+            if (!sprites.isEmpty()) {
+                scratch.addAll(sprites);
+            }
+        }
+
+        cached.revision = region.getDataRevision();
+        cached.sprites = scratch.isEmpty() ? NO_SPRITES : scratch.toArray();
+        scratch.clear();
     }
 }
