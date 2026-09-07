@@ -42,6 +42,18 @@ vec4 _exp2Fog(vec4 fragColor, float fragDistance, vec4 fogColor, float fogDensit
 #endif
 }
 
+vec4 _expFog(vec4 fragColor, float fragDistance, vec4 fogColor, float fogDensity) {
+#ifdef USE_FOG
+    float dist = fragDistance * fogDensity;
+    float factor = clamp(1.0 / exp(dist), 0.0, 1.0);
+    vec3 blended = mix(fogColor.rgb, fragColor.rgb, factor * fogColor.a);
+
+    return vec4(blended, fragColor.a); // alpha value of fragment cannot be modified
+#else
+    return fragColor;
+#endif
+}
+
 float getFragDistance(int fogShape, vec3 position) {
     // Use the maximum of the horizontal and vertical distance to get cylindrical fog if fog shape is cylindrical
     if (fogShape == FOG_SHAPE_CYLINDRICAL) {

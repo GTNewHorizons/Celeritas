@@ -85,8 +85,9 @@ public class FogHelper implements FogService {
 
         switch (mode) {
             case GL20.GL_EXP2:
-            case GL20.GL_EXP:
                 return ChunkFogMode.EXP2;
+            case GL20.GL_EXP:
+                return ChunkFogMode.EXP;
             case GL20.GL_LINEAR:
                 return ChunkFogMode.SMOOTH;
             default:

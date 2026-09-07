@@ -10,6 +10,7 @@ import java.util.function.Function;
 
 public enum ChunkFogMode implements ChunkShaderComponent.Factory<ChunkShaderFogComponent> {
     NONE(ChunkShaderFogComponent.None::new, List.of()),
+    EXP(ChunkShaderFogComponent.Exp::new, List.of("USE_FOG", "USE_FOG_EXP")),
     EXP2(ChunkShaderFogComponent.Exp2::new, List.of("USE_FOG", "USE_FOG_EXP2")),
     SMOOTH(ChunkShaderFogComponent.Smooth::new, List.of("USE_FOG", "USE_FOG_SMOOTH"));
 
@@ -35,8 +36,9 @@ public enum ChunkFogMode implements ChunkShaderComponent.Factory<ChunkShaderFogC
             case 0:
                 return ChunkFogMode.NONE;
             case GL20.GL_EXP2:
-            case GL20.GL_EXP:
                 return ChunkFogMode.EXP2;
+            case GL20.GL_EXP:
+                return ChunkFogMode.EXP;
             case GL20.GL_LINEAR:
                 return ChunkFogMode.SMOOTH;
             default:

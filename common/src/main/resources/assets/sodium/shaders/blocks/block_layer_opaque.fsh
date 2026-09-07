@@ -40,7 +40,7 @@ uniform float u_EnvFogStart;
 uniform float u_EnvFogEnd;
 #endif
 
-#ifdef USE_FOG_EXP2
+#if defined(USE_FOG_EXP) || defined(USE_FOG_EXP2)
 uniform float u_FogDensity; // The density of the shader fog
 #endif
 
@@ -98,6 +98,8 @@ void main() {
     }
 #if defined(USE_FOG_EXP2)
     fragColor = _exp2Fog(diffuseColor, fragDistance, u_FogColor, u_FogDensity);
+#elif defined(USE_FOG_EXP)
+    fragColor = _expFog(diffuseColor, fragDistance, u_FogColor, u_FogDensity);
 #elif defined(USE_FOG_SMOOTH)
     fragColor = _linearFog(diffuseColor, fragDistance, u_FogColor, u_FogStart, u_FogEnd);
 #endif

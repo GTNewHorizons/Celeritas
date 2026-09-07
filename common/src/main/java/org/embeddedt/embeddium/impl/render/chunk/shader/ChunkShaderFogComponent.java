@@ -32,6 +32,22 @@ public abstract class ChunkShaderFogComponent implements ChunkShaderComponent {
         }
     }
 
+    public static class Exp extends ChunkShaderFogComponent {
+        private final GlUniformFloat4v uFogColor;
+        private final GlUniformFloat uFogDensity;
+
+        public Exp(ShaderBindingContext context) {
+            this.uFogColor = context.bindUniform("u_FogColor", GlUniformFloat4v::new);
+            this.uFogDensity = context.bindUniform("u_FogDensity", GlUniformFloat::new);
+        }
+
+        @Override
+        public void setup() {
+            this.uFogColor.set(FOG_SERVICE.getFogColor());
+            this.uFogDensity.set(FOG_SERVICE.getFogDensity());
+        }
+    }
+
     public static class Exp2 extends ChunkShaderFogComponent {
         private final GlUniformFloat4v uFogColor;
         private final GlUniformFloat uFogDensity;
