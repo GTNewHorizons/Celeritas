@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.experimental.Accessors;
+import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
@@ -56,6 +57,12 @@ public class TerrainRenderPass {
     private final @NotNull ChunkPrimitiveType primitiveType;
     private final @NotNull ChunkVertexType vertexType;
 
+    public record TessellationKey(GlVertexFormat vertexFormat, ChunkPrimitiveType primitiveType, boolean sorted) {}
+
+    @Getter
+    @EqualsAndHashCode.Exclude
+    private final TessellationKey tessellationKey;
+
     private final Map<String, String> extraDefines;
 
     @Builder
@@ -82,6 +89,7 @@ public class TerrainRenderPass {
         this.hasNoLightmap = hasNoLightmap;
         this.primitiveType = primitiveType;
         this.vertexType = vertexType;
+        this.tessellationKey = new TessellationKey(vertexType.getVertexFormat(), primitiveType, useTranslucencySorting);
         this.extraDefines = Map.copyOf(extraDefines);
     }
 

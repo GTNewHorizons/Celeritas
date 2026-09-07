@@ -1,12 +1,15 @@
 package org.embeddedt.embeddium.impl.render.chunk.multidraw;
 
 import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
+import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
 public class CachedBatch {
     private final @Nullable MultiDrawBatch batch;
+
+    private final @Nullable GlTessellation tessellation;
 
     private final byte[] sections;
 
@@ -15,11 +18,13 @@ public class CachedBatch {
     private final int cameraMinZ, cameraMaxZ;
 
     public CachedBatch(@Nullable MultiDrawBatch batch,
+                       @Nullable GlTessellation tessellation,
                        byte[] sections, int sectionCount,
                        int cameraMinX, int cameraMaxX,
                        int cameraMinY, int cameraMaxY,
                        int cameraMinZ, int cameraMaxZ) {
         this.batch = batch;
+        this.tessellation = tessellation;
         this.sections = Arrays.copyOf(sections, sectionCount);
         this.cameraMinX = cameraMinX;
         this.cameraMaxX = cameraMaxX;
@@ -39,6 +44,10 @@ public class CachedBatch {
 
     public @Nullable MultiDrawBatch getBatch() {
         return this.batch;
+    }
+
+    public @Nullable GlTessellation getTessellation() {
+        return this.tessellation;
     }
 
     public void delete() {

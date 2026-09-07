@@ -22,6 +22,8 @@ import java.util.Iterator;
 public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
     private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer> sharedIndexBuffers;
 
+    private final BatchAssembler.TessellationProvider tessellationProvider = this::prepareTessellation;
+
     private TerrainRenderPass currentRenderPass;
     private GlVertexFormat currentVertexFormat;
 
@@ -101,7 +103,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                         occlusionCamera.intX, occlusionCamera.intY, occlusionCamera.intZ)) {
                     numRebuilds++;
                     cached = BatchAssembler.createCachedBatch(region, storage, renderList, occlusionCamera, renderPass,
-                            useBlockFaceCulling, commandList);
+                            useBlockFaceCulling, commandList, this.tessellationProvider);
 
                     storage.storeCachedMultiDrawBatch(cacheParams, cached);
                 }
@@ -114,11 +116,9 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                                 .ensureCapacity(commandList, batch.getIndexBufferSize());
                     }
 
-                    var tessellation = this.prepareTessellation(commandList, region);
-
                     setModelMatrixUniforms(shader, region, camera);
                     shader.setSectionAges(timestamp, region.getSectionLoadTimes());
-                    batch.execute(commandList, tessellation, primitiveType);
+                    batch.execute(commandList, cached.getTessellation(), primitiveType);
                 }
             }
 
@@ -143,17 +143,15 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return (chunkBlockPos - cameraBlockPos) - cameraPos;
     }
 
-    private GlTessellation prepareTessellation(CommandList commandList, RenderRegion region) {
-        var resources = region.getResources(this.currentVertexFormat);
-        var tessellation = this.currentRenderPass.isSorted() ? resources.getIndexedTessellation() : resources.getTessellation();
+    private GlTessellation prepareTessellation(CommandList commandList, RenderRegion region, TerrainRenderPass pass) {
+        var resources = region.getResources();
+        var key = pass.tessellationKey();
+
+        var tessellation = resources.getTessellation(key);
 
         if (tessellation == null) {
             tessellation = this.createRegionTessellation(commandList, resources);
-            if (this.currentRenderPass.isSorted()) {
-                resources.updateIndexedTessellation(commandList, tessellation);
-            } else {
-                resources.updateTessellation(commandList, tessellation);
-            }
+            resources.updateTessellation(commandList, key, tessellation);
         }
 
         return tessellation;

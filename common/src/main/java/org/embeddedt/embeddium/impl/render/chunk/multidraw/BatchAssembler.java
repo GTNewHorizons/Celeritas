@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk.multidraw;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.DirectMultiDrawBatch;
 import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
+import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.LocalSectionIndex;
@@ -96,17 +97,29 @@ public final class BatchAssembler {
         return batch;
     }
 
+    @FunctionalInterface
+    public interface TessellationProvider {
+        GlTessellation getTessellation(CommandList commandList, RenderRegion region, TerrainRenderPass pass);
+    }
+
     public static CachedBatch createCachedBatch(RenderRegion region,
                                                 SectionRenderDataStorage storage,
                                                 ChunkRenderList renderList,
                                                 CameraTransform camera,
                                                 TerrainRenderPass pass,
                                                 boolean useBlockFaceCulling,
-                                                CommandList commandList) {
+                                                CommandList commandList,
+                                                TessellationProvider tessellationProvider) {
         var batch = fillRegion(region, storage, renderList, camera, pass, useBlockFaceCulling);
+
+        GlTessellation tessellation = null;
 
         if (batch != null) {
             batch.upload(commandList);
+
+            if (!batch.isEmpty()) {
+                tessellation = tessellationProvider.getTessellation(commandList, region, pass);
+            }
         }
 
         long intervalX, intervalY, intervalZ;
@@ -119,7 +132,7 @@ public final class BatchAssembler {
             intervalX = intervalY = intervalZ = (Integer.MIN_VALUE & 0xFFFFFFFFL) | ((long) Integer.MAX_VALUE << 32);
         }
 
-        return new CachedBatch(batch,
+        return new CachedBatch(batch, tessellation,
                 renderList.getSectionsWithGeometry(), renderList.getSectionsWithGeometryCount(),
                 intervalMin(intervalX), intervalMax(intervalX),
                 intervalMin(intervalY), intervalMax(intervalY),

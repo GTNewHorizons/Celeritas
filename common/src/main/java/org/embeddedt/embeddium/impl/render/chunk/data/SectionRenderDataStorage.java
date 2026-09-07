@@ -19,6 +19,8 @@ public class SectionRenderDataStorage {
     private final ChunkPrimitiveType primitiveType;
     private final SectionRenderDataUnsafe.Strategy storageStrategy;
 
+    private final int verticesPerArenaElement;
+
     private int numAllocations;
 
     public record BatchCacheParams(boolean useBlockFaceCulling) {}
@@ -30,13 +32,14 @@ public class SectionRenderDataStorage {
     private BatchCacheParams secondBatchParams;
     private CachedBatch secondCachedBatch;
 
-    public SectionRenderDataStorage(ChunkPrimitiveType primitiveType, boolean sorted) {
+    public SectionRenderDataStorage(ChunkPrimitiveType primitiveType, boolean sorted, int verticesPerArenaElement) {
         this.storageStrategy = sorted ? SectionRenderDataUnsafe.Strategy.FULL : SectionRenderDataUnsafe.Strategy.COMPACT;
         this.pMeshDataArray = this.storageStrategy.allocateHeap();
         if (this.pMeshDataArray == 0) {
             throw new OutOfMemoryError("Failed to allocate mesh data array");
         }
         this.primitiveType = primitiveType;
+        this.verticesPerArenaElement = verticesPerArenaElement;
     }
 
     public boolean isEmpty() {
@@ -64,7 +67,7 @@ public class SectionRenderDataStorage {
         this.indexAllocations[localSectionIndex] = indexAllocation;
         this.numAllocations++;
 
-        int vertexOffset = allocation.getOffset();
+        int vertexOffset = allocation.getOffset() * this.verticesPerArenaElement;
         int indexOffset = indexAllocation != null ? indexAllocation.getOffset() * 4 : 0;
 
         this.storageStrategy.writeMeshesAndSliceMask(this.pMeshDataArray, localSectionIndex, vertexOffset, indexOffset, ranges, this.primitiveType);
@@ -127,7 +130,7 @@ public class SectionRenderDataStorage {
 
         var indexAllocation = this.indexAllocations[sectionIndex];
 
-        var vertexOffset = allocation.getOffset();
+        var vertexOffset = allocation.getOffset() * this.verticesPerArenaElement;
         var indexOffset = indexAllocation != null ? indexAllocation.getOffset() * 4 : 0;
 
         var data = this.getDataPointer(sectionIndex);
@@ -180,7 +183,7 @@ public class SectionRenderDataStorage {
         }
     }
 
-    private void invalidateCachedBatches() {
+    public void invalidateCachedBatches() {
         if (firstCachedBatch != null) {
             firstCachedBatch.delete();
             firstCachedBatch = null;

@@ -291,9 +291,9 @@ public class GlBufferArena {
         // If we weren't able to upload some buffers, they will have been left behind in the queue
         if (!queue.isEmpty()) {
             // Calculate the amount of memory needed for the remaining uploads
-            int remainingElements = (int)(queue.stream()
-                    .mapToLong(upload -> upload.getDataBuffer().getLength())
-                    .sum() / this.stride);
+            int remainingElements = (int)queue.stream()
+                    .mapToLong(upload -> this.elementsFor(upload.getDataBuffer().getLength()))
+                    .sum();
 
             // Ask the arena to grow to accommodate the remaining uploads
             // This will force a re-allocation and compaction, which will leave us a continuous free segment
@@ -321,7 +321,7 @@ public class GlBufferArena {
         ByteBuffer data = upload.getDataBuffer()
                 .getDirectBuffer();
 
-        int elementCount = data.remaining() / this.stride;
+        int elementCount = this.elementsFor(data.remaining());
 
         GlBufferSegment dst = this.alloc(elementCount);
 
@@ -335,6 +335,10 @@ public class GlBufferArena {
         upload.setResult(dst);
 
         return true;
+    }
+
+    private int elementsFor(int byteLength) {
+        return (int)(((long)byteLength + this.stride - 1) / this.stride);
     }
 
     public void ensureCapacity(CommandList commandList, int elementCount) {
