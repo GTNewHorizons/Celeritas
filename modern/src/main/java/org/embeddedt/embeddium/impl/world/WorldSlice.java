@@ -262,7 +262,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
         // erase any pointers to resources we no longer need
         // no point in cleaning the pre-allocated arrays (such as block state storage) since we hold the
         // only reference.
-        for (int sectionIndex = 0; sectionIndex < SECTION_ARRAY_LENGTH; sectionIndex++) {
+        for (int sectionIndex = 0; sectionIndex < SECTION_ARRAY_SIZE; sectionIndex++) {
             Arrays.fill(this.lightArrays[sectionIndex], null);
 
             this.blockEntityArrays[sectionIndex] = null;
