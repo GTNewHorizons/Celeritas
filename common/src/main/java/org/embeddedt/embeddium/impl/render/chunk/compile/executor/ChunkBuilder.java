@@ -41,7 +41,7 @@ public class ChunkBuilder {
      * the floor and the scheduler falls back to the legacy fixed per-frame budget of
      * {@link #TASK_QUEUE_LIMIT_PER_WORKER} tasks per worker.
      */
-    private static final boolean ENABLE_ADAPTIVE_SCHEDULING = true;
+    private static final boolean ENABLE_ADAPTIVE_SCHEDULING = false;
 
     /**
      * Whether changes to the adaptive in-flight target are logged. Intended for tuning only.
