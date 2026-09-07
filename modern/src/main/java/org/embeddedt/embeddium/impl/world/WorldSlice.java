@@ -122,12 +122,9 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
     // The biome blend cache
     private final BiomeColorCache biomeColors;
 
-    // (Local Section -> Block States) table. The inner array references point at the corresponding entry
-    // in trueBlockArrays if the section is non-empty, and EMPTY_BLOCK_STATE_ARRAY otherwise.
+    // (Local Section -> Block States) table. The inner array references point at the unpacked block data owned by
+    // the corresponding ClonedChunkSection if the section is non-empty, and EMPTY_BLOCK_STATE_ARRAY otherwise.
     private final BlockState[][] blockArrays;
-
-    // Backing store for the non-empty blockArrays.
-    private final BlockState[][] trueBlockArrays;
 
     // (Local Section -> Light Arrays) table.
     private final @Nullable DataLayer[][] lightArrays;
@@ -199,7 +196,6 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
         this.world = world;
 
         this.blockArrays = new BlockState[SECTION_ARRAY_SIZE][];
-        this.trueBlockArrays = new BlockState[SECTION_ARRAY_SIZE][SECTION_BLOCK_COUNT];
         this.lightArrays = new DataLayer[SECTION_ARRAY_SIZE][LIGHT_TYPES.length];
 
         this.blockEntityArrays = new Int2ReferenceMap[SECTION_ARRAY_SIZE];
@@ -214,10 +210,6 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
                 //Minecraft.getInstance().options.biomeBlendRadius
         );
 
-
-        for (BlockState[] blockArray : this.trueBlockArrays) {
-            Arrays.fill(blockArray, EMPTY_BLOCK_STATE);
-        }
 
         // Default to all block array references pointing at the canonical empty array.
         // They will be replaced later when section data is copied in.
@@ -261,16 +253,9 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
     }
 
     private void unpackBlockData(int sectionIndex, ClonedChunkSection section) {
-        if (section.getBlockData() == null) {
-            // blockArrays[sectionIndex] already initialized to empty in reset() and constructor
-            return;
-        }
+        var blockData = section.getUnpackedBlockData();
 
-        this.blockArrays[sectionIndex] = this.trueBlockArrays[sectionIndex];
-
-        var container = ReadableContainerExtended.of(section.getBlockData());
-
-        container.sodium$unpack(this.blockArrays[sectionIndex]);
+        this.blockArrays[sectionIndex] = blockData != null ? blockData : EMPTY_BLOCK_STATE_ARRAY;
     }
 
     public void reset() {

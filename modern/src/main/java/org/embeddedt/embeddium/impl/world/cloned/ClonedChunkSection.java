@@ -40,6 +40,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 
 public class ClonedChunkSection {
+    // The number of blocks in a section.
+    private static final int SECTION_BLOCK_COUNT = 16 * 16 * 16;
+
     //? if >=1.18 {
     private static final int DATA_LAYER_COUNT = DataLayer.LAYER_COUNT;
     //?} else {
@@ -78,6 +81,8 @@ public class ClonedChunkSection {
     private final @Nullable DataLayer[] lightDataArrays;
 
     private final @Nullable PalettedContainer<BlockState> blockData;
+
+    private volatile @Nullable BlockState[] unpackedBlockData;
 
     //? if >=1.18.2
     private final @Nullable PalettedContainer<Holder<Biome>> biomeData;
@@ -307,6 +312,37 @@ public class ClonedChunkSection {
 
     public @Nullable PalettedContainer<BlockState> getBlockData() {
         return this.blockData;
+    }
+
+    /**
+     * {@return the block states of this section indexed by {@link WorldSlice#getLocalBlockIndex}, or null if the
+     * section is empty}
+     *
+     * <p>The returned array is shared between every world slice holding this section, and between the threads
+     * meshing them. Callers must treat it as immutable.</p>
+     */
+    public @Nullable BlockState[] getUnpackedBlockData() {
+        if (this.blockData == null) {
+            return null;
+        }
+
+        var unpacked = this.unpackedBlockData;
+
+        if (unpacked == null) {
+            synchronized (this) {
+                unpacked = this.unpackedBlockData;
+
+                if (unpacked == null) {
+                    unpacked = new BlockState[SECTION_BLOCK_COUNT];
+
+                    ReadableContainerExtended.of(this.blockData).sodium$unpack(unpacked);
+
+                    this.unpackedBlockData = unpacked;
+                }
+            }
+        }
+
+        return unpacked;
     }
 
     //? if >=1.18.2 {
