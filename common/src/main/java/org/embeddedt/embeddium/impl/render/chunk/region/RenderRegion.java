@@ -43,7 +43,8 @@ public class RenderRegion {
         }
     }
 
-    private static final int INITIAL_GEOMETRY_BYTES_PER_SECTION = 756 * 24;
+    private static final int MINIMUM_GEOMETRY_ARENA_BYTES = 512 * 1024;
+    private static final int MINIMUM_INDEX_ARENA_BYTES = 64 * 1024;
 
     private final StagingBuffer stagingBuffer;
     private final int commonVertexStride;
@@ -309,7 +310,7 @@ public class RenderRegion {
         private final Map<TerrainRenderPass.TessellationKey, GlTessellation> tessellations = new Object2ReferenceOpenHashMap<>();
 
         public DeviceResources(CommandList commandList, StagingBuffer stagingBuffer, int commonVertexStride) {
-            this.geometryArena = new GlBufferArena(commandList, (REGION_SIZE * INITIAL_GEOMETRY_BYTES_PER_SECTION) / commonVertexStride, commonVertexStride, stagingBuffer);
+            this.geometryArena = new GlBufferArena(commandList, commonVertexStride, MINIMUM_GEOMETRY_ARENA_BYTES, stagingBuffer);
             this.stagingBuffer = stagingBuffer;
         }
 
@@ -362,7 +363,7 @@ public class RenderRegion {
 
         public GlBufferArena getOrCreateIndexArena(CommandList commandList) {
             if (this.indexArena == null) {
-                this.indexArena = new GlBufferArena(commandList, (REGION_SIZE * 126) / 4 * 6, 4, this.stagingBuffer);
+                this.indexArena = new GlBufferArena(commandList, 4, MINIMUM_INDEX_ARENA_BYTES, this.stagingBuffer);
             }
             return this.indexArena;
         }
