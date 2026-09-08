@@ -7,7 +7,8 @@ plugins {
 }
 
 group = "org.embeddedt.celeritas"
-version = rootProject.version
+// Pinned GTNH release; rootProject.version is upstream's tau-derived version.
+version = "2.5.12-GTNH"
 
 java {
     toolchain {
@@ -192,6 +193,14 @@ publishing {
             }
             authentication {
                 basic(BasicAuthentication)
+            }
+        }
+        maven {
+            name = "gtnh"
+            url = uri("https://nexus.gtnewhorizons.com/repository/releases/")
+            credentials {
+                username = System.getenv("MAVEN_USER")
+                password = System.getenv("MAVEN_PASSWORD")
             }
         }
     }
