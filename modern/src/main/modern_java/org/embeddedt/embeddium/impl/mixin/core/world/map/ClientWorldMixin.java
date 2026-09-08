@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.mixin.core.world.map;
 
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkStatus;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
+import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerImpl;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -17,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientLevel.class)
 public class ClientWorldMixin implements ChunkTrackerHolder {
     @Unique
-    private final ChunkTracker chunkTracker = new ChunkTracker();
+    private final ChunkTracker chunkTracker = new ChunkTrackerImpl();
 
     @Override
     public ChunkTracker sodium$getTracker() {

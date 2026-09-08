@@ -19,7 +19,6 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
-import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -238,7 +237,7 @@ public class CeleritasWorldRenderer {
 
     private void processChunkEvents() {
         var tracker = ChunkTrackerHolder.get(this.world);
-        tracker.forEachEvent(this.renderSectionManager::onChunkAdded, this.renderSectionManager::onChunkRemoved);
+        tracker.forEachEvent(this.renderSectionManager);
     }
 
     /**
@@ -289,7 +288,7 @@ public class CeleritasWorldRenderer {
         this.renderSectionManager = ArchaicRenderSectionManager.create(vertexType, this.world, this.renderDistance, commandList);
 
         var tracker = ChunkTrackerHolder.get(this.world);
-        ChunkTracker.forEachChunk(tracker.getReadyChunks(), this.renderSectionManager::onChunkAdded);
+        tracker.forEachReady(this.renderSectionManager);
     }
 
     // We track whether a block entity uses custom block outline rendering, so that the outline postprocessing
