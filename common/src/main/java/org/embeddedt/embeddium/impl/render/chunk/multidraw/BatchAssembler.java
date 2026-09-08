@@ -43,6 +43,12 @@ public final class BatchAssembler {
         return batchFactory.create(capacity);
     }
 
+    private static long cachedBatchesCreated;
+
+    public static long getCachedBatchesCreated() {
+        return cachedBatchesCreated;
+    }
+
     /**
      * Assembles every draw command for one region into {@code batch}, which is cleared first.
      * The returned batch must be uploaded before being used.
@@ -121,6 +127,8 @@ public final class BatchAssembler {
                                                 boolean useBlockFaceCulling,
                                                 CommandList commandList,
                                                 TessellationProvider tessellationProvider) {
+        cachedBatchesCreated++;
+
         var batch = fillRegion(region, storage, renderList, camera, pass, useBlockFaceCulling);
 
         GlTessellation tessellation = null;

@@ -22,6 +22,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class RenderRegionManager {
+    private static long sectionsUploaded;
+    private static long bytesUploaded;
+
     private final Long2ReferenceOpenHashMap<RenderRegion> regions = new Long2ReferenceOpenHashMap<>();
     private final BitSet regionIds = new BitSet();
     private int nextFreeId = 0;
@@ -172,6 +175,11 @@ public class RenderRegionManager {
                     var indexResult = upload.indexUpload() != null ? upload.indexUpload().getResult() : null;
                     storage.setMeshes(upload.section().getSectionIndex(),
                             upload.vertexUpload().getResult(), indexResult, meshUpload.meshData().ranges());
+                    sectionsUploaded++;
+                    bytesUploaded += upload.vertexUpload().getLength();
+                    if (upload.indexUpload() != null) {
+                        bytesUploaded += upload.indexUpload().getLength();
+                    }
                 } else if (upload instanceof PendingMeshSortUpload) {
                     // Replace index buffer
                     storage.replaceIndexBuffer(upload.section().getSectionIndex(), upload.indexUpload().getResult());
@@ -211,6 +219,14 @@ public class RenderRegionManager {
 
     public Collection<RenderRegion> getLoadedRegions() {
         return this.regions.values();
+    }
+
+    public static long getSectionsUploaded() {
+        return sectionsUploaded;
+    }
+
+    public static long getBytesUploaded() {
+        return bytesUploaded;
     }
 
     public StagingBuffer getStagingBuffer() {
