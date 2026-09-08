@@ -24,7 +24,7 @@ public final class BatchAssembler {
      * Magic sentinel returned by {@link BatchAssembler#uniformCullMask} when sections in the region have differing
      * cull masks.
      */
-    private static final int MASK_NOT_UNIFORM = -1;
+    public static final int MASK_NOT_UNIFORM = -1;
 
     private BatchAssembler() {
     }
@@ -160,7 +160,7 @@ public final class BatchAssembler {
      * behaves the same way on its own axis. A bit that agrees at the lowest and the highest section therefore agrees at
      * every section in between, so if the two corner masks are equal, that mask is the mask of the whole region.
      */
-    private static int uniformCullMask(RenderRegion region, CameraTransform camera) {
+    public static int uniformCullMask(RenderRegion region, CameraTransform camera) {
         int minX = region.getChunkX(), minY = region.getChunkY(), minZ = region.getChunkZ();
         int maxX = minX + RenderRegion.REGION_WIDTH - 1;
         int maxY = minY + RenderRegion.REGION_HEIGHT - 1;
@@ -186,7 +186,7 @@ public final class BatchAssembler {
     /**
      * Decomposes a packed cull mask of visible facings into a run plan.
      */
-    private static long packRuns(int mask) {
+    public static long packRuns(int mask) {
         long runs = 0;
         int count = 0;
 
@@ -212,21 +212,21 @@ public final class BatchAssembler {
     /**
      * {@return the number of runs packed in this plan}
      */
-    private static int runCount(long runs) {
+    public static int runCount(long runs) {
         return (int) (runs >>> RUN_COUNT_SHIFT) & 0xF;
     }
 
     /**
      * {@return the first facing of run `run` in the plan}
      */
-    private static int runFirst(long runs, int run) {
+    public static int runFirst(long runs, int run) {
         return (int) (runs >>> (run << 3)) & 0xF;
     }
 
     /**
      * {@return the last facing of run `run` in the plan}
      */
-    private static int runLast(long runs, int run) {
+    public static int runLast(long runs, int run) {
         return (int) (runs >>> ((run << 3) + 4)) & 0xF;
     }
 
