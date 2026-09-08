@@ -21,6 +21,12 @@ public final class LWJGLServiceProvider {
     }
 
     static LWJGLService createInstance() {
+        var override = System.getProperty("celeritas.lwjglService");
+
+        if (override != null) {
+            return constructInstance(override);
+        }
+
         try {
             Class.forName("org.lwjgl.opengl.GL11C");
             return constructInstance("org.taumc.celeritas.lwjgl.lwjgl3.LWJGL3Service");
