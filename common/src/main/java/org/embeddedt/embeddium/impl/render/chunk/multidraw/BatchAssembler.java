@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk.multidraw;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.DirectMultiDrawBatch;
 import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
+import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatchFactory;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
@@ -28,8 +29,18 @@ public final class BatchAssembler {
     private BatchAssembler() {
     }
 
+    private static volatile MultiDrawBatchFactory batchFactory = DirectMultiDrawBatch::new;
+
+    public static void setBatchFactory(MultiDrawBatchFactory factory) {
+        batchFactory = factory;
+    }
+
+    public static MultiDrawBatchFactory getBatchFactory() {
+        return batchFactory;
+    }
+
     private static MultiDrawBatch createBatch(int capacity) {
-        return new DirectMultiDrawBatch(capacity);
+        return batchFactory.create(capacity);
     }
 
     /**
