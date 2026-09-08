@@ -74,7 +74,8 @@ public final class IndirectMultiDrawBatch extends MultiDrawBatch {
 
     @Override
     public void upload(CommandList commandList) {
-        commandList.uploadData(this.bufferObject, this.pCommands, (long) this.size * COMMAND_SIZE, GlBufferUsage.STATIC_DRAW);
+        commandList.uploadData(this.bufferObject, this.pCommands, (long) this.size * COMMAND_SIZE,
+                GlBufferUsage.STATIC_DRAW, GlBufferTarget.DRAW_INDIRECT_BUFFER);
 
         // Nothing after this point needs the CPU-side copy.
         LWJGL.nmemAlignedFree(this.pCommands);
