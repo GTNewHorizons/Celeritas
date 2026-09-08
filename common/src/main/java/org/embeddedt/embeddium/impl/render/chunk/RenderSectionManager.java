@@ -243,6 +243,17 @@ public abstract class RenderSectionManager {
             this.createTerrainRenderList(playerViewport, null, frame, spectator);
         }
 
+        if (this.canSubmitShadowGraphSearch()) {
+            this.submitShadowGraphSearch(shadowViewport, frame);
+        }
+    }
+
+    /** When false, {@link #updateForShadowPass} keeps the previous shadow lists instead of searching again. */
+    protected boolean canSubmitShadowGraphSearch() {
+        return true;
+    }
+
+    protected void submitShadowGraphSearch(Viewport shadowViewport, int frame) {
         Vector3fc lightVector = null;
 
         if (shadowViewport.getFrustum() instanceof ShadowSearchFrustum searchFrustum && searchFrustum.supportsOcclusionSearch()) {
