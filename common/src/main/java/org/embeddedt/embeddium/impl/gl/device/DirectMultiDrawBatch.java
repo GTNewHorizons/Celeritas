@@ -8,7 +8,7 @@ import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 import org.taumc.celeritas.lwjgl.LWJGLServiceProvider;
 import java.nio.IntBuffer;
 
-public final class DirectMultiDrawBatch extends MultiDrawBatch {
+public class DirectMultiDrawBatch extends MultiDrawBatch {
     public final long pElementPointer;
     public final long pElementCount;
     public final long pBaseVertex;
