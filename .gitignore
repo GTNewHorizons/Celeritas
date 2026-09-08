@@ -41,3 +41,5 @@ bin/
 **/run/
 
 /versions-local.json
+
+local/**

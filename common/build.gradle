@@ -7,7 +7,8 @@ plugins {
 }
 
 group = "org.embeddedt.celeritas"
-version = rootProject.version
+// Not rootProject.version: upstream's base is 2.4 and would sort below the published 2.5.x-GTNH.
+version = "2.5.11-GTNH"
 
 java {
     toolchain {
@@ -185,6 +186,14 @@ publishing {
             }
             authentication {
                 basic(BasicAuthentication)
+            }
+        }
+        maven {
+            name = "gtnh"
+            url = uri("https://nexus.gtnewhorizons.com/repository/releases/")
+            credentials {
+                username = System.getenv("MAVEN_USER")
+                password = System.getenv("MAVEN_PASSWORD")
             }
         }
     }
