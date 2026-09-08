@@ -1017,15 +1017,21 @@ public abstract class RenderSectionManager {
 
     protected final Supplier<Object2LongMap<TerrainRenderPass>> renderPassTimingsDebounced = new ExpiringSupplier<>(this::computeRenderPassTimingsMap, 1, TimeUnit.SECONDS);
 
-    public Collection<String> getDebugStrings() {
-        List<String> list = new ArrayList<>();
+    public static final class DeviceMemoryStats {
+        public long deviceUsed, deviceAllocated;
+        public long indexUsed, indexAllocated;
+        public int bufferCount;
+    }
 
-        int count = 0, indexCount = 0;
+    private final DeviceMemoryStats deviceMemoryStats = new DeviceMemoryStats();
 
-        long deviceUsed = 0;
-        long deviceAllocated = 0;
-
-        long indexUsed = 0, indexAllocated = 0;
+    public DeviceMemoryStats getDeviceMemoryStats() {
+        var stats = this.deviceMemoryStats;
+        stats.deviceUsed = 0;
+        stats.deviceAllocated = 0;
+        stats.indexUsed = 0;
+        stats.indexAllocated = 0;
+        stats.bufferCount = 0;
 
         for (var region : this.regions.getLoadedRegions()) {
             var resources = region.getResources();
@@ -1036,21 +1042,28 @@ public abstract class RenderSectionManager {
 
             var buffer = resources.getGeometryArena();
 
-            deviceUsed += buffer.getDeviceUsedMemoryL();
-            deviceAllocated += buffer.getDeviceAllocatedMemoryL();
+            stats.deviceUsed += buffer.getDeviceUsedMemoryL();
+            stats.deviceAllocated += buffer.getDeviceAllocatedMemoryL();
 
             var indexBuffer = resources.getIndexArena();
 
             if (indexBuffer != null) {
-                indexUsed += indexBuffer.getDeviceUsedMemoryL();
-                indexAllocated += indexBuffer.getDeviceAllocatedMemoryL();
-                indexCount++;
+                stats.indexUsed += indexBuffer.getDeviceUsedMemoryL();
+                stats.indexAllocated += indexBuffer.getDeviceAllocatedMemoryL();
             }
 
-            count++;
+            stats.bufferCount++;
         }
 
-        list.add(String.format("G: %d/%d, I: %d/%d MiB (%d buffers)", MathUtil.toMib(deviceUsed), MathUtil.toMib(deviceAllocated), MathUtil.toMib(indexUsed), MathUtil.toMib(indexAllocated), count));
+        return stats;
+    }
+
+    public Collection<String> getDebugStrings() {
+        List<String> list = new ArrayList<>();
+
+        var mem = this.getDeviceMemoryStats();
+
+        list.add(String.format("G: %d/%d, I: %d/%d MiB (%d buffers)", MathUtil.toMib(mem.deviceUsed), MathUtil.toMib(mem.deviceAllocated), MathUtil.toMib(mem.indexUsed), MathUtil.toMib(mem.indexAllocated), mem.bufferCount));
         list.add(String.format("Transfer Queue: %s", this.regions.getStagingBuffer().toString()));
 
         var rebuildLists = this.getCurrentRenderListManager().getRebuildLists();
