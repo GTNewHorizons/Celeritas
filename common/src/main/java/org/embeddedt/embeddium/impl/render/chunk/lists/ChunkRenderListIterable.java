@@ -9,6 +9,8 @@ public interface ChunkRenderListIterable {
 
     int getNumRegions();
 
+    ChunkRenderList getRegion(int index);
+
     default Iterator<ChunkRenderList> iterator() {
         return this.iterator(false);
     }
