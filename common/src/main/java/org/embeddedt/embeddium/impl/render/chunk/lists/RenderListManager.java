@@ -162,6 +162,10 @@ public class RenderListManager {
         this.needsUpdate = false;
     }
 
+    public boolean hasOcclusionFutureInFlight() {
+        return this.currentOcclusionFuture != null;
+    }
+
     public void finishPreviousGraphUpdate() {
         if (currentOcclusionFuture != null) {
             VisibleChunkCollector visitor = currentOcclusionFuture.join();

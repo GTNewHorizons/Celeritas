@@ -101,6 +101,8 @@ public abstract class RenderSectionManager {
     @Nullable
     protected final RenderListManager shadowRenderListManager;
 
+    private final Vector3f shadowLightVector = new Vector3f();
+
     // Set by the shadow pass, which precedes the terrain pass in a frame and submits both searches. The terrain
     // pass of the same frame then skips re-running the search.
     private boolean shadowPassRanThisFrame;
@@ -229,14 +231,32 @@ public abstract class RenderSectionManager {
             this.createTerrainRenderList(playerViewport, null, frame, spectator);
         }
 
+        this.submitShadowGraphSearch(shadowViewport, frame);
+    }
+
+    protected boolean canSubmitShadowGraphSearch() {
+        return this.shadowRenderListManager != null;
+    }
+
+    protected boolean submitShadowGraphSearch(Viewport shadowViewport, int frame) {
+        if (!this.canSubmitShadowGraphSearch()) {
+            return false;
+        }
+
+        if (this.shadowRenderListManager.hasOcclusionFutureInFlight()) {
+            throw new IllegalStateException("Occlusion work in progress while trying to submit next task");
+        }
+
         Vector3fc lightVector = null;
 
         if (shadowViewport.getFrustum() instanceof ShadowSearchFrustum searchFrustum && searchFrustum.supportsOcclusionSearch()) {
-            lightVector = new Vector3f(searchFrustum.shadowLightX(), searchFrustum.shadowLightY(), searchFrustum.shadowLightZ());
+            lightVector = this.shadowLightVector.set(searchFrustum.shadowLightX(), searchFrustum.shadowLightY(), searchFrustum.shadowLightZ());
         }
 
         this.shadowRenderListManager.startShadowGraphUpdate(shadowViewport, frame, this.regions.getRegionIdsLength(),
                 this.getSearchDistance(null), lightVector, this.getTargetQueueSize());
+
+        return true;
     }
 
     private void updateCameraPosition(Viewport positionedViewport) {
