@@ -187,7 +187,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
         this.renderSectionManager.updateChunks(updateChunksImmediately);
     }
 
-    private void processChunkEvents() {
+    protected void processChunkEvents() {
         var tracker = ChunkTrackerHolder.get(this.world);
         tracker.forEachEvent(this.renderSectionManager::onChunkAdded, this.renderSectionManager::onChunkRemoved);
     }
