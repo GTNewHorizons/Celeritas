@@ -224,14 +224,12 @@ public class RenderListManager {
     private RenderListDebugStatistics computeDebugStatistics() {
         Object2IntOpenHashMap<TerrainRenderPass> renderPassCounts = new Object2IntOpenHashMap<>();
 
-        var iterator = renderLists.iterator();
-
         int[] sectionCounts = new int[TranslucentQuadAnalyzer.Level.VALUES.length];
 
         boolean isSorting = renderLists.getPasses().stream().anyMatch(TerrainRenderPass::isSorted);
 
-        while (iterator.hasNext()) {
-            var renderList = iterator.next();
+        for (int i = 0, numRegions = renderLists.getNumRegions(); i < numRegions; i++) {
+            var renderList = renderLists.getRegion(i);
 
             if (renderList.getSectionsWithGeometryCount() == 0) {
                 continue;

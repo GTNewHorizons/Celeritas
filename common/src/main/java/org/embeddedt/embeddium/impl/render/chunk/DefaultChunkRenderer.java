@@ -21,8 +21,6 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
-
 public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
     private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer> sharedIndexBuffers;
 
@@ -77,7 +75,8 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
 
             var primitiveType = shader.getPrimitiveType();
 
-            Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
+            boolean reverse = renderPass.isReverseOrder();
+            int numRegions = renderLists.getNumRegions();
 
             this.currentRenderPass = renderPass;
             this.currentVertexFormat = this.renderPassConfiguration.getVertexTypeForPass(this.currentRenderPass).getVertexFormat();
@@ -89,8 +88,8 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             useBlockFaceCulling = useBlockFaceCulling && !renderPass.isSorted();
             var cacheParams = new SectionRenderDataStorage.BatchCacheParams(useBlockFaceCulling);
 
-            while (iterator.hasNext()) {
-                ChunkRenderList renderList = iterator.next();
+            for (int i = 0; i < numRegions; i++) {
+                ChunkRenderList renderList = renderLists.getRegion(reverse ? (numRegions - 1) - i : i);
 
                 var region = renderList.getRegion();
                 var storage = region.getStorage(renderPass);

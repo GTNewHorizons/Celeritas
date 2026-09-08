@@ -9,7 +9,6 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
-import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -262,10 +261,9 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
     private int renderCulledBlockEntities(BLOCKENTITY_RENDER_CONTEXT renderContext) {
         int count = 0;
         SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
-        Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
 
-        while (renderListIterator.hasNext()) {
-            var renderList = renderListIterator.next();
+        for (int i = 0, numRegions = renderLists.getNumRegions(); i < numRegions; i++) {
+            var renderList = renderLists.getRegion(i);
 
             var renderRegion = renderList.getRegion();
             var renderSectionIterator = renderList.sectionsWithEntitiesIterator();

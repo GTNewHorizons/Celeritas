@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.render.chunk.data;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
-import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderVisualsService;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.util.iterator.ConcatenatedIterator;
@@ -52,10 +51,8 @@ public class MinecraftBuiltRenderSectionData<SPRITE, BLOCKENTITY> extends BuiltR
     public static <BLOCKENTITY> Iterator<BLOCKENTITY> generateBlockEntityIterator(SortedRenderLists renderLists, Collection<RenderSection> globalSections) {
         List<Iterator<BLOCKENTITY>> iterators = new ArrayList<>();
 
-        Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
-
-        while (renderListIterator.hasNext()) {
-            var renderList = renderListIterator.next();
+        for (int i = 0, numRegions = renderLists.getNumRegions(); i < numRegions; i++) {
+            var renderList = renderLists.getRegion(i);
 
             var renderRegion = renderList.getRegion();
             var renderSectionIterator = renderList.sectionsWithEntitiesIterator();
@@ -97,10 +94,8 @@ public class MinecraftBuiltRenderSectionData<SPRITE, BLOCKENTITY> extends BuiltR
 
     @SuppressWarnings("unchecked")
     public static <BLOCKENTITY> void forEachBlockEntity(Consumer<BLOCKENTITY> consumer, SortedRenderLists renderLists, Collection<RenderSection> globalSections) {
-        Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
-
-        while (renderListIterator.hasNext()) {
-            var renderList = renderListIterator.next();
+        for (int i = 0, numRegions = renderLists.getNumRegions(); i < numRegions; i++) {
+            var renderList = renderLists.getRegion(i);
 
             var renderRegion = renderList.getRegion();
             var renderSectionIterator = renderList.sectionsWithEntitiesIterator();

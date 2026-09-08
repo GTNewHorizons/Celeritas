@@ -276,8 +276,9 @@ public abstract class RenderSectionManager {
         if (!this.hasTranslucencySortedSections()) {
             return;
         }
-        for (Iterator<ChunkRenderList> it = renderListManager.getRenderLists().iterator(); it.hasNext(); ) {
-            ChunkRenderList entry = it.next();
+        var renderLists = renderListManager.getRenderLists();
+        for (int i = 0, numRegions = renderLists.getNumRegions(); i < numRegions; i++) {
+            ChunkRenderList entry = renderLists.getRegion(i);
             var region = entry.getRegion();
             if (!region.hasSectionsInPass(translucentPass)) {
                 continue;
@@ -800,11 +801,10 @@ public abstract class RenderSectionManager {
 
     public int getVisibleChunkCount() {
         var sections = 0;
-        var iterator = this.getCurrentRenderListManager().getRenderLists().iterator();
+        var renderLists = this.getCurrentRenderListManager().getRenderLists();
 
-        while (iterator.hasNext()) {
-            var renderList = iterator.next();
-            sections += renderList.getSectionsWithGeometryCount();
+        for (int i = 0, numRegions = renderLists.getNumRegions(); i < numRegions; i++) {
+            sections += renderLists.getRegion(i).getSectionsWithGeometryCount();
         }
 
         return sections;
@@ -972,8 +972,9 @@ public abstract class RenderSectionManager {
 
         int[] sectionCounts = new int[TranslucentQuadAnalyzer.Level.VALUES.length];
 
-        for (Iterator<ChunkRenderList> it = this.getCurrentRenderListManager().getRenderLists().iterator(); it.hasNext(); ) {
-            var renderList = it.next();
+        var renderLists = this.getCurrentRenderListManager().getRenderLists();
+        for (int i = 0, numRegions = renderLists.getNumRegions(); i < numRegions; i++) {
+            var renderList = renderLists.getRegion(i);
             var region = renderList.getRegion();
             var listIter = renderList.sectionsWithGeometryIterator();
             if(listIter != null) {
