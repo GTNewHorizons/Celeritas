@@ -6,6 +6,7 @@ import org.embeddedt.embeddium.impl.gl.array.GlVertexArray;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
+import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.tessellation.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
@@ -13,10 +14,13 @@ import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderListIterable;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.multidraw.BatchAssembler;
+import org.embeddedt.embeddium.impl.render.chunk.multidraw.CachedBatch;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Iterator;
 
 public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
@@ -85,8 +89,6 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             useBlockFaceCulling = useBlockFaceCulling && !renderPass.isSorted();
             var cacheParams = new SectionRenderDataStorage.BatchCacheParams(useBlockFaceCulling);
 
-            int numRebuilds = 0;
-
             while (iterator.hasNext()) {
                 ChunkRenderList renderList = iterator.next();
 
@@ -97,18 +99,10 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                     continue;
                 }
 
-                var cached = storage.getCachedMultiDrawBatch(cacheParams);
+                var cached = this.getRegionBatch(commandList, region, storage, renderList, occlusionCamera, renderPass,
+                        useBlockFaceCulling, cacheParams);
 
-                if (cached == null || !cached.isValidFor(renderList.getSectionsWithGeometry(), renderList.getSectionsWithGeometryCount(),
-                        occlusionCamera.intX, occlusionCamera.intY, occlusionCamera.intZ)) {
-                    numRebuilds++;
-                    cached = BatchAssembler.createCachedBatch(region, storage, renderList, occlusionCamera, renderPass,
-                            useBlockFaceCulling, commandList, this.tessellationProvider);
-
-                    storage.storeCachedMultiDrawBatch(cacheParams, cached);
-                }
-
-                var batch = cached.getBatch();
+                var batch = cached != null ? cached.getBatch() : null;
 
                 if (batch != null && !batch.isEmpty()) {
                     if (!renderPass.isSorted()) {
@@ -118,7 +112,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
 
                     setModelMatrixUniforms(shader, region, camera);
                     shader.setSectionAges(timestamp, region.getSectionLoadTimes());
-                    batch.execute(commandList, cached.getTessellation(), primitiveType);
+                    this.executeBatch(commandList, batch, cached.getTessellation(), primitiveType);
                 }
             }
 
@@ -129,6 +123,31 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         }
 
         this.end(renderPass);
+    }
+
+    protected @Nullable CachedBatch getRegionBatch(CommandList commandList,
+                                                   RenderRegion region,
+                                                   SectionRenderDataStorage storage,
+                                                   ChunkRenderList renderList,
+                                                   CameraTransform occlusionCamera,
+                                                   TerrainRenderPass renderPass,
+                                                   boolean useBlockFaceCulling,
+                                                   SectionRenderDataStorage.BatchCacheParams cacheParams) {
+        var cached = storage.getCachedMultiDrawBatch(cacheParams);
+
+        if (cached == null || !cached.isValidFor(renderList.getSectionsWithGeometry(), renderList.getSectionsWithGeometryCount(),
+                occlusionCamera.intX, occlusionCamera.intY, occlusionCamera.intZ)) {
+            cached = BatchAssembler.createCachedBatch(region, storage, renderList, occlusionCamera, renderPass,
+                    useBlockFaceCulling, commandList, this.tessellationProvider);
+
+            storage.storeCachedMultiDrawBatch(cacheParams, cached);
+        }
+
+        return cached;
+    }
+
+    protected void executeBatch(CommandList commandList, MultiDrawBatch batch, GlTessellation tessellation, GlPrimitiveType primitiveType) {
+        batch.execute(commandList, tessellation, primitiveType);
     }
 
     private static void setModelMatrixUniforms(ChunkShaderInterface shader, RenderRegion region, CameraTransform camera) {
@@ -143,7 +162,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return (chunkBlockPos - cameraBlockPos) - cameraPos;
     }
 
-    private GlTessellation prepareTessellation(CommandList commandList, RenderRegion region, TerrainRenderPass pass) {
+    protected GlTessellation prepareTessellation(CommandList commandList, RenderRegion region, TerrainRenderPass pass) {
         var resources = region.getResources();
         var key = pass.tessellationKey();
 
