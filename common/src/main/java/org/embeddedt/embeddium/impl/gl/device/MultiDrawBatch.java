@@ -1,9 +1,11 @@
 package org.embeddedt.embeddium.impl.gl.device;
 
+import org.embeddedt.embeddium.impl.gl.buffer.GlMutableBuffer;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A fixed-size queue for building a draw-command list, usable with either direct or indirect multidraw.
@@ -63,6 +65,29 @@ public abstract class MultiDrawBatch {
      * first time (possibly repeatedly, across frames, if cached).
      */
     public abstract void upload(CommandList commandList);
+
+    /**
+     * Whether {@link #upload} puts the commands into a GL buffer owned by this batch.
+     */
+    public boolean usesGpuBuffer() {
+        return false;
+    }
+
+    /**
+     * Gives this batch an existing buffer to upload into. Only valid before {@link #upload} and when
+     * {@link #usesGpuBuffer()}.
+     */
+    public void adoptBuffer(GlMutableBuffer buffer) {
+        throw new UnsupportedOperationException("This batch keeps no GL buffer");
+    }
+
+    /**
+     * Takes the GL buffer away from this batch so that {@link #delete()} leaves it alive. The batch can't be
+     * executed afterwards.
+     */
+    public @Nullable GlMutableBuffer detachBuffer() {
+        return null;
+    }
 
     /**
      * Issues the multidraw call for this batch against the currently bound {@code tessellation}.

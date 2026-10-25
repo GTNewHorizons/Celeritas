@@ -23,7 +23,8 @@ public final class IndirectMultiDrawBatch extends MultiDrawBatch {
     private static final int COMMAND_SIZE = 4 * 5;
 
     private long pCommands;
-    private final GlMutableBuffer bufferObject;
+    // Created in upload() unless adoptBuffer() handed over the buffer of a discarded batch.
+    private GlMutableBuffer bufferObject;
 
     public IndirectMultiDrawBatch(int capacity) {
         super(capacity);
@@ -42,8 +43,26 @@ public final class IndirectMultiDrawBatch extends MultiDrawBatch {
             LWJGL.memPutInt(ptr + 16L, 0); // baseInstance
             ptr += COMMAND_SIZE;
         }
+    }
 
-        this.bufferObject = new GlMutableBuffer();
+    @Override
+    public boolean usesGpuBuffer() {
+        return true;
+    }
+
+    @Override
+    public void adoptBuffer(GlMutableBuffer buffer) {
+        if (this.bufferObject != null) {
+            throw new IllegalStateException("Batch already has a buffer");
+        }
+        this.bufferObject = buffer;
+    }
+
+    @Override
+    public GlMutableBuffer detachBuffer() {
+        GlMutableBuffer buffer = this.bufferObject;
+        this.bufferObject = null;
+        return buffer;
     }
 
     @Override
@@ -74,6 +93,11 @@ public final class IndirectMultiDrawBatch extends MultiDrawBatch {
 
     @Override
     public void upload(CommandList commandList) {
+        if (this.bufferObject == null) {
+            this.bufferObject = new GlMutableBuffer();
+        }
+
+        // Must stay glBufferData for an adopted buffer: it orphans the old storage, so draws still queued against it don't stall.
         commandList.uploadData(this.bufferObject, this.pCommands, (long) this.size * COMMAND_SIZE,
                 GlBufferUsage.STATIC_DRAW, GlBufferTarget.DRAW_INDIRECT_BUFFER);
 
@@ -88,7 +112,10 @@ public final class IndirectMultiDrawBatch extends MultiDrawBatch {
             LWJGL.nmemAlignedFree(this.pCommands);
             this.pCommands = LWJGLServiceProvider.NULL;
         }
-        this.bufferObject.delete();
+        if (this.bufferObject != null) {
+            this.bufferObject.delete();
+            this.bufferObject = null;
+        }
     }
 
     @Override
