@@ -126,6 +126,13 @@ public final class BatchAssembler {
         GlTessellation tessellation = null;
 
         if (batch != null) {
+            if (batch.usesGpuBuffer()) {
+                var spare = storage.takeSpareBatchBuffer();
+                if (spare != null) {
+                    batch.adoptBuffer(spare);
+                }
+            }
+
             batch.upload(commandList);
 
             if (!batch.isEmpty()) {

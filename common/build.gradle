@@ -50,6 +50,10 @@ sourceSets {
         runtimeClasspath += lwjglCommon.output
         runtimeClasspath += lwjgl3.output
     }
+    test {
+        compileClasspath += lwjglCommon.output
+        runtimeClasspath += lwjglCommon.output
+    }
 }
 
 // The benchmarks run against main's code, so the jmh source set needs main's dependencies too.
@@ -127,6 +131,9 @@ tasks.named('test', Test) {
     useJUnitPlatform()
 
     maxHeapSize = '1G'
+
+    // Tests have no GL context; this one records buffer calls instead.
+    systemProperty 'celeritas.lwjglService', 'org.taumc.celeritas.lwjgl.FakeGlLWJGLService'
 
     testLogging {
         events "passed"

@@ -42,6 +42,11 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return true;
     }
 
+    /** When true, a rebuilt region batch reuses the GL buffer of the batch it replaces instead of creating a new one. */
+    protected boolean recycleBatchBuffers() {
+        return false;
+    }
+
     protected final SharedQuadIndexBuffer getSharedIndexBuffer(ChunkPrimitiveType type, CommandList commandList) {
         var buffer = this.sharedIndexBuffers.get(type);
         if (buffer == null) {
@@ -134,10 +139,18 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                                                    TerrainRenderPass renderPass,
                                                    boolean useBlockFaceCulling,
                                                    SectionRenderDataStorage.BatchCacheParams cacheParams) {
+        boolean recycle = this.recycleBatchBuffers();
+        storage.setRecycleBatchBuffers(recycle);
+
         var cached = storage.getCachedMultiDrawBatch(cacheParams);
 
         if (cached == null || !cached.isValidFor(renderList.getSectionsWithGeometry(), renderList.getSectionsWithGeometryCount(),
                 occlusionCamera.intX, occlusionCamera.intY, occlusionCamera.intZ)) {
+            // Retire the stale batch first so the new one can take its buffer.
+            if (recycle && cached != null) {
+                storage.retireCachedMultiDrawBatch(cacheParams);
+            }
+
             cached = BatchAssembler.createCachedBatch(region, storage, renderList, occlusionCamera, renderPass,
                     useBlockFaceCulling, commandList, this.tessellationProvider);
 

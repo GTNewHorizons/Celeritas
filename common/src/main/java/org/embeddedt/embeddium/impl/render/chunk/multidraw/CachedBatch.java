@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.multidraw;
 
+import org.embeddedt.embeddium.impl.gl.buffer.GlMutableBuffer;
 import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +49,10 @@ public class CachedBatch {
 
     public @Nullable GlTessellation getTessellation() {
         return this.tessellation;
+    }
+
+    public @Nullable GlMutableBuffer detachBuffer() {
+        return this.batch != null ? this.batch.detachBuffer() : null;
     }
 
     public void delete() {

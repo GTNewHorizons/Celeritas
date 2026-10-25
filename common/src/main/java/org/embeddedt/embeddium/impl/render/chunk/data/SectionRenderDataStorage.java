@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.data;
 
 import org.embeddedt.embeddium.impl.gl.arena.GlBufferSegment;
+import org.embeddedt.embeddium.impl.gl.buffer.GlMutableBuffer;
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
@@ -31,6 +32,8 @@ public class SectionRenderDataStorage {
     private CachedBatch firstCachedBatch;
     private BatchCacheParams secondBatchParams;
     private CachedBatch secondCachedBatch;
+
+    private final BatchBufferRecycler<GlMutableBuffer> batchBufferRecycler = new BatchBufferRecycler<>();
 
     public SectionRenderDataStorage(ChunkPrimitiveType primitiveType, boolean sorted, int verticesPerArenaElement) {
         this.storageStrategy = sorted ? SectionRenderDataUnsafe.Strategy.FULL : SectionRenderDataUnsafe.Strategy.COMPACT;
@@ -170,13 +173,13 @@ public class SectionRenderDataStorage {
     public void storeCachedMultiDrawBatch(BatchCacheParams params, CachedBatch batch) {
         if (params.equals(firstBatchParams) || firstBatchParams == null) {
             if (firstCachedBatch != null) {
-                firstCachedBatch.delete();
+                this.discardCachedBatch(firstCachedBatch);
             }
             firstBatchParams = params;
             firstCachedBatch = batch;
         } else {
             if (secondCachedBatch != null) {
-                secondCachedBatch.delete();
+                this.discardCachedBatch(secondCachedBatch);
             }
             secondBatchParams = params;
             secondCachedBatch = batch;
@@ -185,19 +188,59 @@ public class SectionRenderDataStorage {
 
     public void invalidateCachedBatches() {
         if (firstCachedBatch != null) {
-            firstCachedBatch.delete();
+            this.discardCachedBatch(firstCachedBatch);
             firstCachedBatch = null;
         }
         if (secondCachedBatch != null) {
-            secondCachedBatch.delete();
+            this.discardCachedBatch(secondCachedBatch);
             secondCachedBatch = null;
         }
         firstBatchParams = null;
         secondBatchParams = null;
     }
 
+    /**
+     * Turns buffer recycling for cached batches on or off. Turning it off deletes the buffers held for reuse.
+     */
+    public void setRecycleBatchBuffers(boolean recycle) {
+        this.batchBufferRecycler.setEnabled(recycle, GlMutableBuffer::delete);
+    }
+
+    /**
+     * {@return the buffer of a discarded batch for a new batch to upload into, or {@code null}}
+     */
+    public @Nullable GlMutableBuffer takeSpareBatchBuffer() {
+        return this.batchBufferRecycler.take();
+    }
+
+    /**
+     * Discards the cached batch for {@code params} ahead of its rebuild so that the new batch can take its buffer.
+     * The params stay, so {@link #storeCachedMultiDrawBatch} puts the new batch in the same slot.
+     */
+    public void retireCachedMultiDrawBatch(BatchCacheParams params) {
+        if (params.equals(firstBatchParams)) {
+            if (firstCachedBatch != null) {
+                this.discardCachedBatch(firstCachedBatch);
+                firstCachedBatch = null;
+            }
+        } else if (params.equals(secondBatchParams)) {
+            if (secondCachedBatch != null) {
+                this.discardCachedBatch(secondCachedBatch);
+                secondCachedBatch = null;
+            }
+        }
+    }
+
+    private void discardCachedBatch(CachedBatch batch) {
+        if (this.batchBufferRecycler.isEnabled()) {
+            this.batchBufferRecycler.retire(batch.detachBuffer(), GlMutableBuffer::delete);
+        }
+        batch.delete();
+    }
+
     public void delete() {
         this.invalidateCachedBatches();
+        this.batchBufferRecycler.drain(GlMutableBuffer::delete);
 
         for (var allocation : this.allocations) {
             if (allocation != null) {
