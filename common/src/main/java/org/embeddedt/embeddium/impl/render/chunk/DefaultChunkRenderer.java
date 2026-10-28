@@ -42,6 +42,10 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return true;
     }
 
+    protected SectionRenderDataStorage.BatchCacheParams batchCacheParams(boolean useBlockFaceCulling) {
+        return SectionRenderDataStorage.BatchCacheParams.of(useBlockFaceCulling, 0);
+    }
+
     protected final SharedQuadIndexBuffer getSharedIndexBuffer(ChunkPrimitiveType type, CommandList commandList) {
         var buffer = this.sharedIndexBuffers.get(type);
         if (buffer == null) {
@@ -88,7 +92,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             long timestamp = System.nanoTime();
 
             useBlockFaceCulling = useBlockFaceCulling && !renderPass.isSorted();
-            var cacheParams = new SectionRenderDataStorage.BatchCacheParams(useBlockFaceCulling);
+            var cacheParams = this.batchCacheParams(useBlockFaceCulling);
 
             while (iterator.hasNext()) {
                 ChunkRenderList renderList = iterator.next();

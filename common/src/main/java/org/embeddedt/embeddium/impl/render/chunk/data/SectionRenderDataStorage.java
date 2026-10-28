@@ -24,7 +24,19 @@ public class SectionRenderDataStorage {
 
     private int numAllocations;
 
-    public record BatchCacheParams(boolean useBlockFaceCulling) {}
+    public record BatchCacheParams(boolean useBlockFaceCulling, int view) {
+        private static final BatchCacheParams[] SHARED = {
+                new BatchCacheParams(false, 0), new BatchCacheParams(true, 0),
+                new BatchCacheParams(false, 1), new BatchCacheParams(true, 1)
+        };
+
+        public static BatchCacheParams of(boolean useBlockFaceCulling, int view) {
+            if (view == 0 || view == 1) {
+                return SHARED[view * 2 + (useBlockFaceCulling ? 1 : 0)];
+            }
+            return new BatchCacheParams(useBlockFaceCulling, view);
+        }
+    }
 
     // we only need to cache two batches in practice (shadow pass for shaders disables block face culling), so we unroll
     // what would otherwise be an LRU for simplicity

@@ -56,8 +56,6 @@ class BatchBufferRecyclingTest {
         }
     };
 
-    private static final SectionRenderDataStorage.BatchCacheParams PARAMS = new SectionRenderDataStorage.BatchCacheParams(false);
-
     private MultiDrawBatchFactory previousFactory;
     private SectionRenderDataStorage storage;
     private RenderRegion region;
@@ -115,9 +113,46 @@ class BatchBufferRecyclingTest {
         assertEquals(List.of("gen 1", "data 1", "del 1"), FakeGlLWJGLService.LOG);
     }
 
+    @Test
+    void viewsKeepTheirOwnBatchWhenTheyAlternate() {
+        ChunkRenderList otherList = this.otherRenderList();
+
+        for (int round = 0; round < 4; round++) {
+            this.renderer.view = 0;
+            this.batch(this.renderList);
+            this.renderer.view = 1;
+            this.batch(otherList);
+        }
+
+        assertEquals(List.of("gen 1", "data 1", "gen 2", "data 2"), FakeGlLWJGLService.LOG);
+    }
+
+    @Test
+    void oneViewRebuildsOnEveryAlternation() {
+        ChunkRenderList otherList = this.otherRenderList();
+
+        for (int round = 0; round < 2; round++) {
+            this.batch(this.renderList);
+            this.batch(otherList);
+        }
+
+        assertEquals(List.of("gen 1", "data 1", "data 1", "data 1", "data 1"), FakeGlLWJGLService.LOG);
+    }
+
+    private ChunkRenderList otherRenderList() {
+        ChunkRenderList list = new ChunkRenderList(this.region);
+        list.add(0, 1 << RenderVisualsService.HAS_BLOCK_GEOMETRY);
+        list.add(1, 1 << RenderVisualsService.HAS_BLOCK_GEOMETRY);
+        return list;
+    }
+
     private CachedBatch batch() {
-        CachedBatch cached = this.renderer.getRegionBatch(this.commandList(), this.region, this.storage, this.renderList,
-                new CameraTransform(0, 0, 0), this.pass, false, PARAMS);
+        return this.batch(this.renderList);
+    }
+
+    private CachedBatch batch(ChunkRenderList list) {
+        CachedBatch cached = this.renderer.getRegionBatch(this.commandList(), this.region, this.storage, list,
+                new CameraTransform(0, 0, 0), this.pass, false, this.renderer.batchCacheParams(false));
         assertNotNull(cached);
         return cached;
     }
@@ -137,8 +172,15 @@ class BatchBufferRecyclingTest {
     }
 
     private static final class TestRenderer extends DefaultChunkRenderer {
+        int view;
+
         TestRenderer() {
             super(null, null, null);
+        }
+
+        @Override
+        protected SectionRenderDataStorage.BatchCacheParams batchCacheParams(boolean useBlockFaceCulling) {
+            return SectionRenderDataStorage.BatchCacheParams.of(useBlockFaceCulling, this.view);
         }
 
         @Override
